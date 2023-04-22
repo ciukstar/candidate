@@ -1,0 +1,44 @@
+
+/depts/#DeptId DeptR   POST DELETE
+/depts 	       DeptsR  POST
+
+/job-candidates/#JobId/#ApplicantId JobCandidateR  GET
+/job-candidates/#JobId	 	    JobCandidatesR GET
+/candidates/#JobId/#ApplicantId     CandidateR     GET
+/candidates	 		    CandidatesR    GET
+
+/form/jobs/#JobId/skills     JobSkillsEditFormR GET
+/form/jobs/#JobId            JobEditFormR       GET
+/form/job 	             JobCreateFormR     GET
+/job-skills/#JobSkillId      JobSkillR	    	PUT DELETE
+/jobs/#JobId/edit/skills     JobSkillsEditR    	POST
+/jobs/#JobId/skills   	     JobSkillsR     	POST
+/jobs/#JobId	    	     JobR 	    	GET  POST DELETE
+/jobs      	    	     JobsR          	GET  POST
+
+/form/applicants/#ApplicantId/skills       AppSkillsEditFormR   GET
+/form/applicants/#ApplicantId		   ApplicantEditFormR   GET
+/form/applicant		     		   ApplicantCreateFormR GET
+/applicants/#ApplicantId/photo 	 	   AppPhotoR	      	GET
+/applicants/#ApplicantId/skills/#SkillId   AppSkillR   	      	POST DELETE
+/applicants/#ApplicantId/tab/1       	   ApplicantSkillsR  	POST
+/applicants/#ApplicantId/edit/skills       AppSkillsEditR  	POST
+/applicants/#ApplicantId/skills            AppSkillsR  	      	POST
+/applicants/tag/edit			   ApplicantTagR      	POST
+/applicants/#ApplicantId                   ApplicantR  	      	GET POST DELETE
+/applicants                                ApplicantsR 	      	GET POST
+
+/form/skills/#SkillId SkillEditFormR   GET
+/form/skill           SkillCreateFormR GET
+/skills/label/edit    SkillsLabelR     POST
+/skills/#SkillId      SkillR   	       GET  POST DELETE
+/skills               SkillsR 	       GET  POST
+
+/static StaticR Static appStatic
+/auth   AuthR   Auth   getAuth
+
+/ HomeR GET
+
+/photo-placeholder.svg PhotoPlaceholderR GET
+/favicon.ico FaviconR GET
+/robots.txt RobotsR GET

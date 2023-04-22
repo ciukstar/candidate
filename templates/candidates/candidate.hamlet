@@ -1,0 +1,31 @@
+<nav aria-label=_{MsgBreadcrumbs}>
+  <ol.breadcrumb>
+    <li.breadcrumb-item>
+      <a href=@{HomeR}>_{MsgHome}
+    <li.breadcrumb-item>
+      <a href=#{ult} rell=collection>_{MsgCandidates}
+    <li.breadcrumb-item.active aria-current=page>
+      _{MsgCandidate}
+
+<div.d-flex.flex-row.gap-lg-5>
+  <div.flex-grow-1.d-column>
+    ^{candidateInfo jid aid}
+
+    <a.btn.btn-sm.btn-outline-secondary.mt-3 href=#{ult} role=button>
+      <i.bi.bi-arrow-left>
+      _{MsgBack}
+  
+  <aside>
+    <div.offcanvas-lg.offcanvas-end tabindex=-1 #offcanvasMainRight aria-labelledby=offcanvasMainRightTitle>
+      <div.offcanvas-header.border-bottom>
+        <h5.offcanvas-title #offcanvasMainRightTitle>_{MsgTags}
+        <button.btn-close type=button aria-label=_{MsgClose}
+          data-bs-dismiss=offcanvas data-bs-target=#offcanvasMainRight>
+      <div.offcanvas-body>
+        <div>
+          <p>
+            <a href=@{CandidateR jid aid}?tab=0>_{MsgCalculationAnalysis}
+          <p>
+            <a href=@{CandidateR jid aid}?tab=1>_{MsgApplicant}
+          <p>
+            <a href=@{CandidateR jid aid}?tab=2>_{MsgPosition}

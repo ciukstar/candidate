@@ -1,0 +1,6 @@
+
+a.app-link
+  text-decoration: none
+
+a.app-link:hover
+  text-decoration: underline

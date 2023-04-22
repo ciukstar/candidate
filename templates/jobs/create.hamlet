@@ -1,0 +1,35 @@
+<nav aria-label=breadcrumb>
+  <ol.breadcrumb>
+    <li.breadcrumb-item>
+      <a href=@{HomeR} rel=linkset>
+        _{MsgHome}
+    <li.breadcrumb-item>
+      $maybe dest <- ult
+        <a href=#{dest} rel=collection>
+          _{MsgPositions}
+      $nothing
+        <a href="@{JobsR}?desc=id&offset=0&limit=5" rel=collection>
+          _{MsgPositions}
+    <li.breadcrumb-item.active aria-current=page>_{MsgPosition}
+
+<h1>_{MsgPosition}
+
+<fieldset.p-3.my-3.border.rounded>
+  <legend.display-6>_{MsgAttributes}
+  $forall (status,msg) <- msgs
+    <div.alert.#{status}.alert-dismissible.fade.show role=alert>
+      <i.bi.bi-exclamation-circle.me-2>
+      #{msg}
+      <button.btn-close type=button data-bs-dismiss=alert aria-label=_{MsgClose}>
+    
+  <form method=post action=@{JobsR} rel=edit enctype=#{enctype} novalidate>
+    <div.pb-3>
+      ^{widget}
+    <button.btn.btn-primary type=submit>
+      _{MsgSave}
+    $maybe dest <- ult
+      <a.btn.btn-secondary role=button href=#{dest} rel=collection>
+        _{MsgCancel}
+    $nothing
+      <a.btn.btn-secondary role=button href="@{JobsR}?desc=id&offset=0&limit=5">
+        _{MsgCancel}

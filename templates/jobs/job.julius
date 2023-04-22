@@ -1,0 +1,8 @@
+
+$('ul[role=tree] li[role=treeitem] button.chevron').click(function (e) {
+  $.ajax({
+    method: 'PUT',
+    url: this.dataset.url,
+    data: `expanded=${this.getAttribute('aria-expanded')}`
+  })
+})

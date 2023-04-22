@@ -1,0 +1,248 @@
+<nav aria-label=_{MsgBreadcrumbs}>
+  <ol.breadcrumb>
+    <li.breadcrumb-item>
+      <a href=@{HomeR} rel=linkset>
+        _{MsgHome}
+    <li.breadcrumb-item.active aria-current=page>
+      _{MsgApplicants}
+<h1>
+  _{MsgApplicants}
+
+$forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
+  <div.alert.#{status}.alert-dismissible.fade.show>
+    #{msg}
+    <button.btn-close type=button data-bs-dismiss=alert>
+
+<div.d-flex.flex-row>
+  <div.flex-grow-1>
+    <nav.navbar>
+      <div.container-fluid.flex-nowrap.gap-3.px-0>
+        <form method=get action=@{ApplicantsR} rel=search #qform>
+          <div.input-group>
+            <button.btn type=submit title=_{MsgSearch}
+              :Just True == ((<$>) T.null mq):.btn-outline-success
+              :Nothing == mq:.btn-outline-success
+              :Just False == ((<$>) T.null mq):.btn-success>
+              <i.bi.bi-search>
+            $maybe q <- mq
+              <input.form-control type=search name=q value=#{q}
+                #inputSearch placeholder=_{MsgSearch}>
+            $nothing
+              <input.form-control type=search name=q
+                #inputSearch placeholder=_{MsgSearch}>
+
+          $maybe (d,f) <- msort
+            <input.sort type=text name=#{d} value=#{f} hidden>
+          $nothing
+            <input.sort type=text name=desc value=id hidden>
+
+          $maybe offset <- moffset
+            <input type=number name=offset value=#{offset} hidden #inputOffset>
+          $nothing
+            <input type=number name=offset value=5 hidden #inputOffset>
+
+        <a.btn.btn-primary href=@{ApplicantCreateFormR} rel=create-form role=button aria-label=_{MsgAdd}>
+          <span.d-none.d-lg-inline-block>
+            _{MsgAdd}
+          <i.bi.bi-plus-lg.d-block.d-lg-none>
+
+
+    <div.card.mt-2.d-block.d-lg-none>
+      <div.card-header.pt-0>
+        <div.d-flex.flex-row.justify-content-between>
+          <div>
+            <small>
+              <small>
+                <small.fw-light>_{MsgRowsPerPage}
+            <select.form-select #selectLimit2 
+              onchange="$('#selectLimit').val($(this).val());$('#qform').submit()">
+              
+              <option value=3 :Just 3 == mlimit:selected>3
+              <option value=4 :Just 4 == mlimit:selected>4
+              <option value=5 :Just 5 == mlimit:selected>5
+              <option value=10 :Just 10 == mlimit:selected>10
+              <option value=20 :Just 20 == mlimit:selected>20
+              <option value=50 :Just 50 == mlimit:selected>50
+          <div>
+            <small>
+              <small>
+                <small.fw-light>_{MsgPaginationLabel start end rc}
+            <nav aria-label=_{MsgPagination}>
+              <ul.pagination.m-0.p-0>
+                <li.page-item :moffset == Just 0:.disabled>
+                  <button.page-link type=submit form=qform rel=first title=_{MsgFirst}>
+                    <i.bi.bi-chevron-bar-left>
+                <li.page-item :moffset == Just 0:.disabled>
+                  <button.page-link type=submit form=qform rel=prev title=_{MsgPrevious}>
+                    <i.bi.bi-chevron-left>
+                <li.page-item :moffset == Just maxo:.disabled>
+                  <button.page-link type=submit form=qform rel=next title=_{MsgNext}>
+                    <i.bi.bi-chevron-right>
+                <li.page-item :moffset == Just maxo:.disabled>
+                  <button.page-link type=submit form=qform rel=last title=_{MsgLast}>
+                    <i.bi.bi-chevron-bar-right>
+      <ul.list-group.list-group-flush #applicantList>
+        $forall (Entity aid (Applicant s n mp _ _), Value ns, _) <- applicants
+          <li.list-group-item>
+            <img.photo.rounded-circle src=@{AppPhotoR aid} height=48 width=48
+              alt=_{MsgPhoto} onerror="this.src='@{PhotoPlaceholderR}'">
+            <a.applicant.app-link.lh-1 href=@{ApplicantR aid}?tab=0 rel=item>
+              <span.fs-5.fw-bold>
+                $maybe p <- mp
+                  #{s} #{n} #{p}
+                $nothing
+                  #{s} #{n}
+            <div.actions>
+              ^{menuActions aid}
+
+            <a.skills.app-link href=@{ApplicantR aid}?tab=1>
+              <span>_{MsgSkills}
+              <small.badge.rounded-pill.bg-secondary.ms-1>
+                #{ns}
+
+    <div.d-none.d-lg-block>
+      <table.table.table-hover>
+        <thead>
+          <tr>
+            <th scope=col>_{MsgPhoto}
+            <th scope=col>
+              ^{thSort msort "surname" MsgFamilyName "qform"}
+            <th scope=col>
+              ^{thSort msort "name" MsgGivenName "qform"}
+            <th scope=col>
+              ^{thSort msort "patronymic" MsgAdditionalName "qform"}
+            <th scope=col>
+              ^{thSort msort "skills" MsgSkills "qform"}
+            <th scope=col>_{MsgAge}
+            <th scope=col>
+        <tbody>
+          $if 0 == rc
+            <tr>
+              <td.text-muted colspan=7>
+                _{MsgNoDataFound}
+
+          $forall (Entity aid (Applicant s n mp _ _), Value ns, mage) <- applicants
+            <tr>
+              <td>
+                <img.rounded-circle src=@{AppPhotoR aid} height=32 width=32
+                  alt=_{MsgPhoto} onerror="this.src='@{PhotoPlaceholderR}'">
+
+              <td>#{s}
+              <td>#{n}
+              <td>
+                $maybe p <- mp
+                  #{p}
+              <td>
+                <a.app-link href=@{ApplicantR aid}?tab=1 title=_{MsgNumberOfSkills}>
+                  &nbsp;#{ns}&nbsp;
+              <td>
+                $maybe age <- mage
+                  #{age}
+              <td>
+                <div.d-flex.flex-row.justify-content-end.align-items-center.gap-1>
+                  ^{menuActions aid}
+
+      <div.d-flex.flex-row.justify-content-between>
+        <div>
+          <label.fw-light for=selectLimit>
+            <small>_{MsgRowsPerPage}
+          <select.form-select name=limit form=qform #selectLimit onchange="this.form.submit()">
+            <option value=3 :Just 3 == mlimit:selected>3
+            <option value=4 :Just 4 == mlimit:selected>4
+            <option value=5 :Just 5 == mlimit:selected>5
+            <option value=10 :Just 10 == mlimit:selected>10
+            <option value=20 :Just 20 == mlimit:selected>20
+            <option value=50 :Just 50 == mlimit:selected>50
+        <div>
+          <small.fw-light>_{MsgPaginationLabel start end rc}
+          <nav aria-label=_{MsgPagination}>
+            <ul.pagination>
+              <li.page-item :moffset == Just 0:.disabled>
+                <button.page-link type=submit form=qform rel=first title=_{MsgFirst}>
+                  <i.bi.bi-chevron-bar-left>
+              <li.page-item :moffset == Just 0:.disabled>
+                <button.page-link type=submit form=qform rel=prev title=_{MsgPrevious}>
+                  <i.bi.bi-chevron-left>
+              <li.page-item :moffset == Just maxo:.disabled>
+                <button.page-link type=submit form=qform rel=next title=_{MsgNext}>
+                  <i.bi.bi-chevron-right>
+              <li.page-item :moffset == Just maxo:.disabled>
+                <button.page-link type=submit form=qform rel=last title=_{MsgLast}>
+                  <i.bi.bi-chevron-bar-right>
+
+    $forall (Entity aid (Applicant s n mp _ _), _, _) <- applicants
+      <div.modal #modalDelete#{fromSqlKey aid} tabindex=-1 aria-hidden=true aria-label=_{MsgDelete}>
+        <div.modal-dialog>
+          <div.modal-content>
+            <div.modal-header>
+              _{MsgPleaseConfirm}
+              <button.btn-close type=button data-bs-dismiss=modal>
+            <div.modal-body>
+              <code>_{MsgInQuotes ((<>) ((<>) ((<>) ((<>) s " ") n) " ") (fromMaybe "" mp))}
+              <h4>_{MsgReallyDelete}
+            <div.modal-footer>
+              <button.btn.btn-primary.delete type=button data-url=@{ApplicantR aid}>
+                _{MsgDelete}
+              <button.btn.btn-secondary type=button data-bs-dismiss=modal>
+                _{MsgCancel}
+
+  <aside>
+    <div.offcanvas-lg.offcanvas-end #offcanvasMainRight tabindex=-1>
+      <div.offcanvas-header.border-bottom>
+        <h5.offcanvas-title>
+          _{MsgLabels}
+        <button.btn-close type=button aria-label=_{MsgClose}
+          data-bs-dismiss=offcanvas data-bs-target=#offcanvasMainRight>
+      <div.offcanvas-body>
+        <nav>
+          <ul.list-group.ms-lg-3>
+            <li.list-group-item.list-group-item-secondary>
+              _{MsgCategories}
+            $forall (ident, mtag) <- alltags
+              $maybe tag <- mtag
+                <li.list-group-item.list-group-item-action.text-nowrap>
+                  <div.d-flex.flex-row.flex-nowrap.justify-content-between.align-items-center.gap-1>
+                    <div.flex-grow-1.d-flex.flex-row.flex-nowrap.justify-content-start.align-items-center.gap-2>
+                      <input.flex-shrink-0.form-check-input name=tag value=#{tag} form=qform
+                        :elem tag tags:checked
+                        type=checkbox ##{ident} onchange=this.form.submit()>
+                      <label.flex-shrink-1.form-check-label.text-wrap.lh-1 for=#{ident} style="max-width:20rem">
+                        #{tag}
+                    <button.flex-shrink-0.btn.btn-sm.btn-light.rounded-circle.float-end type=button title=_{MsgEdit}
+                      data-bs-toggle=modal data-bs-target=#modalTagEdit#{ident}>
+                      <i.bi.bi-pencil>
+
+    $forall (ident, mtag) <- alltags
+      $maybe tag <- mtag
+        <div.modal #modalTagEdit#{ident} tabindex=-1 aria-hidden=true aria-label=_{MsgCategory}>
+          <div.modal-dialog>
+            <div.modal-content>
+              <div.modal-header>
+                <h5.modal-title>_{MsgEdit}
+                <button.btn-close type=button data-bs-dismiss=modal aria-label=_{MsgClose}>
+              <div.modal-body>
+                <form method=post action=@{ApplicantTagR} #formTagEdit#{ident}>
+                  <input type=hidden name=old value=#{tag}>
+                  <label.form-label for=inputNewTag#{ident}>_{MsgInQuotes tag}
+                  <input.form-control type=text name=new placeholder=_{MsgEnterNewName} #inputNewTag#{ident}>
+              <div.modal-footer>
+                <button.btn.btn-primary type=submit form=formTagEdit#{ident}>
+                  _{MsgSave}
+                <button.btn.btn-secondary type=button data-bs-dismiss=modal>
+                  _{MsgCancel}
+
+$forall (status,msg) <- filter (isInfixOf "toast" . fst) msgs
+  <div.toast-container.p-3.bottom-0.start-50.translate-middle-x>
+    <div.toast.align-items-center.text-bg-secondary.border-0.fade.show role=alert aria-live=assertive aria-atomic=true>
+      <div.d-flex>
+        <div.toast-body>
+          $if isInfixOf "alert-info" status
+            <i.bi.bi-info-circle.me-2>
+          #{msg}
+        <button.btn-close.btn-close-white.me-2.m-auto type=button data-bs-dismiss=toast aria-label=_{MsgClose}>
+  <script>
+    setTimeout(function () {
+      Array.from(document.getElementsByClassName('toast')).forEach(function (x) {
+        x.classList.remove('show')
+      })
+    },5000)

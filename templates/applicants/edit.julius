@@ -1,0 +1,40 @@
+
+document.querySelectorAll(
+  'div.is-invalid > input'
+).forEach(function (x) {
+  x.classList.add('is-invalid')
+})
+
+document.querySelectorAll(
+  'div.is-valid > input'
+).forEach(function (x) {
+  x.classList.add('is-valid')
+})
+
+$('input#modalInputSearchSkills').on('input', e => {
+  var skey = e.target.value.toLowerCase();
+  var items = $('.modal#modalSkills .modal-body ul > li');
+  items.hide();
+  items.filter(
+    (i,x) => $(x).children('label').text().toLowerCase().indexOf(skey) >= 0
+  ).show();
+})
+
+$('button.delete').click(function () {
+  $.ajax({
+    method: 'DELETE',
+    url: this.dataset.url
+  }).done(function () {
+    window.location = '@{ApplicantEditFormR aid}?tab=1';
+  })
+})
+
+function displayPhoto(input) {
+  if (input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      $('#imgPhoto').attr('src',e.target.result).show();
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}

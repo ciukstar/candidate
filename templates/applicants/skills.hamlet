@@ -1,0 +1,100 @@
+<nav aria-label=_{MsgBreadcrumbs}>
+  <ol.breadcrumb>
+    <li.breadcrumb-item>
+      <a href=@{HomeR} rel=linkset>_{MsgHome}
+    <li.breadcrumb-item>
+      <a href=#{ult} rel=collection>_{MsgApplicants}
+    <li.breadcrumb-item.active aria-current=page>
+      _{MsgSkills}
+
+<h1>
+  $maybe Entity _ (Applicant s n mp _ _) <- applicant
+    $maybe p <- mp
+      #{s} #{n} #{p}
+    $nothing
+      #{s} #{n}
+  $nothing
+    _{MsgApplicant}: _{MsgNumberSign}#{fromSqlKey aid}
+
+<fieldset.border.rounded.p-3>
+  <legend.display-6>_{MsgSkills}
+  $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
+    <div.alert.#{status}.alert-dismissible.fade.show role=alert>
+      <i.bi.bi-exclamation-circle.me-2>
+      #{msg}
+      <button.btn-close type=button data-bs-dismiss=alert aria-label=_{MsgClose}>
+
+  <form method=post action=@{AppSkillsEditR aid} #formPostSkills enctype=#{fe} novalidate>
+    <input type=url name=location value=@{AppSkillsEditFormR aid} hidden>
+    ^{fw}
+
+    <div.d-flex.flex-row.gap-2>
+      <button.btn.btn-success type=button data-bs-toggle=modal data-bs-target=#modalSkills>
+        _{MsgAdd}
+      <button.btn.btn-primary type=submit form=formPostSkills>
+        _{MsgSave}
+      <a.btn.btn-secondary href=#{ult} role=button>
+        _{MsgCancel}
+
+<a.btn.btn-sm.btn-outline-secondary.my-3 href=#{ult} rel=collection role=button>
+  <i.bi.bi-arrow-left>
+  _{MsgBack}
+
+$forall (Entity asid (AppSkill aid _ _), Entity sid (Skill _ name _ _)) <- appSkills
+  <div.modal #modalRemoveSkill#{fromSqlKey asid} tabindex=-1 aria-hidden=true>
+    <div.modal-dialog>
+      <div.modal-content>
+        <div.modal-header>
+          _{MsgPleaseConfirm}
+          <button.btn-close type=button data-bs-dismiss=modal>
+        <div.modal-body>
+          <code>_{MsgInQuotes name}
+          <h4>_{MsgReallyRemove}
+        <div.modal-footer>
+          <button.btn.btn-primary.delete type=button data-url=@{AppSkillR aid sid}>
+            _{MsgRemove}
+          <button.btn.btn-secondary type=button data-bs-dismiss=modal>
+            _{MsgCancel}
+
+<div.modal #modalSkills tabindex=-1 aria-hidden=true>
+  <div.modal-dialog.modal-dialog-scrollable>
+    <div.modal-content>
+      <div.modal-header.border-bottom-0>
+        <h4.modal-title>_{MsgSkills}
+        <button.btn-close data-bs-dismiss=modal aria-label=_{MsgClose}>
+      <div.modal-header.botder-top-0.mt-0.pt-0>
+        <div.input-group>
+          <i.bi.bi-search.input-group-text>
+          <input.form-control type=search placeholder=_{MsgSearch} #modalInputSearchSkills>
+      <div.modal-body>
+        <form method=post action=@{AppSkillsR aid} #formSkills>
+          <input type=url name=location value=@{AppSkillsEditFormR aid} required hidden>
+          <input type=number name=weight value=1 required hidden>
+          <ul.list-group.list-group-flush>
+            $forall Entity sid (Skill code name _ _) <- skills
+              <li.list-group-item.list-group-item-action.text-nowrap data-url=@{AppSkillR aid sid}>
+                <input.form-check-input.me-2 type=radio name=skill value=#{fromSqlKey sid}
+                  #inputSkill#{fromSqlKey sid} required>
+                <label.form-check-label.text-wrap.lh-1 for=inputSkill#{fromSqlKey sid} title=_{code}>
+                  #{name}
+      <div.modal-footer>
+        <button.btn.btn-primary type=submit form=formSkills>
+          _{MsgSelect}
+        <button.btn.btn-secondary type=button data-bs-dismiss=modal>
+          _{MsgCancel}
+
+$forall (status,msg) <- filter (isInfixOf "toast" . fst) msgs
+  <div.toast-container.p-3.bottom-0.start-50.translate-middle-x>
+    <div.toast.align-items-center.text-bg-secondary.border-0.fade.show role=alert aria-live=assertive aria-atomic=true>
+      <div.d-flex>
+        <div.toast-body>
+          $if isInfixOf "alert-info" status
+            <i.bi.bi-info-circle.me-2>
+          #{msg}
+        <button.btn-close.btn-close-white.me-2.m-auto type=button data-bs-dismiss=toast aria-label=_{MsgClose}>
+  <script>
+    setTimeout(function () {
+      Array.from(document.getElementsByClassName('toast')).forEach(function (x) {
+        x.classList.remove('show')
+      })
+    },5000)

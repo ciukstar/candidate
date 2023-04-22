@@ -1,0 +1,38 @@
+<nav aria-label=breadcrumb>
+  <ol.breadcrumb>
+    <li.breadcrumb-item>
+      <a href=@{HomeR} rel=linkset>_{MsgHome}
+    <li.breadcrumb-item>
+      <a href=#{ult} rel=collection>_{MsgSkills}
+    <li.breadcrumb-item.active aria-current=page>_{MsgSkill}
+
+<h1>_{MsgSkill}: _{MsgNumberSign}#{fromSqlKey ident}
+
+<fieldset.p-3.mb-3.border.rounded>
+  <legend.display-6>_{MsgAttributes}
+  $maybe (Skill code name descr label) <- skill
+    <table.table.table-hover.w-auto>
+      <tbody>
+        <tr>
+          <th scope=row>_{MsgId}
+          <td>#{fromSqlKey ident}
+        <tr>
+          <th scope=row>_{MsgCode}
+          <td>#{code}
+        <tr>
+          <th scope=row>_{MsgDenom}
+          <td>#{name}
+        <tr>
+          <th scope=row>_{MsgDescription}
+          <td>
+            $maybe descr <- descr
+              #{descr}
+        <tr>
+          <th scope=row>_{MsgCategory}
+          <td>
+            $maybe lbl <- label
+              #{lbl}
+
+<a.btn.btn-sm.btn-outline-secondary href=#{ult} role=button>
+  <i.bi.bi-arrow-left>
+  _{MsgBack}

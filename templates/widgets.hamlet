@@ -1,0 +1,10 @@
+
+$maybe (d,f) <- msort
+  <button.sort.text-nowrap type=submit form=#{form} data-field=#{field}>
+    <span.me-1>_{label}
+    $if (&&) (field == f) ("desc" == d)
+      <i.bi.bi-arrow-up>
+    $elseif (&&) (field == f) ("asc" == d)
+      <i.bi.bi-arrow-down>
+    $else
+      <i.bi.bi-arrow-down-up.text-body-secondary>

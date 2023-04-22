@@ -1,0 +1,43 @@
+
+a.app-link
+  text-decoration: none
+a.app-link:hover
+  text-decoration: underline
+
+div.card div.list-group div.list-group-item
+  display: grid
+  grid-template-columns: auto 48px
+  grid-template-rows: auto
+  grid-template-areas: "job actions" "details details"
+  gap: 0.5rem
+  a.job
+    grid-area: job
+    align-self: center
+  div.actions
+    grid-area: actions
+  div.details
+    grid-area: details
+
+table
+  thead
+    button.sort
+      background: none
+      border: none
+      font-weight: inherit
+      padding: 0
+      margin: 0
+      .bi-arrow-down-up
+        visibility: hidden
+
+    button.sort:hover
+      .bi-arrow-down-up
+        visibility: visible
+
+aside nav ul
+  list-style: none
+  button.chevron[aria-expanded=true]::before
+    font-family: Bootstrap-icons
+    content: '\F282'
+  button.chevron[aria-expanded=false]::before
+    font-family: Bootstrap-icons
+    content: '\F285'

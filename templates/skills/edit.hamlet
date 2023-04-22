@@ -1,0 +1,25 @@
+<nav aria-label=beadcrumb>
+  <ol.breadcrumb>
+    <li.breadcrumb-item>
+      <a href=@{HomeR} rel=linkset>_{MsgHome}
+    <li.breadcrumb-item>
+      <a href=#{ult} rel=collection>_{MsgSkills}
+    <li.breadcrumb-item.active aria-current=page>
+      _{MsgSkill}
+
+<h1>_{MsgSkill}: _{MsgNumberSign}#{fromSqlKey sid}
+
+<fieldset.border.rounded.p-3>
+  <legend.display-6>_{MsgAttributes}
+  $forall (status,msg) <- msgs
+    <div.alert.#{status}.alert-dismissible.fade.show role=alert>
+      #{msg}
+      <button.btn-close type=button data-bs-dismiss=alert>
+
+  <form method=post action=@{SkillR sid} rel=edit enctype=#{enctype} novalidate>
+    <div.d-flex.flex-column.gap-3.mb-3>
+      ^{widget}
+    <button.btn.btn-primary type=submit>
+      _{MsgSave}
+    <a.btn.btn-secondary href=#{ult} rel=collection>
+      _{MsgCancel}

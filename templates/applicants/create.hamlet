@@ -1,0 +1,44 @@
+<nav aria-label=_{MsgBreadcrumbs}>
+  <ol.breadcrumb>
+    <li.breadcrumb-item>
+      <a href=@{HomeR} rel=linkset>
+        _{MsgHome}
+    <li.breadcrumb-item>
+        <a href=#{ult} rel=collection>
+          _{MsgApplicants}
+    <li.breadcrumb-item.active aria-current=page>
+      _{MsgApplicant}
+
+<h1>
+  _{MsgApplicant}
+
+<fieldset.border.rounded.p-3>
+  $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
+    <div.alert.#{status}.alert-dismissible.fade.show>
+      <i.bi.bi-exclamation-circle.me-2>
+      #{msg}
+      <button.btn-close type=button data-bs-dismiss=alert>
+
+  <form method=post action=@{ApplicantsR} enctype=#{enctype} novalidate>
+    ^{widget}
+    <div.mt-3>
+      <button.btn.btn-primary type=submit>
+        _{MsgSave}
+      <a.btn.btn-secondary href=#{ult} rel=collection role=button>
+        _{MsgCancel}
+
+$forall (status,msg) <- filter (isInfixOf "toast" . fst) msgs
+  <div.toast-container.p-3.bottom-0.start-50.translate-middle-x>
+    <div.toast.align-items-center.text-bg-secondary.border-0.fade.show role=alert aria-live=assertive aria-atomic=true>
+      <div.d-flex>
+        <div.toast-body>
+          $if isInfixOf "alert-info" status
+            <i.bi.bi-info-circle.me-2>
+          #{msg}
+        <button.btn-close.btn-close-white.me-2.m-auto type=button data-bs-dismiss=toast aria-label=_{MsgClose}>
+  <script>
+    setTimeout(function () {
+      Array.from(document.getElementsByClassName('toast')).forEach(function (x) {
+        x.classList.remove('show')
+      })
+    },5000)

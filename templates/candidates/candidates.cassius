@@ -1,0 +1,28 @@
+
+span#applicantsBadge
+  position: absolute
+  top: 0
+  right: 0
+
+button.btn-link, ul.list-group > li a, table a
+  text-decoration: none
+  
+button.btn-link:hover, ul.list-group > li a:hover, table a:hover
+  text-decoration: underline
+
+ul#candidateList 
+  li.list-group-item      
+    display: grid
+    grid-template-columns: 48px auto 48px
+    grid-template-rows: auto
+    grid-template-areas: "photo candidate actions" "photo weight weight"
+    gap: 0.5rem
+    img.photo
+      grid-area: photo
+    a.candidate
+      grid-area: candidate
+      align-self: center
+    div.actions
+      grid-area: actions
+    a.weight
+      grid-area: weight

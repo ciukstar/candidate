@@ -1,0 +1,35 @@
+
+$('#inputSearch,#selectLimit,#selectLimit2').on('input', function (e) {
+  $('#inputOffset').val(0)
+})
+
+$('button.sort').click(function () {
+  $('input.sort')
+    .attr('name',#{thSortDir (fst (fromMaybe ("desc","id") msort))})
+    .val(this.dataset.field);
+})
+
+$('button[rel=last]').click(function () {
+  $('input[name=offset]').val(#{rawJS $ show maxo})
+})
+
+$('button[rel=next]').click(function () {
+  $('input[name=offset]').val(#{rawJS $ show next})
+})
+
+$('button[rel=prev]').click(function () {
+  $('input[name=offset]').val(#{rawJS $ show prev})
+})
+
+$('button[rel=first]').click(function () {
+  $('input[name=offset]').val(0)
+})
+
+$('button.delete[data-url]').click(function () {
+  $.ajax({
+    method: 'DELETE',
+    url: this.dataset.url
+  }).done(function () {
+    window.location = '#{rawJS $ fromMaybe "/jobs" ult}';
+  })
+})

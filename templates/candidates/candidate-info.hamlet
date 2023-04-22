@@ -1,0 +1,124 @@
+
+<h1>_{MsgCandidate}
+
+$maybe (Entity _ (Job _ name _ _ _ _), _) <- mjob
+  <div.display-6.mb-3>
+    #{name}
+
+$maybe Entity aid (Applicant s n mp _ _) <- mapp
+  <div.card>
+    <div.card-body>
+      <div.d-flex.flex-row.gap-3>
+        <img.rounded src=@{AppPhotoR aid} height=64 width=64
+          alt=_{MsgPhoto} onerror="this.src='@{PhotoPlaceholderR}'">
+        <div.d-flex.flex-column>
+          <h2.card-title>
+            $maybe p <- mp
+              #{s} #{n} #{p}
+            $nothing
+              #{s} #{n}
+
+          <div.card-text>
+            <span.text-body-secondary.h6.fw-light>_{MsgWeight}
+            <span.badge.bg-success.fs-6>
+              #{fmtDbl ".##" loc weight}
+
+<div.accordion.mt-3 #accordionCandidate>
+  <div.accordion-item>
+    <div.accordion-header>
+      <button.accordion-button.py-2.px-3 :Just 0 /= mtab:.collapsed :Just 0 == mtab:autofocus type=button
+        data-bs-toggle=collapse data-bs-target=#collapseAnalysis
+        :Just 0 == mtab:aria-expanded=true :Just 0 /= mtab:aria-expanded=false aria-controls=collapseAnalysis>
+        <span.display-6>
+          _{MsgCalculationAnalysis}
+
+    <div.collapse.accordion-collapse :Just 0 == mtab:.show #collapseAnalysis data-bs-parent=#accordionCandidate>
+      <div.accordion-body>
+        $with tree <- bldFullTree app langs appSkills skillTree
+          <div.d-flex.flex-row.gap-2>
+            <code>
+              #{fmtDbl ".####" loc weight}
+            <code>
+              &cong;
+            <code>
+              #{rndrExpr (fmtDbl ".####" loc) tree}
+
+          <hr>
+          <ul role=tree>
+            ^{rndrTree (fmtDbl ".####" loc) tree}
+
+  <div.accordion-item>
+    <div.accordion-header>
+      <button.accordion-button.py-2.px-3 :Just 1 /= mtab:.collapsed :Just 1 == mtab:autofocus type=button
+        data-bs-toggle=collapse data-bs-target=#collapseApplicant
+        :Just 1 /= mtab:aria-expanded=true :Just 1 /= mtab:aria-expanded=false aria-controls=collapseApplicant>
+        <span.display-6>_{MsgApplicant}
+
+    <div.collapse.accordion-collapse :Just 1 == mtab:.show #collapseApplicant data-bs-parent=#accordionCandidate>
+      <div.accordion-body>
+        $maybe Entity aid (Applicant s n mp mbd _) <- mapp
+          <table.table.table-sm.table-hover.w-auto>
+            <tbody>
+              <tr>
+                <th scope=row>_{MsgPhoto}
+                <td>
+                  <img src=@{AppPhotoR aid} height=32
+                    alt=_{MsgPhoto} onerror="this.src='@{PhotoPlaceholderR}'">
+              <tr>
+                <th scope=row>_{MsgId}
+                <td>#{fromSqlKey aid}
+              <tr>
+                <th scope=row>_{MsgFullName}
+                <td>
+                  $maybe p <- mp
+                    #{s} #{n} #{p}
+                  $nothing
+                    #{s} #{n}
+              <tr>
+                <th scope=row>_{MsgBirthday}
+                <td>
+                  $maybe bd <- mbd
+                    #{formatCalendar fmtDay (setDay cal bd)}
+              <tr>
+                <th scope=row>_{MsgAge}
+                <td>
+                  $maybe age <- mage
+                    #{age}
+
+  <div.accordion-item>
+    <div.accordion-header>
+      <button.accordion-button.py-2.px-3 :Just 2 /= mtab:.collapsed :Just 2 == mtab:autofocus type=button
+        data-bs-toggle=collapse data-bs-target=#collapseJob
+        :Just 2 == mtab:aria-expanded=true :Just 2 /= mtab:aria-expanded=false aria-controls=collapseJob>
+        <span.display-6>_{MsgPosition}
+
+    <div.collapse.accordion-collapse :Just 2 == mtab:.show #collapseJob data-bs-parent=#accordionCandidate>
+      <div.accordion-body>
+        $maybe (Entity jid (Job code name ds de mdescr _), mdept) <- mjob
+          <table.table.table-sm.table-hover.w-auto>
+            <tbody>
+              <tr>
+                <th scope=row>_{MsgId}
+                <td>#{fromSqlKey jid}
+              <tr>
+                <th scope=row>_{MsgCode}
+                <td>#{code}
+              <tr>
+                <th scope=row>_{MsgDenom}
+                <td>#{name}
+              <tr>
+                <th scope=row>_{MsgDayStart}
+                <td>#{formatCalendar fmtDay (setDay cal ds)}
+              <tr>
+                <th scope=row>_{MsgDayEnd}
+                <td>#{formatCalendar fmtDay (setDay cal de)}
+              <tr>
+                <th scope=row>_{MsgDescription}
+                <td>
+                  $maybe descr <- mdescr
+                    #{unTextarea descr}
+              <tr>
+                <th scope=row>_{MsgDivision}
+                <td>
+                  $maybe Entity _ (Dept name _) <- mdept
+                    #{name}

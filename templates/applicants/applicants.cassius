@@ -1,0 +1,52 @@
+
+a.app-link
+  text-decoration: none
+  
+a.app-link:hover
+  text-decoration: underline
+
+ul.list-group#applicantList
+  li.list-group-item      
+    display: grid
+    grid-template-columns: 48px auto 48px
+    grid-template-rows: auto
+    grid-template-areas: "photo applicant actions" "photo skills skills"
+    gap: 0.5rem
+    img.photo
+      grid-area: photo
+    a.applicant
+      grid-area: applicant
+      align-self: center
+    div.actions
+      grid-area: actions
+    a.skills
+      grid-area: skills
+    
+
+table
+  thead
+    button.sort
+      background: none
+      border: none
+      font-weight: inherit
+      padding: 0
+      margin: 0
+      .bi-arrow-down-up
+        visibility: hidden
+
+    button.sort:hover
+      .bi-arrow-down-up
+        visibility: visible
+
+button[aria-expanded=false]
+  i.bi.bi-chevron-right
+    display: block
+  i.bi.bi-chevron-down
+    display: none
+    
+button[aria-expanded=true]
+  i.bi.bi-chevron-right
+    display: none
+  i.bi.bi-chevron-down
+    display: block
+  

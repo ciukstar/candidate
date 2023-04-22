@@ -1,0 +1,22 @@
+
+#collapseSkills
+  ul[role=tree], ul[role=group]
+    list-style: none
+    margin-left: 0
+    padding-left: 1.5rem
+    li[role=treeitem] button.chevron[aria-expanded=true]::before
+        content: '\F282'
+      	font-family: Bootstrap-icons
+    li[role=treeitem] button.chevron[aria-expanded=false]::before
+        content: '\F285'
+      	font-family: Bootstrap-icons
+  ul[role=tree]
+    margin: 0
+    padding: 0
+    padding-left: 0
+
+aside ul li
+  a
+    text-decoration: none
+  a:hover
+    text-decoration: underline

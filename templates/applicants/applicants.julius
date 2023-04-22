@@ -1,0 +1,35 @@
+
+$('#inputSearch,#selectLimit,#selectLimit2').on('input', function (e) {
+  $('#inputOffset').val(0)
+})
+
+$('button.sort').click(function () {
+  $('input.sort')
+    .attr('name',#{thSortDir (fst (fromMaybe ("desc","id") msort))})
+    .val(this.dataset.field);
+})
+
+$('button.page-link[rel=last]').click(function () {
+  $('input[name=offset]').val(#{rawJS $ show maxo})
+})
+
+$('button.page-link[rel=prev]').click(function () {
+  $('input[name=offset]').val(#{rawJS $ show prev})
+})
+
+$('button.page-link[rel=next]').click(function () {
+  $('input[name=offset]').val(#{rawJS $ show next})
+})
+
+$('button.page-link[rel=first]').click(function () {
+  $('input[name=offset]').val(0)
+})
+
+$('button.delete').click(function () {
+  $.ajax({
+    method: 'DELETE',
+    url: this.dataset.url
+  }).done(function (x,y,z) {
+    window.location = '#{rawJS ult}';
+  });
+})

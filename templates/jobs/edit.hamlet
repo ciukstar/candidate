@@ -1,0 +1,192 @@
+<nav aria-label=breadcrumb>
+  <ol.breadcrumb>
+    <li.breadcrumb-item>
+      <a href=@{HomeR} rel=linkset>_{MsgHome}
+    <li.breadcrumb-item>
+      <a href=#{ult} rel=collection>_{MsgPositions}
+    <li.breadcrumb-item.active aria-current=page>_{MsgPosition}
+
+<h1>_{MsgPosition}: _{MsgNumberSign}#{fromSqlKey jid}
+
+<div.d-flex.flex-row.gap-lg-5>
+  <div.d-flex.flex-column.w-100>
+    <div.accordion #accordionJob>
+      <div.accordion-item>
+        <h2.accordion-header #accordionHeaderAttributes>
+          <button.accordion-button.py-2.px-3 type=button :tab == 0:autofocus :tab /= 0:.collapsed
+            data-bs-toggle=collapse data-bs-target=#collapseAttributes
+            aria-expanded=true aria-controls=collapseAttributes>
+            <small.display-6>_{MsgAttributes}
+
+        <div.collapse.accordion-collapse :0 == tab:.show #collapseAttributes
+          data-bs-parent=#accordionJob aria-labelledby=accordionHeaderAttributes>
+
+          <div.accordion-body>
+
+            $forall (status,msg) <- (filter (isInfixOf "tab-0" . fst) . filter (not . (isInfixOf "toast" . fst))) msgs
+              <div.alert.#{status}.alert-dismissible.fade.show>
+                <i.bi.bi-exclamation-circle.me-2>
+                #{msg}
+                <button.btn-close type=button data-bs-dismiss=alert aria-label=_{MsgClose}>
+
+            <form method=post action=@{JobR jid} enctype=#{enctype} novalidate>
+              <div.pb-3>
+                ^{widget}
+              <button.btn.btn-primary type=submit>
+                _{MsgSave}
+              <a.btn.btn-secondary href=#{ult} rel=collection role=button>
+                _{MsgCancel}
+
+      <div.accordion-item>
+        <h2.accordion-header #accordionHeaderSkills>
+          <button.accordion-button.py-2.px-3 type=button :tab == 1:autofocus :tab /= 1:.collapsed
+            data-bs-toggle=collapse data-bs-target=#collapseSkills
+            aria-expanded=false aria-controls=collapseSkills>
+            <span.display-6>_{MsgSkills}
+
+        <div.collapse.accordion-collapse :1 == tab:.show #collapseSkills
+          data-bs-parent=#accordionJob aria-labelledby=accordionHeaderSkills>
+
+          <div.accordion-body>
+
+            $forall (status,msg) <- (filter (isInfixOf "tab-1" . fst) . filter (not . (isInfixOf "toast" . fst))) msgs
+              <div.alert.#{status}.alert-dismissible.fade.show>
+                $if "alert-warning" == status
+                  <i.bi.bi-exclamation-triangle.me-2>
+                  #{msg}
+                  <button.btn-close data-bs-dismiss=alert aria-label=_{MsgClose}>
+                $else
+                  <i.bi.bi-info-circle.me-2>
+                  #{msg}
+                  <a.btn-close href=@{JobEditFormR jid}?tab=1 aria-label=_{MsgClose}>
+
+            <form method=get action=@{JobEditFormR jid} enctype=#{fe} #formGetJobSkillWeights novalidate>
+              <input type=number name=tab value=1 hidden>
+
+            <form method=post action=@{JobSkillsEditR jid} enctype=#{fe} #formPostJobSkillWeights novalidate>
+              <input type=submit hidden>
+              <input type=url name=location value=@{JobEditFormR jid}?tab=1 hidden>
+              ^{fw}
+
+            <div.mt-3>
+              <button.btn.btn-success.mt-3 type=button data-bs-toggle=modal data-bs-target=#modalSkills>
+                _{MsgAdd}
+              <button.btn.btn-primary.mt-3 type=submit form=formPostJobSkillWeights>
+                _{MsgSave}
+              <a.btn.btn-secondary.mt-3 href=#{ult} role=button>
+                _{MsgCancel}
+
+    <div.d-block>
+      <a.btn.btn-sm.btn-outline-secondary.my-3 href=#{ult} role=button rel=collection>
+        <i.bi.bi-arrow-left>
+        _{MsgBack}
+
+  <aside>
+    <div.offcanvas-lg.offcanvas-end tabindex=-1 #offcanvasMainRight>
+      <div.offcanvas-header.border-bottom>
+        <h5.offcanvas-title>_{MsgLabels}
+        <button.btn-close type=button aria-label=_{MsgClose}
+          data-bs-dismiss=offcanvas data-bs-target=#offcanvasMainRight>
+      <div.offcanvas-body>
+        <div>
+          <div.d-none.d-lg-block>
+            <span.fw-light>_{MsgSections}
+            <hr>
+          <nav>
+            <ul.list-unstyled>
+              <li.ms-3.mb-3>
+                <a href=@{JobEditFormR jid}?tab=0 rel=section>
+                  _{MsgAttributes}
+              <li.ms-3>
+                <a href=@{JobEditFormR jid}?tab=1 rel=section>
+                  _{MsgSkills}
+
+<div.modal.fade.skillOptions #modalSkills>
+  <div.modal-dialog.modal-dialog-scrollable>
+    <div.modal-content>
+      <div.modal-header.border-bottom-0>
+        <h4.modal-title>_{MsgSkills}
+        <button.btn-close type=button data-bs-dismiss=modal aria-label=_{MsgClose}>
+      <div.modal-header.border-top-0.mt-0.pt-0>
+        <div.input-group>
+          <i.bi.bi-search.input-group-text>
+          <input.form-control type=search placeholder=_{MsgSearch} #inputSearchSkills>
+      <div.modal-body>
+        <form method=post action=@{JobSkillsR jid} #formSkills>
+          <input type=url name=location value="@{JobEditFormR jid}?tab=1" required hidden>
+          <input type=number name=weight value=0 required hidden>
+          <ul.list-group.list-group-flush>
+            $forall Entity sid (Skill code name _ _) <- skillPool
+              <li.list-group-item.list-group-item-action.text-nowrap>
+                <input.form-check-input.me-2 type=radio name=skill value=#{fromSqlKey sid}
+                   #rootInputSkill#{fromSqlKey sid} required>
+                <label.form-check-label.text-wrap.lh-1 for=rootInputSkill#{fromSqlKey sid} title=#{code}>#{name}
+      <div.modal-footer>
+        <button.btn.btn-primary type=submit form=formSkills>
+          _{MsgSelect}
+        <button.btn.btn-secondary type=button data-bs-dismiss=modal>
+          _{MsgCancel}
+
+
+$forall (Entity jsid (JobSkill _ _ _ _ _), Entity _ (Skill code _ _ _)) <- skills
+  <div.modal.fade.skillOptions #modalChildSkills#{fromSqlKey jsid} tabindex=-1
+    aria-hidden=true aria-label=_{MsgSkills}>
+    <div.modal-dialog.modal-dialog-scrollable>
+      <div.modal-content>
+        <div.modal-header.border-bottom-0>
+          <h4.modal-title>_{MsgSkills}
+          <button.btn-close type=button data-bs-dismiss=modal aria-label=_{MsgClose}>
+        <div.modal-header.border-top-0.mt-0.pt-0>
+          <div.input-group>
+            <i.bi.bi-search.input-group-text>
+            <input.form-control type=search placeholder=_{MsgSearch} #inputSearchSkills>
+        <div.modal-body>
+          <form #formChildSkills#{fromSqlKey jsid} method=post action=@{JobSkillsR jid}>
+            <input type=url name=location value=#{location} required hidden>
+            <input type=number name=weight value=0 required hidden>
+            <input type=number name=parent value=#{fromSqlKey jsid} required hidden>
+            <ul.list-group.list-group-flush>
+              $forall Entity sid (Skill code name _ _) <- skillPool
+                <li.list-group-item.list-group-item-action.text-nowrap>
+                  <input.form-check-input.me-2 type=radio name=skill value=#{fromSqlKey sid}
+                    #inputRadio#{fromSqlKey jsid}#{fromSqlKey sid} required>
+                  <label.form-check-label.text-wrap.lh-1 for=inputRadio#{fromSqlKey jsid}#{fromSqlKey sid} title=#{code}>
+                    #{name}
+        <div.modal-footer>
+          <button.btn.btn-primary type=submit form=formChildSkills#{fromSqlKey jsid}>
+            _{MsgSelect}
+          <button.btn.btn-secondary type=button data-bs-dismiss=modal>
+            _{MsgCancel}
+
+  <div.modal.fade #modalChildSkillsRemove#{fromSqlKey jsid} tabindex=-1
+    aria-labelledby=modalChildSkillsRemoveTitle#{fromSqlKey jsid}>
+    <div.modal-dialog>
+      <div.modal-content>
+        <div.modal-header>
+          <h5.modal-title #modalChildSkillsRemoveTitle#{fromSqlKey jsid}>
+            _{MsgPleaseConfirm}
+          <button.btn-close type=button data-bs-dismiss=modal aria-label=_{MsgClose}>
+        <div.modal-body>
+          <code>_{MsgInQuotes code}
+          <h4>_{MsgReallyRemove}
+        <div.modal-footer>
+          <button.btn.btn-primary.delete type=button data-url=@{JobSkillR jsid}>
+            _{MsgRemove}
+          <button.btn.btn-secondary type=button data-bs-dismiss=modal>
+            _{MsgCancel}
+
+$forall (status,msg) <- filter (isInfixOf "toast" . fst) msgs
+  <div.toast-container.p-3.bottom-0.start-50.translate-middle-x>
+    <div.toast.align-items-center.text-bg-secondary.border-0.fade.show role=alert aria-live=assertive aria-atomic=true>
+      <div.d-flex>
+        <div.toast-body>
+          $if isInfixOf "alert-info" status
+            <i.bi.bi-info-circle.me-2>
+          #{msg}
+        <button.btn-close.btn-close-white.me-2.m-auto type=button data-bs-dismiss=toast aria-label=_{MsgClose}>
+  <script>
+    setTimeout(function () {
+      Array.from(document.getElementsByClassName('toast')).forEach(function (x) {
+        x.classList.remove('show')
+      })
+    },5000)

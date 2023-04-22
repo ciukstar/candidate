@@ -1,0 +1,31 @@
+<nav aria-label=breadcumb>
+  <ol.breadcrumb>
+    <li.breadcrumb-item>
+      <a href=@{HomeR}>_{MsgHome}
+    <li.breadcrumb-item>
+      $maybe dest <- ult
+        <a href=#{dest}>_{MsgSkills}
+      $nothing
+        <a href=@{SkillsR}>_{MsgSkills}
+    <li.breadcrumb-item.active aria-current=page>_{MsgSkill}
+      
+<fieldset.border.rounded.p-3>
+  <legend>_{MsgSkill}
+
+  $forall (status,msg) <- msgs
+    <div.alert.#{status}.alert-dismissible.fade.show>
+      <i.bi.bi-exclamation-circle.me-2>
+      #{msg}
+      <button.btn-close type=button data-bs-dismiss=alert>
+      
+  <form method=post action=@{SkillsR} enctype=#{enctype} novalidate>
+    <div.pb-3>
+      ^{widget}
+    <button.btn.btn-primary type=submit>
+      _{MsgSave}
+    $maybe dest <- ult
+      <a.btn.btn-secondary role=button href=#{dest} rel=collection>
+        _{MsgCancel}
+    $nothing
+      <a.btn.btn-secondary role=button href=@{SkillsR} rel=collection>
+        _{MsgCancel}

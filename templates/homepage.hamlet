@@ -1,0 +1,59 @@
+<nav aria-label=_{MsgBreadcrumbs}>
+  <ol.breadcrumb>
+    <li.breadcrumb-item.active aria-current=page>
+      _{MsgHome}
+
+<div.d-flex.flex-row>
+  <div.w-100>
+    <h1>
+      _{MsgDoc1}
+    <p>
+      _{MsgDoc11}.
+
+    <h2>
+      _{MsgOverview}
+    <p>
+      _{MsgDoc12} <a href="@{SkillsR}?desc=id&offset=0&limit=5">_{MsgSkills}</a>.
+
+    <p>
+      _{MsgDoc13} <a href="@{JobsR}?desc=id&offset=0&limit=5">_{MsgPositions}</a>.
+
+    <p>
+      _{MsgDoc14} <a href=@{ApplicantsR}?offset=0&limit=5&desc=id>_{MsgApplicants}</a>.
+    <p>
+      _{MsgDoc15}.
+      _{MsgSeeLink} <a href="@{JobsR}?desc=id&offset=0&limit=5">_{MsgPositions}</a>.
+    <p>
+      _{MsgDoc16}.
+      _{MsgSeeLink} <a href=@{CandidatesR}>_{MsgCandidates}</a>.
+
+    <h2>_{MsgDoc17}
+    <dl>
+      <dt>_{MsgSkill}
+      <dd>_{MsgDoc18}
+
+      <dt>_{MsgPosition}
+      <dd>_{MsgDoc19}
+
+      <dt>_{MsgApplicant}
+      <dd>_{MsgDoc20}
+
+      <dt>_{MsgCandidate}
+      <dd>_{MsgDoc21}
+
+  <aside>
+    <div.offcanvas-lg.offcanvas-end #offcanvasMainRight tabindex=-1>
+      <div.offcanvas-header.border-bottom>
+        <h5.offcanvas-title>_{MsgTags}
+        <button.btn-close type=button aria-label=_{MsgClose}
+          data-bs-dismiss=offcanvas data-bs-target=#offcanvasMainRight>
+      <div.offcanvas-body>
+        <div.d-block.d-lg-none>
+          <p>
+            <a href="@{SkillsR}?desc=id&offset=0&limit=5">_{MsgSkills}
+          <p>
+            <a href="@{JobsR}?desc=id&offset=0&limit=5">_{MsgPositions}
+          <p>
+            <a href="@{ApplicantsR}?desc=id&offset=0&limit=5">_{MsgApplicants}
+          <p>
+            <a href=@{CandidatesR}>_{MsgCandidates}

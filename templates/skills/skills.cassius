@@ -1,0 +1,20 @@
+
+a.app-link
+  text-decoration: none
+a.app-link:hover
+  text-decoration: underline
+    
+table
+  thead
+    button.sort
+      background: none
+      border: none
+      font-weight: inherit
+      padding: 0
+      margin: 0
+      .bi-arrow-down-up
+        visibility: hidden
+
+    button.sort:hover
+      .bi-arrow-down-up
+        visibility: visible

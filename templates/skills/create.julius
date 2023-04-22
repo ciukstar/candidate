@@ -1,0 +1,12 @@
+
+document.querySelectorAll(
+  'div.is-invalid > input, div.is-invalid > textarea'
+).forEach(function (x) {
+  x.classList.add('is-invalid');
+});
+
+document.querySelectorAll(
+  'div.is-valid > input, div.is-valid > textarea'
+).forEach(function (x) {
+  x.classList.add('is-valid');
+});

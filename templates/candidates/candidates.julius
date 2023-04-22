@@ -1,0 +1,18 @@
+
+$('#inputSearchApplicants').on('input', e => {
+  var skey = e.target.value.toLowerCase();
+  var items = $('.modal#applicants .modal-body ul > li');
+  items.hide();
+  items.filter(
+    (i,x) => $(x).children('label').text().toLowerCase().indexOf(skey) >= 0
+  ).show();
+})
+
+$('#inputSearchJobs').on('input', e => {
+  var skey = e.target.value.toLowerCase();
+  var items = $('.modal#positions .modal-body ul > li');
+  items.hide();
+  items.filter(
+    (i,x) => $(x).children('label').text().toLowerCase().indexOf(skey) >= 0
+  ).show();
+})

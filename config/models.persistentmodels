@@ -1,0 +1,58 @@
+
+JobSkill sql=job_skills
+  job JobId OnDeleteCascade
+  skill SkillId
+  weight Double default=0.0
+  parent JobSkillId Maybe OnDeleteCascade
+  expanded Bool default=false
+  UniqueJobSkill job skill
+
+Job sql=jobs
+  code Text
+  name Text
+  dayStart Day
+  dayEnd Day
+  descr Textarea Maybe
+  dept DeptId Maybe OnDeleteSetNull
+  UniqueJob code
+  
+
+Dept sql=depts
+  name Text
+  parent DeptId Maybe OnDeleteCascade
+  UniqueDept name
+
+AppPhoto sql=applicant_photos
+  applicant ApplicantId OnDeleteCascade
+  photo ByteString
+  mime  Text
+  UniqueAppPhoto applicant
+
+AppSkill sql=applicant_skills
+  applicant ApplicantId OnDeleteCascade
+  skill SkillId
+  weight Double default=0.0
+  UniqueAppSkill applicant skill
+
+Applicant sql=applicants
+  familyName Text
+  givenName Text
+  additionalName Text Maybe
+  bday Day Maybe
+  tag Text Maybe
+  deriving Eq
+  deriving Ord
+  
+Skill sql=skills
+  code Text
+  name Text
+  descr Textarea Maybe
+  label Text Maybe
+  UniqueSkill code
+  deriving Show
+
+User sql=users
+  ident Text
+  password Text Maybe
+  UniqueUser ident
+  deriving Typeable

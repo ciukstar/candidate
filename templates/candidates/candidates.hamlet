@@ -1,0 +1,205 @@
+<nav aria-label=_{MsgBreadcrumbs}>
+  <ol.breadcrumb>
+    <li.breadcrumb-item>
+      <a href=@{HomeR}>_{MsgHome}
+    <li.breadcrumb-item.active aria-current=page>
+      _{MsgCandidates}
+
+<h1>_{MsgCandidates}
+
+<div.mb-1>
+  $maybe ((Entity _ (Job _ name _ _ _ _), _), _) <- job
+    <div.d-flex.flex-row.flex-nowrap.justify-content-between.align-items-center>
+      <h2.flex-grow-1.fw-light.lh-1>
+        #{name}
+      <div>
+        <button.d-block.d-lg-none.btn.btn-light.rounded-circle type=button
+          title=_{MsgSelect} data-bs-toggle=modal data-bs-target=#positions>
+          <i.bi.bi-list-ul>
+  $nothing
+    <div.d-flex.justify-content-center.align-items-center.mt-5.d-lg-none>
+      <button.btn.btn-primary type=button
+        data-bs-toggle=modal data-bs-target=#positions>
+        _{MsgSelectAPosition}
+    <div.d-none.mt-5.d-lg-block>
+      <button.btn.btn-primary type=button
+        data-bs-toggle=modal data-bs-target=#positions>
+        _{MsgSelectAPosition}
+
+
+<div.d-flex.flex-row.gap-lg-3>
+  $maybe ((Entity jid _, jobSkills), appSkills) <- job
+    $with weights <- take limit (calcWeights appSkills jobSkills)
+      <div.d-block.d-lg-none.card.w-100>
+        <div.card-header>
+          <div.d-flex.flex-row.justify-content-between.align-items-center>
+            $if length aids > 0
+              <div.position-relative>
+                <button.btn.btn-light.rounded-circle type=button
+                  title=_{MsgApplicants} data-bs-toggle=modal data-bs-target=#applicants>
+                  <i.bi.bi-person-fill>
+                <small>
+                  <span.badge.rounded-pill.bg-success #applicantsBadge>
+                    <small>#{length aids}
+            $else
+              <button.btn.btn-light.rounded-circle type=button
+                title=_{MsgApplicants} data-bs-toggle=modal data-bs-target=#applicants>
+                <i.bi.bi-person-check-fill>
+
+            <div>
+              <label.col-form-label for=selectTop>
+                _{MsgTop}
+              <select.form-select.d-inline-block.w-auto
+                #selectTop onchange="$('#selectLimit').val($(this).val());$('#formGetCandidates').submit()">
+                <option :limit == 3:selected value=3>3
+                <option :limit == 5:selected value=5>5
+                <option :limit == 10:selected value=10>10
+                <option :limit == 15:selected value=15>15
+                <option :limit == 20:selected value=20>20
+                <option :limit == 50:selected value=50>50
+
+        <ul.list-group.list-group-flush #candidateList>
+          $forall (w,Entity aid (Applicant s n mp _ _), _) <- weights
+            <li.list-group-item>
+              <img.photo.rounded-circle src=@{AppPhotoR aid} height=48 width=48
+                alt=_{MsgPhoto} onerror="this.src='@{PhotoPlaceholderR}'">
+              <a.candidate.lh-1 href=@{CandidateR jid aid}?tab=1 rel-item>
+                <span.fs-5.fw-bold>
+                  $maybe p <- mp
+                    #{s} #{n} #{p}
+                  $nothing
+                    #{s} #{n}
+              <div.actions.dropdown>
+                <button.btn.btn-light.rounded-circle.border-0 type=button
+                  title=_{MsgActions} aria-label=_{MsgActions}
+                  data-bs-toggle=dropdown aria-expanded=false>
+                  <i.bi.bi-three-dots-vertical>
+                <ul.dropdown-menu>
+                  <li>
+                    <a.dropdown-item href="@{CandidateR jid aid}?tab=0">
+                      _{MsgCalculationAnalysis}
+                  <li>
+                    <a.dropdown-item href="@{CandidateR jid aid}?tab=1">
+                      _{MsgApplicant}
+                  <li>
+                    <a.dropdown-item href="@{CandidateR jid aid}?tab=2">
+                      _{MsgPosition}
+
+              <a.weight href=@{CandidateR jid aid}?tab=0>
+                <span.fw-light>_{MsgWeight}
+                <span.fs-6.badge.rounded-pill.bg-success>
+                  #{fmtDbl ".##" loc w}
+
+  $maybe ((Entity jid _, jobSkills), appSkills) <- job
+    $with weights <- take limit (calcWeights appSkills jobSkills)
+      <div.d-none.d-lg-block.table-responsive>
+        <table.table.table-bordered.table-hover.border-dark-subtle.w-100>
+          <thead>
+            ^{bldThead (fmtDbl ".##" loc) (maxHeight jobSkills) 1 jobSkills}
+
+          <tbody>
+            $forall (w,Entity aid (Applicant s n mp _ _), appSkills) <- weights
+              <tr>
+                <td>
+                  $maybe p <- mp
+                    <a href=@{CandidateR jid aid}?tab=1 rel=item>
+                      #{s} #{n} #{p}
+                  $nothing
+                    <a href=@{CandidateR jid aid}?tab=1 rel=item>
+                      #{s} #{n}
+                <th scope=row>
+                  <a href=@{CandidateR jid aid}?tab=0>
+                    #{fmtDbl ".##" loc w}
+                $forall Node (Entity _ (JobSkill _ sid _ _ _), _) _ <- (allLeafs jobSkills)
+                  <td.fw-light title=_{MsgExpertAssessment}>
+                    $maybe (Entity _ (AppSkill _ _ weight)) <- filterAppSkills sid appSkills
+                      #{fmtDbl ".##" loc weight}
+
+
+  <aside>
+    <div.offcanvas-lg.offcanvas-end #offcanvasMainRight tabindex=-1 aria-labelledby=offcanvasMainRightLabel>
+      <div.offcanvas-header.border-bottom>
+        <h5.offcanvas-title #offcanvasMainRightLabel>_{MsgActions}
+        <button.btn-close type=button data-bs-dismiss=offcanvas data-bs-target=#offcanvasMainRight>
+      <div.offcanvas-body>
+        <div.d-grid.gap-3>
+          $maybe _ <- job
+            <button.btn.btn-primary type=button data-bs-toggle=modal data-bs-target=#positions>
+              _{MsgSelectAPosition}
+            <button.btn.btn-primary.position-relative type=button
+              data-bs-toggle=modal data-bs-target=#applicants>
+              _{MsgSelectApplicants}
+              $if length aids > 0
+                <span.badge.rounded-pill.position-absolute.top-0.start-100.translate-middle.bg-success>
+                  #{length aids}
+
+            <div.form-floating>
+              <select.form-select name=limit required form=formGetCandidates
+                #selectLimit onchange=this.form.submit()>
+                <option :limit == 3:selected value=3>3
+                <option :limit == 5:selected value=5>5
+                <option :limit == 10:selected value=10>10
+                <option :limit == 15:selected value=15>15
+                <option :limit == 20:selected value=20>20
+                <option :limit == 50:selected value=50>50
+              <label for=selectLimit>_{MsgShowTop}
+          $nothing
+            <button.d-lg-none.btn.btn-primary type=button
+              data-bs-toggle=modal data-bs-target=#positions>
+              _{MsgSelectAPosition}
+
+
+<div.modal.fade #positions tabindex=-1 aria-hidden=true aria-label=_{MsgPositions}>
+  <div.modal-dialog.modal-dialog-scrollable>
+    <div.modal-content>
+      <div.modal-header.border-bottom-0>
+        <h4.modal-title>_{MsgPositions}
+        <button.btn-close type=button data-bs-dismiss=modal aria-label=_{MsgClose}>
+      <div.modal-header.border-top-0.mt-0.pt-0>
+        <div.input-group>
+          <i.bi.bi-search.input-group-text>
+          <input.form-control type=search placeholder=_{MsgSearch} #inputSearchJobs>
+      <div.modal-body>
+        <form method=get action=@{CandidatesR} #formGetCandidates>
+          <ul.list-group.list-group-flush>
+            $forall Entity jid (Job code name _ _ _ _) <- jobs
+              <li.list-group-item.text-nowrap>
+                <input.form-check-input.me-2 type=radio name=job value=#{fromSqlKey jid}
+                  :(==) (fmap ((.) entityKey ((.) fst fst)) job) (Just jid):checked
+                  #inputJob#{fromSqlKey jid}>
+                <label.form-check-label.text-wrap.lh-1 for=inputJob#{fromSqlKey jid} title=#{code}>
+                  <span.text-wrap>#{name}
+      <div.modal-footer>
+        <button.btn.btn-primary type=submit form=formGetCandidates>
+          _{MsgSelect}
+        <button.btn.btn-secondary type=button data-bs-dismiss=modal aria-lable=_{MsgClose}>
+          _{MsgCancel}
+
+<div.modal.fade #applicants tabindex=-1 aria-hidden=true aria-label=_{MsgApplicants}>
+  <div.modal-dialog.modal-dialog-scrollable>
+    <div.modal-content>
+      <div.modal-header.border-bottom-0>
+        <h4.modal-title>_{MsgApplicants}
+        <button.btn-close type=button data-bs-dismiss=modal aria-label=_{MsgClose}>
+      <div.modal-header.border-top-0.mt-0.pt-0>
+        <div.input-group>
+          <i.bi.bi-search.input-group-text>
+          <input.form-control type=search placeholder=_{MsgSearch} #inputSearchApplicants>
+      <div.modal-body>
+        <ul.list-group.list-group-flush>
+          $forall Entity aid (Applicant s n mp _ _) <- applicants
+            <li.list-group-item.text-nowrap>
+              <input.form-check-input.me-2 type=checkbox name=app value=#{fromSqlKey aid}
+                form=formGetCandidates
+                :elem aid aids:checked #inputAid#{fromSqlKey aid}>
+              $maybe p <- mp
+                <label.from-check-label.text-wrap.lh-1 for=inputAid#{fromSqlKey aid}>
+                  #{s} #{n} #{p}
+              $nothing
+                <label.from-check-label.text-wrap.lh-1 for=inputAid#{fromSqlKey aid}>
+                  #{s} #{n}
+      <div.modal-footer>
+        <button.btn.btn-primary type=submit form=formGetCandidates>
+          _{MsgSelect}
+        <button.btn.btn-secondary type=button data-bs-dismiss=modal>
+          _{MsgCancel}

@@ -1,0 +1,22 @@
+
+ul.list-group a, table a
+  text-decoration: none
+
+ul.list-group a:hover, table a:hover
+  text-decoration: underline
+
+ul#listGroupCandidates > li.list-group-item
+  display: grid
+  grid-template-columns: 48px auto 48px
+  grid-template-rows: auto
+  gap: 1rem 1rem
+  grid-template-areas: "photo candidate actions" "photo weight weight"
+  img.photo
+    grid-area: photo
+  a.candidate
+    grid-area: candidate
+    align-self: center
+  div.actions
+    grid-area: actions
+  a.weight
+    grid-area: weight
