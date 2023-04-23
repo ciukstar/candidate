@@ -776,7 +776,7 @@ populateRU = do
                         , jobName = "Инженер по DevOps"
                         , jobDayStart = addGregorianMonthsClip (-2) today
                         , jobDayEnd = addGregorianMonthsClip 2 today
-                        , jobDescr = Just "addGregorianMonthsClip 4 today"
+                        , jobDescr = Just "Инженер по интеграции и автоматизации разработки программного обеспечения и ИТ-операций"
                         , jobDept = Just idIT
                         }
   jobSkill06 <- insert $ JobSkill { jobSkillJob = job04
