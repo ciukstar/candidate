@@ -130,6 +130,7 @@ import Handler.Depts
   )
 import Database.Persist.Sqlite (SqliteConf(sqlDatabase, sqlPoolSize), createSqlitePool)
 import Data.Pool (Pool(idleTime))
+import Network.Wai.Middleware.Gzip (gzip, GzipSettings (gzipFiles), GzipFiles (GzipCompress))
 import Demo.DemoDataEN (populateEN)
 import Demo.DemoDataFR (populateFR)
 import Demo.DemoDataRU (populateRU)
@@ -187,7 +188,7 @@ makeApplication foundation = do
     logWare <- makeLogWare foundation
     -- Create the WAI application and apply middlewares
     appPlain <- toWaiAppPlain foundation
-    return $ logWare $ defaultMiddlewaresNoLogging appPlain
+    return $ logWare $ defaultMiddlewaresNoLogging $ gzip def { gzipFiles = GzipCompress } appPlain
 
 makeLogWare :: App -> IO Middleware
 makeLogWare foundation =
