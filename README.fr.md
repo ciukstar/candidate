@@ -1,4 +1,5 @@
 [In English](https://github.com/ciukstar/candidate/blob/master/README.md)  
+[În română](https://github.com/ciukstar/candidate/blob/master/README.ro.md)  
 [На русском](https://github.com/ciukstar/candidate/blob/master/README.ru.md)
 
 # Classement des candidats
@@ -7,15 +8,15 @@ Cette application fournit une méthode simple pour agréger les classements hié
 
 ## Aperçu
 
-Les Compétences requises par un Poste doivent être définies dans le dictionnaire [Compétences](https://candidatefr-biyunm4r4q-de.a.run.app/skills?desc=id&offset=0&limit=5).
+Les Compétences requises par un Poste doivent être définies dans le dictionnaire [Compétences](https://candidatefr-i4rimw5qwq-de.a.run.app/skills?desc=id&offset=0&limit=5).
 
-Les Postes et leurs Compétences requises sont définis dans la section [Postes](https://candidatefr-biyunm4r4q-de.a.run.app/jobs?desc=id&offset=0&limit=5).
+Les Postes et leurs Compétences requises sont définis dans la section [Postes](https://candidatefr-i4rimw5qwq-de.a.run.app/jobs?desc=id&offset=0&limit=5).
 
-Les Demandeurs et leurs compétences sont ajoutés dans la section [Demandeurs](https://candidatefr-biyunm4r4q-de.a.run.app/applicants?desc=id&offset=0&limit=5).
+Les Demandeurs et leurs compétences sont ajoutés dans la section [Demandeurs](https://candidatefr-i4rimw5qwq-de.a.run.app/applicants?desc=id&offset=0&limit=5).
 
-Pour chaque Poste, le classement des Candidats est calculé et le résultat est disponible sur le lien "Candidat". Voir le lien [Postes](https://candidatefr-biyunm4r4q-de.a.run.app/job-candidates/2).
+Pour chaque Poste, le classement des Candidats est calculé et le résultat est disponible sur le lien "Candidat". Voir le lien [Postes](https://candidatefr-i4rimw5qwq-de.a.run.app/job-candidates/2).
 
-Aussi dans la section "Candidats", plus d'options sont fournies pour calculer le classement des Candidats. Voir le lien [Candidats](https://candidatefr-biyunm4r4q-de.a.run.app/candidates).
+Aussi dans la section "Candidats", plus d'options sont fournies pour calculer le classement des Candidats. Voir le lien [Candidats](https://candidatefr-i4rimw5qwq-de.a.run.app/candidates).
 
 ## Entités basiques
 
@@ -37,4 +38,4 @@ Un Candidat est un Demandeur dont les Compétences ont été comparées à celle
 
 # Démo
 
-[Cliquez ici pour voir la démo](https://candidatefr-biyunm4r4q-de.a.run.app)
+[Cliquez ici pour voir la démo](https://candidatefr-i4rimw5qwq-de.a.run.app)

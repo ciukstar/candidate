@@ -8,6 +8,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeOperators #-}
 
 module Foundation
   ( Handler
@@ -51,8 +52,6 @@ import Import.NoFoundation
   , guessApproot
   , widgetToPageContent
   , mkYesodData
-  , addScript
-  , addStylesheet
   , parseRoutesFile
   , defaultFormMessage
   , defaultGetDBRunner
@@ -105,13 +104,7 @@ import Text.Hamlet (hamletFile)
 import Text.Jasmine (minifym)
 import Control.Monad.Logger (LogSource)
 
-import Settings.StaticFiles
-  ( bootstrap_5_3_0_alpha3_dist_css_bootstrap_min_css
-  , bootstrap_5_3_0_alpha3_dist_js_bootstrap_bundle_min_js
-  , bootstrap_icons_1_10_4_font_bootstrap_icons_css
-  , jquery_3_6_3_jquery_min_js
-  , js_cookie_3_0_1_dist_js_cookie_js
-  )
+import Settings.StaticFiles (js_cookie_3_0_1_dist_js_cookie_js)
 
 -- Used only when in "auth-dummy-login" setting is enabled.
 import Yesod.Auth.Dummy
@@ -128,13 +121,16 @@ import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
 import qualified Data.Text.Encoding as TE
 import Text.Shakespeare.I18N (mkMessage)
-import Yesod.Form.I18n.English (englishFormMessage)
-import Yesod.Form.I18n.Russian (russianFormMessage)
-import Yesod.Form.I18n.French (frenchFormMessage)
+
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
 import Model (JobSkillId, SkillId, ApplicantId, JobId, DeptId)
 import qualified Data.List.Safe as LS
+
+import Yesod.Form.I18n.English (englishFormMessage)
+import Yesod.Form.I18n.French (frenchFormMessage)
+import Yesod.Form.I18n.Romanian (romanianFormMessage)
+import Yesod.Form.I18n.Russian (russianFormMessage)
 
 
 -- | The foundation datatype for your application. This can be a good place to
@@ -206,11 +202,7 @@ instance Yesod App where
         -- value passed to hamletToRepHtml cannot be a widget, this allows
         -- you to use normal widget features in default-layout.
 
-        pc <- widgetToPageContent $ do  
-          addStylesheet $ StaticR bootstrap_icons_1_10_4_font_bootstrap_icons_css
-          addStylesheet $ StaticR bootstrap_5_3_0_alpha3_dist_css_bootstrap_min_css
-          addScript $ StaticR bootstrap_5_3_0_alpha3_dist_js_bootstrap_bundle_min_js
-          addScript $ StaticR jquery_3_6_3_jquery_min_js
+        pc <- widgetToPageContent $ do
           toWidgetHead [hamlet|<script type=text/javascript src=@{StaticR js_cookie_3_0_1_dist_js_cookie_js}>|]
           $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
@@ -364,6 +356,7 @@ instance RenderMessage App FormMessage where
   renderMessage _ [] = defaultFormMessage
   renderMessage _ ("en":_) = englishFormMessage
   renderMessage _ ("fr":_) = frenchFormMessage
+  renderMessage _ ("ro":_) = romanianFormMessage
   renderMessage _ ("ru":_) = russianFormMessage
   renderMessage app (_:xs) = renderMessage app xs
 

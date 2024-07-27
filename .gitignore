@@ -21,4 +21,8 @@ cabal.sandbox.config
 \#*
 candidate.cabal
 *.el
+deploy-demo-en.sh
+deploy-demo-fr.sh
+deploy-demo-ro.sh
+deploy-demo-ru.sh
 candidate

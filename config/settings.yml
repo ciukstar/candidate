@@ -9,4 +9,9 @@ database:
   database: "_env:YESOD_SQLITE_DATABASE:':memory:'"
   poolsize: "_env:YESOD_SQLITE_POOLSIZE:1"
 
+connection-pool:
+  stripes:      "_env:YESOD_CONNECTION_POOL_STRIPES:1"
+  idle-timeout: "_env:YESOD_CONNECTION_POOL_IDLETIMEOUT:1200"
+  size:         "_env:YESOD_CONNECTION_POOL_POOLSIZE:1"
+
 copyright: Sergiu Starciuc

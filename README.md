@@ -1,4 +1,5 @@
 [En français](https://github.com/ciukstar/candidate/blob/master/README.fr.md)  
+[În română](https://github.com/ciukstar/candidate/blob/master/README.ro.md)  
 [На русском](https://github.com/ciukstar/candidate/blob/master/README.ru.md)
 
 # Candidate Ranking
@@ -7,15 +8,15 @@ This application provides a simple method for aggregating hierarchical rankings.
 
 ## Overview
 
-The skills required by a job position should be defined in the dictionary [Skills](https://candidate-biyunm4r4q-de.a.run.app/skills?desc=id&offset=0&limit=5).
+The skills required by a job position should be defined in the dictionary [Skills](https://candidate-i4rimw5qwq-de.a.run.app/skills?desc=id&offset=0&limit=5).
 
-Job positions and their required skills are defined in the section [Positions](https://candidate-biyunm4r4q-de.a.run.app/jobs?desc=id&offset=0&limit=5).
+Job positions and their required skills are defined in the section [Positions](https://candidate-i4rimw5qwq-de.a.run.app/jobs?desc=id&offset=0&limit=5).
 
-Applicants and their skills are added in the section [Applicants](https://candidate-biyunm4r4q-de.a.run.app/applicants?desc=id&offset=0&limit=5).
+Applicants and their skills are added in the section [Applicants](https://candidate-i4rimw5qwq-de.a.run.app/applicants?desc=id&offset=0&limit=5).
 
-For each position, the rating of candidates is calculated and the result is available at the link "Candidate". See [Positions](https://candidate-biyunm4r4q-de.a.run.app/job-candidates/2).
+For each position, the rating of candidates is calculated and the result is available at the link "Candidate". See [Positions](https://candidate-i4rimw5qwq-de.a.run.app/job-candidates/2).
 
-Also in the "Candidates" section, more options are provided for calculating the rating of candidates. See [Candidates](https://candidate-biyunm4r4q-de.a.run.app/candidates).
+Also in the "Candidates" section, more options are provided for calculating the rating of candidates. See [Candidates](https://candidate-i4rimw5qwq-de.a.run.app/candidates).
 
 ## Basic Entities
 
@@ -37,4 +38,4 @@ A Candidate is an Applicant whose Skills have been compared to those of a partic
 
 # Demo
 
-[Click here to see demo](https://candidate-biyunm4r4q-de.a.run.app)
+[Click here to see demo](https://candidate-i4rimw5qwq-de.a.run.app)

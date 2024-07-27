@@ -1,5 +1,6 @@
 [In English](https://github.com/ciukstar/candidate/blob/master/README.md)  
-[En français](https://github.com/ciukstar/candidate/blob/master/README.fr.md)
+[En français](https://github.com/ciukstar/candidate/blob/master/README.fr.md)  
+[În română](https://github.com/ciukstar/candidate/blob/master/README.ro.md)
 
 # Ранжирование кандидатов
 
@@ -7,15 +8,15 @@
 
 ## Обзор
 
-Навыки, необходимые для должности, должны быть определены в словаре [Навыки](https://candidateru-biyunm4r4q-de.a.run.app/skills?desc=id&offset=0&limit=5).
+Навыки, необходимые для должности, должны быть определены в словаре [Навыки](https://candidateru-i4rimw5qwq-de.a.run.app/skills?desc=id&offset=0&limit=5).
 
-Должности и требуемые для них навыки определены в разделе [Должности](https://candidateru-biyunm4r4q-de.a.run.app/jobs?desc=id&offset=0&limit=5).
+Должности и требуемые для них навыки определены в разделе [Должности](https://candidateru-i4rimw5qwq-de.a.run.app/jobs?desc=id&offset=0&limit=5).
 
-Соискатели и их навыки добавляются в раздел [Соискатели](https://candidateru-biyunm4r4q-de.a.run.app/applicants?desc=id&offset=0&limit=5).
+Соискатели и их навыки добавляются в раздел [Соискатели](https://candidateru-i4rimw5qwq-de.a.run.app/applicants?desc=id&offset=0&limit=5).
 
-Для каждой должности рассчитывается рейтинг кандидатов и результат доступен по ссылке «Кандидат». См. [Должности](https://candidateru-biyunm4r4q-de.a.run.app/job-candidates/2).
+Для каждой должности рассчитывается рейтинг кандидатов и результат доступен по ссылке «Кандидат». См. [Должности](https://candidateru-i4rimw5qwq-de.a.run.app/job-candidates/2).
 
-Также в разделе «Кандидаты» предоставлено больше возможностей для расчета рейтинга кандидатов. См. [Кандидаты](https://candidateru-biyunm4r4q-de.a.run.app/candidates).
+Также в разделе «Кандидаты» предоставлено больше возможностей для расчета рейтинга кандидатов. См. [Кандидаты](https://candidateru-i4rimw5qwq-de.a.run.app/candidates).
 
 ## Основные сущности
 
@@ -37,4 +38,4 @@
 
 # Демонстрация приложения
 
-[Нажмите здесь, чтобы увидеть демонстрацию](https://candidateru-biyunm4r4q-de.a.run.app)
+[Нажмите здесь, чтобы увидеть демонстрацию](https://candidateru-i4rimw5qwq-de.a.run.app)

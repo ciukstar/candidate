@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Demo.DemoDataEN (populateEN) where
+module Demo.DemoDataRO (populateRO) where
 
 import Data.ByteString.Base64 as B64 (decode)
 import Control.Monad.IO.Class (MonadIO, liftIO)
@@ -30,57 +30,57 @@ import Model
     )
   )
 
-populateEN :: MonadIO m => ReaderT SqlBackend m ()
-populateEN = do
+populateRO :: MonadIO m => ReaderT SqlBackend m ()
+populateRO = do
   today <- liftIO $ utctDay <$> getCurrentTime
 
-  skill01 <- insert $ Skill { skillCode = "Web development"
-                            , skillName = "Web development"
-                            , skillDescr = Just "Web development skills"
-                            , skillLabel = Just "Development"
+  skill01 <- insert $ Skill { skillCode = "Dezvoltare web"
+                            , skillName = "Dezvoltare web"
+                            , skillDescr = Just "Abilități de dezvoltare web"
+                            , skillLabel = Just "Dezvoltare"
                             }
   skill02 <- insert $ Skill { skillCode = "HTML"
                             , skillName = "HTML"
-                            , skillDescr = Just "Knowledge of the HTML spec"
-                            , skillLabel = Just "Development"
+                            , skillDescr = Just "Cunoașterea specificațiilor HTML"
+                            , skillLabel = Just "Dezvoltare"
                             }
-  skill03 <- insert $ Skill { skillCode = "Web design"
-                            , skillName = "Web design"
-                            , skillDescr = Just "Basic web design principles"
-                            , skillLabel = Just "Development"
+  skill03 <- insert $ Skill { skillCode = "Proiectare web"
+                            , skillName = "Proiectare web"
+                            , skillDescr = Just "Principii de bază pentru design web"
+                            , skillLabel = Just "Dezvoltare"
                             }
   skill04 <- insert $ Skill { skillCode = "JavaScript"
-                            , skillName = "JavaScript programming language"
-                            , skillDescr = Just "JavaScript programming skills"
-                            , skillLabel = Just "Development"
+                            , skillName = "Limbajul de programare JavaScript"
+                            , skillDescr = Just "Cunoștințe de programare JavaScript"
+                            , skillLabel = Just "Dezvoltare"
                             }
   skill05 <- insert $ Skill { skillCode = "REST"
-                            , skillName = "REST development principles"
-                            , skillDescr = Just "RESTful application development skills"
-                            , skillLabel = Just "Architecture"
+                            , skillName = "Principii de dezvoltare REST"
+                            , skillDescr = Just "Abilități de dezvoltare a aplicațiilor RESTful"
+                            , skillLabel = Just "Arhitectură"
                             }
-  skill06 <- insert $ Skill { skillCode = "Databases"
-                            , skillName = "Databases"
-                            , skillDescr = Just "Database skills"
-                            , skillLabel = Just "Databases"
+  skill06 <- insert $ Skill { skillCode = "Baze de date"
+                            , skillName = "Baze de date"
+                            , skillDescr = Just "Abilități de gestionare a bazelor de date"
+                            , skillLabel = Just "Baze de date"
                             }
   skill07 <- insert $ Skill { skillCode = "SQL"
                             , skillName = "SQL"
-                            , skillDescr = Just "SQL query writing skills"
-                            , skillLabel = Just "Databases"
+                            , skillDescr = Just "Abilități de scriere a interogărilor SQL"
+                            , skillLabel = Just "Baze de date"
                             }
-  skill08 <- insert $ Skill { skillCode = "Database administration"
-                            , skillName = "Database administration"
-                            , skillDescr = Just "Database administration skills"
-                            , skillLabel = Just "Databases"
+  skill08 <- insert $ Skill { skillCode = "Administrarea bazei de date"
+                            , skillName = "Administrarea bazei de date"
+                            , skillDescr = Just "Abilități de administrare a bazelor de date"
+                            , skillLabel = Just "Baze de date"
                             }
 
-  idIT <- insert $ Dept "Information Technology" Nothing
-  jobIT01 <- insert $ Job { jobCode = "JavaScript Developer"
-                          , jobName = "JavaScript Developer"
+  idIT <- insert $ Dept "Tehnologii informaţionale" Nothing
+  jobIT01 <- insert $ Job { jobCode = "Dezvoltator JavaScript"
+                          , jobName = "Dezvoltator JavaScript"
                           , jobDayStart = addGregorianMonthsClip (-2) today
                           , jobDayEnd = addGregorianMonthsClip 3 today
-                          , jobDescr = Just "JavaScript programmer"
+                          , jobDescr = Just "Programator JavaScript"
                           , jobDept = Just idIT
                           }
   jobSkill01 <- insert $ JobSkill { jobSkillJob = jobIT01
@@ -132,37 +132,37 @@ populateEN = do
                      , jobSkillExpanded = True
                      }
 
-  skill09 <- insert $ Skill { skillCode = "Backend development"
-                            , skillName = "Backend development"
-                            , skillDescr = Just "Business logic development"
-                            , skillLabel  = Just "Development"
+  skill09 <- insert $ Skill { skillCode = "Dezvoltare backend"
+                            , skillName = "Dezvoltare backend"
+                            , skillDescr = Just "Dezvoltarea logicii de afaceri"
+                            , skillLabel  = Just "Dezvoltare"
                             }
   skill010 <- insert $ Skill { skillCode = "JavaSE"
                             , skillName = "Java Standard Edition"
-                            , skillDescr = Just "Knowledge of Java 8+ Standard Edition"
-                            , skillLabel  = Just "Development"
+                            , skillDescr = Just "Cunoașterea Java 8+ Standard Edition"
+                            , skillLabel  = Just "Dezvoltare"
                             }
   skill011 <- insert $ Skill { skillCode = "JakartaEE"
                             , skillName = "Jakarta Enterprise Edition"
-                            , skillDescr = Just "Jakarta EE Application Development Skills"
-                            , skillLabel  = Just "Development"
+                            , skillDescr = Just "Jakarta EE abilități de dezvoltare a aplicațiilor"
+                            , skillLabel  = Just "Dezvoltare"
                             }
-  skill012 <- insert $ Skill { skillCode = "Frontend development"
-                             , skillName = "Frontend development"
-                             , skillDescr = Just "Web user interface development"
-                             , skillLabel  = Just "Web technologies"
+  skill012 <- insert $ Skill { skillCode = "Dezvoltare front-end"
+                             , skillName = "Dezvoltare front-end"
+                             , skillDescr = Just "Dezvoltarea interfeței cu utilizatorul web"
+                             , skillLabel  = Just "Tehnologii web"
                              }
   skill013 <- insert $ Skill { skillCode = "CSS"
                              , skillName = "CSS"
-                             , skillDescr = Just "Cascading Style Sheets"
-                             , skillLabel  = Just "Web technologies"
+                             , skillDescr = Just "Foi de stil în cascadă"
+                             , skillLabel  = Just "Tehnologii web"
                              }
 
-  job02 <- insert $ Job { jobCode = "Developer JakartaEE"
-                        , jobName = "Developer Jakarta Enterprise Edition"
+  job02 <- insert $ Job { jobCode = "Dezvoltator JakartaEE"
+                        , jobName = "Dezvoltator Jakarta Enterprise Edition"
                         , jobDayStart = addGregorianMonthsClip (-3) today
                         , jobDayEnd = addGregorianMonthsClip 2 today
-                        , jobDescr = Just "Java Enterprise Edition programmer"
+                        , jobDescr = Just "Programator Java Enterprise Edition"
                         , jobDept = Just idIT
                         }
   jobSkill02 <- insert $ JobSkill { jobSkillJob = job02
@@ -228,11 +228,11 @@ populateEN = do
                      }
 
   appl01 <- insert $ Applicant
-    { applicantFamilyName = "Smith"
-    , applicantGivenName = "Johnny"
-    , applicantAdditionalName = Nothing
+    { applicantFamilyName = "Popescu"
+    , applicantGivenName = "Ion"
+    , applicantAdditionalName = Just "Andrei"
     , applicantBday = Just $ addGregorianYearsClip (-28) today
-    , applicantTag = Just "New employees"
+    , applicantTag = Just "Angajați noi"
     }
 
   case B64.decode man01 of
@@ -265,11 +265,11 @@ populateEN = do
                      }
 
   appl02 <- insert $ Applicant
-    { applicantFamilyName = "Lopez"
-    , applicantGivenName = "Mary"
+    { applicantFamilyName = "Radu"
+    , applicantGivenName = "Ana-Maria"
     , applicantAdditionalName = Nothing
     , applicantBday = Just $ addGregorianYearsClip (-26) today
-    , applicantTag = Just "New employees"
+    , applicantTag = Just "Angajați noi"
     }
 
   case B64.decode woman01 of
@@ -306,11 +306,11 @@ populateEN = do
                      }
 
   appl03 <- insert $ Applicant
-    { applicantFamilyName = "Johnson"
-    , applicantGivenName = "John"
-    , applicantAdditionalName = Just "Thomas"
+    { applicantFamilyName = "Popa"
+    , applicantGivenName = "Andrei"
+    , applicantAdditionalName = Nothing
     , applicantBday = Just $ addGregorianYearsClip (-21) today
-    , applicantTag = Just "Professionals"
+    , applicantTag = Just "Profesionişti"
     }
 
   case B64.decode man02 of
@@ -347,11 +347,11 @@ populateEN = do
                      }
 
   appl04 <- insert $ Applicant
-    { applicantFamilyName = "Brown"
-    , applicantGivenName = "Patricia"
-    , applicantAdditionalName = Just "Elizabeth"
+    { applicantFamilyName = "Stoica"
+    , applicantGivenName = "Maria"
+    , applicantAdditionalName = Just "Alexandra"
     , applicantBday = Just $ addGregorianYearsClip (-30) today
-    , applicantTag = Just "Professionals"
+    , applicantTag = Just "Profesionişti"
     }
 
   case B64.decode woman02 of
@@ -376,11 +376,11 @@ populateEN = do
                      }
 
   appl05 <- insert $ Applicant
-    { applicantFamilyName = "Wilson"
-    , applicantGivenName = "Chris"
-    , applicantAdditionalName = Just "Lee"
+    { applicantFamilyName = "Ionescu"
+    , applicantGivenName = "Alexandru"
+    , applicantAdditionalName = Just "Victor"
     , applicantBday = Just $ addGregorianYearsClip (-32) today
-    , applicantTag = Just "Experts"
+    , applicantTag = Just "Experți"
     }
 
   case B64.decode man03 of
@@ -405,11 +405,11 @@ populateEN = do
                      }
 
   appl06 <- insert $ Applicant
-    { applicantFamilyName = "Davis"
-    , applicantGivenName = "Philip"
-    , applicantAdditionalName = Nothing
+    { applicantFamilyName = "Rusu"
+    , applicantGivenName = "Ştefan"
+    , applicantAdditionalName = Just "Alexandru"
     , applicantBday = Just $ addGregorianYearsClip (-39) today
-    , applicantTag = Just "Experts"
+    , applicantTag = Just "Experți"
     }
 
   case B64.decode man04 of
@@ -442,11 +442,11 @@ populateEN = do
                      }
 
   appl07 <- insert $ Applicant
-    { applicantFamilyName = "Taylor"
-    , applicantGivenName = "Helen"
-    , applicantAdditionalName = Just "Renee"
+    { applicantFamilyName = "Marin"
+    , applicantGivenName = "Ioana"
+    , applicantAdditionalName = Nothing
     , applicantBday = Just $ addGregorianYearsClip (-35) today
-    , applicantTag = Just "Experts"
+    , applicantTag = Just "Experți"
     }
 
   case B64.decode woman03 of
@@ -483,65 +483,65 @@ populateEN = do
 
   dept02 <- insert $ Dept "Management" Nothing
   _ <- insert $ Dept "Marketing" Nothing
-  _ <- insert $ Dept "Sales" Nothing
-  _ <- insert $ Dept "Accounting" Nothing
-  _ <- insert $ Dept "Finance" Nothing
-  _ <- insert $ Dept "Production" Nothing
-  _ <- insert $ Dept "Research and development" Nothing
-  _ <- insert $ Dept "Human Resources" Nothing
+  _ <- insert $ Dept "Vânzări" Nothing
+  _ <- insert $ Dept "Contabilitate" Nothing
+  _ <- insert $ Dept "Finanțe" Nothing
+  _ <- insert $ Dept "Productie" Nothing
+  _ <- insert $ Dept "Cercetare și dezvoltare" Nothing
+  _ <- insert $ Dept "Resurse umane" Nothing
 
 
-  skill14 <- insert $ Skill { skillCode = "Process management"
-                            , skillName = "Process management"
-                            , skillDescr = Just "Creating, launching and developing a project"
+  skill14 <- insert $ Skill { skillCode = "Administrarea procesului"
+                            , skillName = "Administrarea procesului"
+                            , skillDescr = Just "Crearea, lansarea și dezvoltarea unui proiect"
                             , skillLabel = Just "Management"
                             }
-  skill15 <- insert $ Skill { skillCode = "Task Management"
-                            , skillName = "Task Management"
-                            , skillDescr = Just "Set tasks and monitor their progress"
+  skill15 <- insert $ Skill { skillCode = "Managementul sarcinilor"
+                            , skillName = "Managementul sarcinilor"
+                            , skillDescr = Just "Stabilirea sarcinilor și monitorizarea progresului acestora"
                             , skillLabel = Just "Management"
                             }
-  skill16 <- insert $ Skill { skillCode = "Management methodology"
-                            , skillName = "Knowledge of management methodologies"
-                            , skillDescr = Just "Knowledge of management methodologies"
+  skill16 <- insert $ Skill { skillCode = "Metodologia managementului"
+                            , skillName = "Cunoașterea metodologiilor de management"
+                            , skillDescr = Just "Cunoașterea metodologiilor de management"
                             , skillLabel = Just "Management"
                             }
-  skill17 <- insert $ Skill { skillCode = "Team management"
-                            , skillName = "Team management"
-                            , skillDescr = Just "Unite the team, distribute work, analyze the results"
+  skill17 <- insert $ Skill { skillCode = "Managementul echipei"
+                            , skillName = "Managementul echipei"
+                            , skillDescr = Just "Unește echipa, distribuie munca, analizează rezultatele"
                             , skillLabel = Just "Management"
                             }
-  skill18 <- insert $ Skill { skillCode = "Technical Expertise"
-                            , skillName = "Technical Expertise"
-                            , skillDescr = Just "Understand the product itself and all aspects of its development"
+  skill18 <- insert $ Skill { skillCode = "Expertiza tehnica"
+                            , skillName = "Expertiza tehnica"
+                            , skillDescr = Just "Înțelegerea produsului în sine și a tuturor aspectelor dezvoltării acestuia"
                             , skillLabel = Just "Management"
                             }
-  skill19 <- insert $ Skill { skillCode = "Document management"
-                            , skillName = "Document management"
-                            , skillDescr = Just "Reporting"
+  skill19 <- insert $ Skill { skillCode = "Managementul documentelor"
+                            , skillName = "Managementul documentelor"
+                            , skillDescr = Just "Raportare"
                             , skillLabel = Just "Management"
                             }
-  skill20 <- insert $ Skill { skillCode = "Planning"
-                            , skillName = "Planning"
-                            , skillDescr = Just "Defining budgets and required resources"
+  skill20 <- insert $ Skill { skillCode = "Planificare"
+                            , skillName = "Planificare"
+                            , skillDescr = Just "Definirea bugetelor si a resurselor necesare"
                             , skillLabel = Just "Management"
                             }
-  skill21 <- insert $ Skill { skillCode = "Risk management"
-                            , skillName = "Risk management"
-                            , skillDescr = Just "Anticipate risks and be able to avoid them"
+  skill21 <- insert $ Skill { skillCode = "Managementul riscului"
+                            , skillName = "Managementul riscului"
+                            , skillDescr = Just "Anticiparea riscurilor și posibilitatea de a le evita"
                             , skillLabel = Just "Management"
                             }
-  skill22 <- insert $ Skill { skillCode = "Budget and cost management"
-                            , skillName = "Budget and cost management"
-                            , skillDescr = Just "Be able to fit within budget constraints without harming workflows"
+  skill22 <- insert $ Skill { skillCode = "Gestionarea bugetului și a costurilor"
+                            , skillName = "Gestionarea bugetului și a costurilor"
+                            , skillDescr = Just "A fi capabil să se încadreze în constrângerile bugetare fără a afecta fluxurile de lucru"
                             , skillLabel = Just "Management"
                             }
 
-  job03 <- insert $ Job { jobCode = "Project Manager"
-                        , jobName = "Project Manager"
+  job03 <- insert $ Job { jobCode = "Manager de proiect"
+                        , jobName = "Manager de proiect"
                         , jobDayStart = today
                         , jobDayEnd = addGregorianMonthsClip 4 today
-                        , jobDescr = Just "IT project manager"
+                        , jobDescr = Just "Manager de proiect IT"
                         , jobDept = Just dept02
                         }
   insert_ $ JobSkill { jobSkillJob = job03
@@ -600,11 +600,11 @@ populateEN = do
                      }
 
   appl08 <- insert $ Applicant
-    { applicantFamilyName = "Young"
-    , applicantGivenName = "Barbara"
-    , applicantAdditionalName = Nothing
+    { applicantFamilyName = "Matei"
+    , applicantGivenName = "Andreea"
+    , applicantAdditionalName = Just "Alexandra"
     , applicantBday = Just $ addGregorianYearsClip (-42) today
-    , applicantTag = Just "Executives"
+    , applicantTag = Just "Directori"
     }
 
   case B64.decode woman04 of
@@ -682,101 +682,101 @@ populateEN = do
 
 
   skill23 <- insert $ Skill { skillCode = "OS"
-                            , skillName = "Operating Systems"
-                            , skillDescr = Just "Operating System administration skills"
+                            , skillName = "Sisteme de operare"
+                            , skillDescr = Just "Cunostinte de administrare a sistemului de operare"
                             , skillLabel = Just "DevOps"
                             }
   skill24 <- insert $ Skill { skillCode = "OS Linux"
-                            , skillName = "Linux Operating System"
-                            , skillDescr = Just "Linux administration skills"
+                            , skillName = "Sistem de operare Linux"
+                            , skillDescr = Just "Abilități de administrare Linux"
                             , skillLabel = Just "DevOps"
                             }
   skill25 <- insert $ Skill { skillCode = "OS Windows"
-                            , skillName = "Windows Server Operating System"
-                            , skillDescr = Just "Windows Server administration skills"
+                            , skillName = "Sistem de operare Windows Server"
+                            , skillDescr = Just "Cunoștințe de administrare Windows Server"
                             , skillLabel = Just "DevOps"
                             }
   skill26 <- insert $ Skill { skillCode = "PostgreSQL"
-                            , skillName = "PostgreSQL administration"
-                            , skillDescr = Just "PostgreSQL administration skills"
-                            , skillLabel = Just "Databases"
+                            , skillName = "Administrare PostgreSQL"
+                            , skillDescr = Just "Abilități de administrare PostgreSQL"
+                            , skillLabel = Just "Baze de date"
                             }
   skill27 <- insert $ Skill { skillCode = "Oracle DBA"
-                            , skillName = "Oracle database administration"
-                            , skillDescr = Just "Oracle database administration skills"
-                            , skillLabel = Just "Databases"
+                            , skillName = "Administrarea bazei de date Oracle"
+                            , skillDescr = Just "Abilități de administrare a bazelor de date Oracle"
+                            , skillLabel = Just "Baze de date"
                             }
-  skill28 <- insert $ Skill { skillCode = "MySQL administration"
-                            , skillName = "MySQL database administration"
-                            , skillDescr = Just "MySQL database administration skills"
-                            , skillLabel = Just "Databases"
+  skill28 <- insert $ Skill { skillCode = "Administrare MySQL"
+                            , skillName = "Administrarea bazei de date MySQL"
+                            , skillDescr = Just "Cunoștințe de administrare a bazelor de date MySQL"
+                            , skillLabel = Just "Baze de date"
                             }
-  skill29 <- insert $ Skill { skillCode = "Containerization"
-                            , skillName = "Containerization"
-                            , skillDescr = Just "Packaging and deployment of software"
+  skill29 <- insert $ Skill { skillCode = "Containerizarea"
+                            , skillName = "Containerizarea"
+                            , skillDescr = Just "Impachetarea si implementarea software-ului"
                             , skillLabel = Just "DevOps"
                             }
   skill30 <- insert $ Skill { skillCode = "Docker"
                             , skillName = "Docker"
-                            , skillDescr = Just "Skills for using Docker to package and deploy applications"
+                            , skillDescr = Just "Abilități pentru utilizarea Docker pentru a împacheta și a implementa aplicații"
                             , skillLabel = Just "DevOps"
                             }
   skill31 <- insert $ Skill { skillCode = "Docker Compose"
                             , skillName = "Docker Compose"
-                            , skillDescr = Just "Defining and running multi-container Docker applications"
+                            , skillDescr = Just "Definirea și rularea aplicațiilor Docker cu mai multe containere"
                             , skillLabel = Just "DevOps"
                             }
   skill32 <- insert $ Skill { skillCode = "Kubernetes"
                             , skillName = "Kubernetes"
-                            , skillDescr = Just "Automating software deployment, scaling, and management"
+                            , skillDescr = Just "Automatizarea implementării, scalarea și gestionarea software-ului"
                             , skillLabel = Just "DevOps"
                             }
-  skill33 <- insert $ Skill { skillCode = "Cloud Skills"
-                            , skillName = "Cloud Skills"
-                            , skillDescr = Just "Skills for deploying applications in the cloud"
+  skill33 <- insert $ Skill { skillCode = "Abilități cloud"
+                            , skillName = "Abilități cloud"
+                            , skillDescr = Just "Abilități pentru implementarea unei aplicații în cloud"
                             , skillLabel = Just "DevOps"
                             }
   skill34 <- insert $ Skill { skillCode = "GCP PaaS"
                             , skillName = "Google Cloud Platform"
-                            , skillDescr = Just "Skills for deploying applications on Google Cloud"
+                            , skillDescr = Just "Abilități pentru implementarea unei aplicații pe Google Cloud"
                             , skillLabel = Just "Cloud"
                             }
   skill35 <- insert $ Skill { skillCode = "AWS PaaS"
                             , skillName = "Amazon Web Services"
-                            , skillDescr = Just "Skills for deploying applications on Amazon Web Services"
+                            , skillDescr = Just "Abilități pentru implementarea unei aplicații pe Amazon Web Services"
                             , skillLabel = Just "Cloud"
                             }
   skill36 <- insert $ Skill { skillCode = "Heroku PaaS"
                             , skillName = "Heroku Cloud Application Platform"
-                            , skillDescr = Just "Skills for deploying applications on Heroku"
+                            , skillDescr = Just "Abilități pentru implementarea unei aplicații pe Heroku"
                             , skillLabel = Just "Cloud"
                             }
-  skill37 <- insert $ Skill { skillCode = "Version Control Systems"
-                            , skillName = "Version Control Systems"
-                            , skillDescr = Just "Skills for for managing changes to computer programs and documents"
+  skill37 <- insert $ Skill { skillCode = "Sisteme de control al versiunilor"
+                            , skillName = "Sisteme de control al versiunilor"
+                            , skillDescr = Just "Abilități pentru gestionarea modificărilor la programe și documente de calculator"
                             , skillLabel = Just "DevOps"
                             }
   skill38 <- insert $ Skill { skillCode = "Git"
-                            , skillName = "Git Version Control Systems"
-                            , skillDescr = Just "Skills for for managing changes with Git"
+                            , skillName = "Sistemul de control al versiunilor Git"
+                            , skillDescr = Just "Abilități pentru gestionarea modificărilor cu Git"
                             , skillLabel = Just "DevOps"
                             }
   skill39 <- insert $ Skill { skillCode = "Mercurial"
-                            , skillName = "Mercurial Version Control Systems"
-                            , skillDescr = Just "Skills for for managing changes with Mercurial"
+                            , skillName = "Sistemul de control al versiunilor Mercurial"
+                            , skillDescr = Just "Abilități pentru gestionarea schimbărilor cu Mercurial"
                             , skillLabel = Just "DevOps"
                             }
   skill40 <- insert $ Skill { skillCode = "Apache Subversion"
                             , skillName = "Apache Subversion VCS"
-                            , skillDescr = Just "Skills for for managing changes with Apache Subversion"
+                            , skillDescr = Just "Abilități pentru gestionarea schimbărilor cu Apache Subversion"
                             , skillLabel = Just "DevOps"
                             }
 
-  job04 <- insert $ Job { jobCode = "DevOps Engineer"
-                        , jobName = "DevOps Engineer"
+  job04 <- insert $ Job { jobCode = "Inginer DevOps"
+                        , jobName = "Inginer DevOps"
                         , jobDayStart = addGregorianMonthsClip (-2) today
                         , jobDayEnd = addGregorianMonthsClip 2 today
-                        , jobDescr = Just "Integration and automation engineer for software development and IT operations"
+                        , jobDescr = Just "Inginer de integrare şi automatizare pentru dezvoltare software şi operaţiuni IT"
                         , jobDept = Just idIT
                         }
   jobSkill06 <- insert $ JobSkill { jobSkillJob = job04
@@ -895,8 +895,8 @@ populateEN = do
                      }
 
   appl09 <- insert $ Applicant
-    { applicantFamilyName = "Walker"
-    , applicantGivenName = "Jorge"
+    { applicantFamilyName = "Munteanu"
+    , applicantGivenName = "David"
     , applicantAdditionalName = Nothing
     , applicantBday = Just $ addGregorianYearsClip (-46) today
     , applicantTag = Just "DevOps"
@@ -954,9 +954,9 @@ populateEN = do
                      , appSkillWeight = 0.2
                      }
   appl10 <- insert $ Applicant
-    { applicantFamilyName = "Evans"
-    , applicantGivenName = "Robert"
-    , applicantAdditionalName = Just "William"
+    { applicantFamilyName = "Ciobanu"
+    , applicantGivenName = "Ionuţ"
+    , applicantAdditionalName = Just "Ştefan"
     , applicantBday = Just $ addGregorianYearsClip (-39) today
     , applicantTag = Just "DevOps"
     }
@@ -1009,9 +1009,9 @@ populateEN = do
                      , appSkillWeight = 1
                      }
   appl11 <- insert $ Applicant
-    { applicantFamilyName = "Hughes"
-    , applicantGivenName = "Isabel"
-    , applicantAdditionalName = Just "Mae"
+    { applicantFamilyName = "Florea"
+    , applicantGivenName = "Ioana"
+    , applicantAdditionalName = Just "Maria"
     , applicantBday = Just $ addGregorianYearsClip (-33) today
     , applicantTag = Just "DevOps"
     }

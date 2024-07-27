@@ -48,7 +48,8 @@ import Import.NoFoundation
     , YesodPersist(runDB), loggerSet, configSettingsYmlValue
     , AppSettings
       ( appHost, appMutableStatic, appStaticDir, appDatabaseConf
-      , appDetailedRequestLogging, appIpFromHeader, appPort
+      , appConnectionPoolConfig, appDetailedRequestLogging, appIpFromHeader
+      , appPort
       )
     , loadYamlSettings, loadYamlSettingsArgs, useEnv
     , configSettingsYml, develMainHelper, getDevSettings
@@ -128,11 +129,16 @@ import Handler.Depts
   , deleteDeptR
   , postDeptR
   )
-import Database.Persist.Sqlite (SqliteConf(sqlDatabase, sqlPoolSize), createSqlitePool)
-import Data.Pool (Pool(idleTime))
-import Network.Wai.Middleware.Gzip (gzip, GzipSettings (gzipFiles), GzipFiles (GzipCompress))
+
+import Database.Persist.Sqlite
+    (SqliteConf(sqlDatabase), createSqlitePoolWithConfig)
+import Network.Wai.Middleware.Gzip
+    ( gzip, GzipSettings (gzipFiles), GzipFiles (GzipCompress)
+    )
+    
 import Demo.DemoDataEN (populateEN)
 import Demo.DemoDataFR (populateFR)
+import Demo.DemoDataRO (populateRO)
 import Demo.DemoDataRU (populateRU)
 
 mkYesodDispatch "App" resourcesApp
@@ -161,11 +167,9 @@ makeFoundation appSettings = do
         logFunc = messageLoggerSource tempFoundation appLogger
 
     -- Create the database connection pool
-    p <- flip runLoggingT logFunc $ createSqlitePool
+    pool <- flip runLoggingT logFunc $ createSqlitePoolWithConfig
         (sqlDatabase  $ appDatabaseConf appSettings)
-        (sqlPoolSize $ appDatabaseConf appSettings)
-
-    let pool = p { idleTime = 900 }
+        (appConnectionPoolConfig appSettings)
 
     -- Perform database migration using our application's logging settings.
     flip runLoggingT logFunc $ flip runSqlPool pool $ do
@@ -175,6 +179,7 @@ makeFoundation appSettings = do
       case demo of
         Just "EN" -> populateEN
         Just "FR" -> populateFR
+        Just "RO" -> populateRO
         Just "RU" -> populateRU
         _ -> populateEN
 
