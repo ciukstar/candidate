@@ -36,6 +36,9 @@ Un solicitant este entitatea ale cărei abilități vor fi comparate cu abilită
 
 Un candidat este un solicitant ale cărui abilități au fost comparate cu cele ale unei anumite poziții și pentru care se calculează o pondere (evaluare) agregată pentru a-l diferenția de alți candidați pentru aceeași poziție.
 
+*Diagrama relație-entitate*
+![Entity Relationship Diagram](static/img/Candidate_ERD.svg)
+
 # Demo
 
 [Click here to see demo](https://candidatero-i4rimw5qwq-de.a.run.app)

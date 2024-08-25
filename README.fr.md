@@ -36,6 +36,9 @@ Un Demandeur est l'entité dont les Compétences seront mises en correspondance 
 
 Un Candidat est un Demandeur dont les Compétences ont été comparées à celles d'un Poste particulier et pour lequel un poids global (classement) est calculé pour le distinguer des autres candidats pour le même poste.
 
+*Diagramme entité-relation*
+![Entity Relationship Diagram](static/img/Candidate_ERD.svg)
+
 # Démo
 
 [Cliquez ici pour voir la démo](https://candidatefr-i4rimw5qwq-de.a.run.app)

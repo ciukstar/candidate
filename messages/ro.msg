@@ -1,3 +1,6 @@
+EntityRelationshipDiagram: Diagrama entitate - relație
+ErDiagram: Diagrama ER
+BasicEntities: Entități de bază
 RecordEdited: Înregistrare editată
 RecordDeleted: Înregistrare ștearsă
 RecordAdded: Înregistrare adăugată
@@ -123,7 +126,6 @@ Doc13: Posturile de muncă și competențele lor necesare sunt definite în sec�
 Doc14: Solicitanții și abilitățile lor sunt adăugate în secțiune
 Doc15: Pentru fiecare post se calculează ratingul candidaților, iar rezultatul este disponibil la linkul „Candidat”
 Doc16: Tot în secțiunea „Candidați” sunt oferite mai multe opțiuni pentru calcularea ratingului candidaților
-Doc17: Entități de bază
 Doc18: O abilitate este identificată printr-un cod scurt. Are un nume și o descriere. O abilitate poate fi un atribut al unei poziții și/sau al unui solicitant.
 Doc19: O Poziție este identificată printr-un cod. I se atribuie un nume, o dată de început, o dată de încheiere și opțional o diviziune. De asemenea, are o relație multi-la-mulți cu Skills. Fiecărei relații „Poziție – Abilitate” i se atribuie ponderea Abilității sau a grupului. Abilitățile pot fi grupate. Și grupurile pot fi grupate în continuare într-o ierarhie.
 Doc20: Un solicitant este entitatea ale cărei abilități vor fi comparate cu abilitățile necesare pentru o poziție.

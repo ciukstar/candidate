@@ -1,3 +1,6 @@
+EntityRelationshipDiagram: Entity Relationship Diagram
+ErDiagram: ER Diagram
+BasicEntities: Basic Entities
 RecordEdited: Record edited
 RecordDeleted: Record deleted
 RecordAdded: Record added
@@ -123,7 +126,6 @@ Doc13: Job positions and their required skills are defined in the section
 Doc14: Applicants and their skills are added in the section
 Doc15: For each position, the rating of candidates is calculated and the result is available at the link "Candidate"
 Doc16: Also in the "Candidates" section, more options are provided for calculating the rating of candidates
-Doc17: Basic Entities
 Doc18: A Skill is identified by a short code. It has a name and a description. A Skill may be an attribute of a Position and/or of an Applicant.
 Doc19: A Position is identified by a code. It is assigned a name, a start date, end date and optionally a division. Also, it has a many-to-many relationship with Skills. Each relationship "Position - Skill" is assigned the weight of the Skill or group. Skills may be grouped. And the groups may be further grouped in a hierarchy.
 Doc20: An Applicant is the entity whose Skills will be matched against the Skills required for a Position.

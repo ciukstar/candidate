@@ -1,3 +1,6 @@
+EntityRelationshipDiagram: Diagramme entité-relation
+ErDiagram: Diagramme ER
+BasicEntities: Entités basiques
 RecordEdited: Enregistrement modifié
 RecordDeleted: Enregistrement supprimé
 RecordAdded: Enregistrement ajouté
@@ -123,7 +126,6 @@ Doc13: Les Postes et leurs Compétences requises sont définis dans la section
 Doc14: Les Demandeurs et leurs compétences sont ajoutés dans la section
 Doc15: Pour chaque Poste, le classement des Candidats est calculé et le résultat est disponible sur le lien "Candidat"
 Doc16: Aussi dans la section "Candidats", plus d'options sont fournies pour calculer le classement des Candidats
-Doc17: Entités basiques
 Doc18: Une Compétence est identifiée par un code court. Il a un nom et une description. Une Compétence peut être un attribut d'un Poste et/ou d'un Demandeur.
 Doc19: Un Poste est identifié par un code. On lui attribue un nom, une date de début, une date de fin et éventuellement une division. De plus, il a une relation plusieurs-à-plusieurs avec Compétences. A chaque relation "Poste - Compétence" est attribué le poids de la Compétence ou du groupe. Les Compétences peuvent être regroupées. Et les groupes peuvent être en outre regroupés dans une hiérarchie.
 Doc20: Un Demandeur est l'entité dont les Compétences seront mises en correspondance avec les compétences requises pour un Poste.

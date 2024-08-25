@@ -20,18 +20,12 @@ module Foundation
   ) where
 
 import Import.NoFoundation
-  ( ($)
-  , Eq((==))
-  , Monad(return)
-  , Bool(True, False)
-  , IO
-  , Either
+  ( (<$>), flip, (||), (.), (++), ($), Eq((==))
+  , Monad (return)
+  , Bool (True, False), Int, show, IO, Either
   , widgetFile
   , AppSettings
-    ( appShouldLogAll
-    , appAuthDummyLogin
-    , appRoot
-    , appAnalytics
+    ( appShouldLogAll ,appAuthDummyLogin ,appRoot ,appAnalytics
     , appStaticDir
     )
   , Text
@@ -41,11 +35,6 @@ import Import.NoFoundation
   , UserId
   , Unique(UniqueUser)
   , SqlBackend
-  , (<$>)
-  , flip
-  , (||)
-  , (.)
-  , (++)
   , defaultClientSessionBackend
   , defaultYesodMiddleware
   , getApprootText
@@ -78,11 +67,7 @@ import Import.NoFoundation
   , SessionBackend
   , RenderRoute(Route, renderRoute)
   , FormMessage
-  , DBRunner
-  , YesodPersist(..)
-  , YesodPersistRunner(..)
-  , getAuth
-  , AuthPlugin
+  , getAuth, Auth, AuthPlugin
   , AuthenticationResult(Authenticated)
   , Creds(credsIdent)
   , YesodAuth
@@ -94,9 +79,9 @@ import Import.NoFoundation
     , AuthId
     )
   , YesodAuthPersist
-  , Auth
-  , Int
-  , show
+  , DBRunner
+  , YesodPersist(..)
+  , YesodPersistRunner(..)
   )
 
 import Data.Maybe (Maybe (..), fromMaybe)
