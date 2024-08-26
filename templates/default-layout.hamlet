@@ -1,3 +1,4 @@
+
 <header.navbar.navbar-expand-lg.sticky-top.bg-primary data-bs-theme=dark>
   <nav.container-fluid>
 
@@ -24,20 +25,31 @@
       <div.offcanvas-body>
         <ul.navbar-nav.me-auto.mb-2.mb-lg-0>
           <li.nav-item.d-md-none>
-            <a.nav-link :Just HomeR == currRoute:.active title=_{MsgHomePage} href=@{HomeR}>
+            <a.nav-link href=@{HomeR} title=_{MsgHomePage} :Just HomeR == currRoute:.active>
               _{MsgHome}
+              
           <li.nav-item>
             <a.nav-link href=@{CandidatesR} :Just CandidatesR == currRoute:.active>
               _{MsgCandidates}
+              
           <li.nav-item>
-            <a.nav-link href="@{ApplicantsR}?desc=id&offset=0&limit=5" :Just ApplicantsR == currRoute:.active>
+            <a.nav-link href=@?{(ApplicantsR,[("desc","id"),("offset","0"),("limit","5")])}
+              :Just ApplicantsR == currRoute:.active>
               _{MsgApplicants}
+              
           <li.nav-item>
-            <a.nav-link href="@{JobsR}?desc=id&offset=0&limit=5" :Just JobsR == currRoute:.active>
+            <a.nav-link href=@?{(JobsR,[("desc","id"),("offset","0"),("limit","5")])}
+              :Just JobsR == currRoute:.active>
               _{MsgPositions}
+              
           <li.nav-item>
-            <a.nav-link href="@{SkillsR}?desc=id&offset=0&limit=5" :Just SkillsR == currRoute:.active>
+            <a.nav-link href=@?{(SkillsR,[("desc","id"),("offset","0"),("limit","5")])}
+              :Just SkillsR == currRoute:.active>
               _{MsgSkills}
+              
+          <li.nav-item>
+            <a.nav-link href=@{DocsR} :Just DocsR == currRoute:.active>
+              _{MsgDocs}
 
         <ul.navbar-nav.mb-2.mb-lg-0>
           <li.nav-item>

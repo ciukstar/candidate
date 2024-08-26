@@ -1,3 +1,6 @@
+SelectPositionToRankCandidates: Sélectionnez une position pour classer les candidats
+Docs: Documentation
+WelcomeTo: Bienvenue sur
 EntityRelationshipDiagram: Diagramme entité-relation
 ErDiagram: Diagramme ER
 BasicEntities: Entités basiques
@@ -115,7 +118,7 @@ Exit: Quitter
 HomePage: Page d'accueil
 Home: Accueil
 ToggleNavigation: Basculer la navigation
-AppName: L'application Candidat
+AppName: Candidat
 MetaKeywords: Classement, Compétences, Agrégation, Hiérarchique
 MetaDescription: Classement hiérarchique, Sélection des candidats sur la base d'une hiérarchie d'attributs, Aggregating hierarchical rankings of skills
 

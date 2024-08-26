@@ -1,5 +1,13 @@
 
 main
-    figure
-        img
-            width: 100%
+    display: flex
+    flex-direction: column
+    align-items: center
+    gap: 2rem
+
+    .list-group
+        align-self: stretch
+        a.list-group-item
+            display: flex
+            align-items: center
+            justify-content: space-between

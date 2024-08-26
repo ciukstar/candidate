@@ -6,7 +6,11 @@
       <a href=#{ult} rel=collection>_{MsgSkills}
     <li.breadcrumb-item.active aria-current=page>_{MsgSkill}
 
-<h1>_{MsgSkill}: _{MsgNumberSign}#{fromSqlKey ident}
+<h1>
+  <a.btn.btn-light href=#{ult} role=button aria-label=_{MsgBack}>
+    <i.bi.bi-chevron-left>
+    
+  _{MsgSkill}: _{MsgNumberSign}#{fromSqlKey ident}
 
 <fieldset.p-3.mb-3.border.rounded>
   <legend.display-6>_{MsgAttributes}
@@ -32,7 +36,3 @@
           <td>
             $maybe lbl <- label
               #{lbl}
-
-<a.btn.btn-sm.btn-outline-secondary href=#{ult} role=button>
-  <i.bi.bi-arrow-left>
-  _{MsgBack}

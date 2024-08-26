@@ -22,10 +22,12 @@ module Application
     ) where
 
 import System.Environment.Blank (getEnv)
-import Data.Maybe (Maybe (Just))
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Logger (liftLoc, runLoggingT)
+
+import Data.Maybe (Maybe (Just))
 import Database.Persist.Sql (runSqlPool)
+
 import Foundation
     ( Route
       ( RobotsR, DeptR, DeptsR, JobCandidateR, JobCandidatesR
@@ -35,10 +37,11 @@ import Foundation
       , AppPhotoR, AppSkillR, AppSkillsEditR, AppSkillsR, ApplicantTagR
       , ApplicantR, ApplicantsR, SkillEditFormR, SkillCreateFormR
       , SkillsLabelR, SkillR, SkillsR, StaticR, AuthR, HomeR
-      , PhotoPlaceholderR, FaviconR, ApplicantSkillsR
+      , PhotoPlaceholderR, FaviconR, ApplicantSkillsR, DocsR
       )
     , resourcesApp, unsafeHandler, App(..), Handler
     )
+    
 import Import.NoFoundation
     ( ($), Monad(return, (>>=)), Show(show), Bool(True), Int, IO
     , error, migrateAll, SqlBackend, flip, when, (++), runMigration
@@ -72,6 +75,8 @@ import System.Log.FastLogger
 
 import Handler.Common (getPhotoPlaceholderR, getFaviconR, getRobotsR )
 import Handler.Home ( getHomeR )
+
+import Handler.Docs (getDocsR)
 
 import Handler.Skills
   ( getSkillsR

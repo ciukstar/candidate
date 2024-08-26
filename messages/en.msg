@@ -1,3 +1,6 @@
+SelectPositionToRankCandidates: Select a position to rank candidates
+Docs: Docs
+WelcomeTo: Welcome to
 EntityRelationshipDiagram: Entity Relationship Diagram
 ErDiagram: ER Diagram
 BasicEntities: Basic Entities
@@ -115,7 +118,7 @@ Exit: Exit
 HomePage: Home page
 Home: Home
 ToggleNavigation: Toggle navigation
-AppName: Application Candidate
+AppName: Candidate
 MetaKeywords: Ranking, Skills, Aggregation, Hierarchical
 MetaDescription: Hierarchical ranking, Selection of candidates based on a hierarchy of attributes, Aggregating hierarchical rankings of skills
 

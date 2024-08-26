@@ -186,10 +186,11 @@ getSkillsR = do
   let end = fromMaybe 0 $ min <$> ((+) <$> moffset <*> mlimit) <*> pure rcnt
   msgs <- getMessages
   selectRep $ provideRep $ defaultLayout $ do
-    setTitleI MsgSkills
-    setUltDestCurrent
-    ult <- lookupSession ultDestKey
-    $(widgetFile "skills/skills")
+      setTitleI MsgSkills
+      setUltDestCurrent
+      ult <- lookupSession ultDestKey
+      idButtonSkillDelete <- newIdent
+      $(widgetFile "skills/skills")
 
 
 getSkillEditFormR :: SkillId -> HandlerFor App Html

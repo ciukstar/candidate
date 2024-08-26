@@ -1,7 +1,7 @@
 
 JobSkill sql=job_skills
   job JobId OnDeleteCascade
-  skill SkillId
+  skill SkillId OnDeleteCascade
   weight Double default=0.0
   parent JobSkillId Maybe OnDeleteCascade
   expanded Bool default=false
@@ -30,7 +30,7 @@ AppPhoto sql=applicant_photos
 
 AppSkill sql=applicant_skills
   applicant ApplicantId OnDeleteCascade
-  skill SkillId
+  skill SkillId OnDeleteCascade
   weight Double default=0.0
   UniqueAppSkill applicant skill
 

@@ -1,3 +1,4 @@
+
 <nav aria-label=beadcrumb>
   <ol.breadcrumb>
     <li.breadcrumb-item>
@@ -233,10 +234,10 @@
                 <label.form-label for=inputFormControlTag#{ident}>_{MsgInQuotes lbl}
                 <input.form-control type=text name=new placeholder=_{MsgEnterNewName} #inputFormControlTag#{ident}>
             <div.modal-footer>
+              <button.btn.btn-light type=button data-bs-dismiss=modal>
+                _{MsgCancel}
               <button.btn.btn-primary type=submit form=form-edit-lbl-#{ident}>
                 _{MsgSave}
-              <button.btn.btn-secondary type=button data-bs-dismiss=modal>
-                _{MsgCancel}
 
 
 $forall Entity sid (Skill code _ _ _) <- skills
@@ -251,10 +252,10 @@ $forall Entity sid (Skill code _ _ _) <- skills
           <h4>
             _{MsgReallyDelete}
         <div.modal-footer>
-          <button.btn.btn-primary.delete type=button data-url=@{SkillR sid}>
-            _{MsgDelete}
-          <button.btn.btn-secondary type=button data-bs-dismiss=modal>
+          <button.btn.btn-light type=button data-bs-dismiss=modal>
             _{MsgCancel}
+          <button.btn.btn-danger.delete type=button data-url=@{SkillR sid} ##{idButtonSkillDelete}>
+            _{MsgDelete}
 
 $forall (status,msg) <- filter (isInfixOf "toast" . fst) msgs
   <div.toast-container.p-3.bottom-0.start-50.translate-middle-x>

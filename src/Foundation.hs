@@ -200,10 +200,13 @@ instance Yesod App where
                  -> Bool       -- ^ Whether or not this is a "write" request.
                  -> Handler AuthResult
     isAuthorized (AuthR _) _ = return Authorized
-    isAuthorized HomeR _ = return Authorized
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
     isAuthorized PhotoPlaceholderR _ = return Authorized
+
+    isAuthorized HomeR _ = return Authorized
+    isAuthorized DocsR _ = return Authorized
+    
     isAuthorized (StaticR _) _ = return Authorized
     isAuthorized SkillsR _ = return Authorized
     isAuthorized (SkillR _) _ = return Authorized

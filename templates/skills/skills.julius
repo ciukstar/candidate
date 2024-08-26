@@ -1,43 +1,85 @@
 
-$('#inputSearch,#selectLimit,#selectLimit2').on('input', function (e) {
-  $('#inputOffset').val(0)
-})
+['inputSearch','selectLimit','selectLimit2'].map(x => document.getElementById(x)).forEach(x => {
+  x.addEventListener('input',e => {
+    document.getElementById('inputOffset').value = 0;
+  });
+});
 
-$('button.sort').click(function () {
-  $('input.sort')
-    .attr('name',#{thSortDir (fst (fromMaybe ("desc","id") msort))})
-    .val(this.dataset.field);
-})
+Array.from(
+  document.body.querySelectorAll('button.sort')
+).forEach(x => {
+  x.addEventListener('click',function (e) {
+    const input = document.body.querySelector('input.sort');
+    input.setAttribute('name',#{thSortDir (fst (fromMaybe ("desc","id") msort))});
+    input.value = x.dataset.field;
+  });
+});
 
-$('button.label').click(function () {
-  if ($('input[name=label]').val() === this.dataset.label) {
-    $('input[name=label]').val(null)
-  } else {
-    $('input[name=label]').val(this.dataset.label)
-  }
-})
+Array.from(
+  document.body.querySelectorAll('button.label')
+).forEach(x => {
+  x.addEventListener('click',function (e) {
+    const input = document.body.querySelector('input[name=label]');
+    if (iput.value === e.target.dataset.label) {
+      input.value = null;
+    } else {
+      input.value = this.dataset.label;
+    }
+  });
+});
 
-$('button[rel=last]').click(function () {
-  $('input[name=offset]').val(#{rawJS $ show maxo})
-})
 
-$('button[rel=next]').click(function () {
-  $('input[name=offset]').val(#{rawJS $ show next})
-})
+Array.from(
+  document.body.querySelectorAll('button[rel=last]')
+).forEach(x => {
+  x.addEventListener('click',function (e) {
+    document.body.querySelector('input[name=offset]').value = #{rawJS $ show maxo};
+  });
+});
 
-$('button[rel=prev]').click(function () {
-  $('input[name=offset]').val(#{rawJS $ show prev})
-})
+Array.from(
+  document.body.querySelectorAll('button[rel=next]')
+).forEach(x => {
+  x.addEventListener('click',function (e) {
+    document.body.querySelector('input[name=offset]').value = #{rawJS $ show next};
+  });
+});
 
-$('button[rel=first]').click(function () {
-  $('input[name=offset]').val(0)
-})
+Array.from(
+  document.body.querySelectorAll('button[rel=prev]')
+).forEach(x => {
+  x.addEventListener('click',function (e) {
+    document.body.querySelector('input[name=offset]').value = #{rawJS $ show prev};
+  });
+});
 
-$('button.delete').click(function () {
-  $.ajax({
-    method: 'DELETE',
-    url: this.dataset.url
-  }).done(function (data) {
+Array.from(
+  document.body.querySelectorAll('button[rel=first]')
+).forEach(x => {
+  x.addEventListener('click',function (e) {
+    document.body.querySelector('input[name=offset]').value = 0;
+  });
+});
+
+
+/*
+[["last",#{rawJS $ show maxo}],
+ ["next",#{rawJS $ show next}],
+ ["prev",#{rawJS $ show prev}],
+ ["first",0]
+].map(([a,x]) => [document.body.querySelector(`button[rel=${a}]`),x]).forEach(([button,x]) => {
+  console.log('button: ',button);
+  console.log('x: ',x);
+  button.addEventListener('click',function (e) {
+    document.body.querySelector('input[name=offset]').value = x;
+  });
+});
+*/
+
+document.getElementById(#{idButtonSkillDelete}).addEventListener('click',(e) => {
+  fetch(e.target.dataset.url, {
+    method: 'DELETE'
+  }).then(res => {
     window.location = '#{rawJS $ fromMaybe "/skills" ult}';
-  })
-})
+  });
+});

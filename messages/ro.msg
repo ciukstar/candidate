@@ -1,3 +1,6 @@
+SelectPositionToRankCandidates: Selectați o poziție pentru a clasifica candidații
+Docs: Documentația
+WelcomeTo: Bun venit la
 EntityRelationshipDiagram: Diagrama entitate - relație
 ErDiagram: Diagrama ER
 BasicEntities: Entități de bază
@@ -115,7 +118,7 @@ Exit: Ieșire
 HomePage: Pagina principală
 Home: Acasă
 ToggleNavigation: Comutare navigare
-AppName: Aplicația Candidat
+AppName: Candidat
 MetaKeywords: Clasament, aptitudini, agregare, ierarhic
 MetaDescription: Clasament ierarhic, Selectarea candidaților pe baza unei ierarhii de atribute, Agregarea clasamentelor ierarhice a competențelor
 

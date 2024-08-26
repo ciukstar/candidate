@@ -19,7 +19,8 @@
   <form method=post action=@{SkillR sid} rel=edit enctype=#{enctype} novalidate>
     <div.d-flex.flex-column.gap-3.mb-3>
       ^{widget}
-    <button.btn.btn-primary type=submit>
-      _{MsgSave}
-    <a.btn.btn-secondary href=#{ult} rel=collection>
-      _{MsgCancel}
+    <div.text-end>
+      <a.btn.btn-light href=#{ult} rel=collection>
+        _{MsgCancel}
+      <button.btn.btn-primary type=submit>
+        _{MsgSave}

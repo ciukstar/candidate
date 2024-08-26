@@ -21,11 +21,13 @@
   <form method=post action=@{SkillsR} enctype=#{enctype} novalidate>
     <div.pb-3>
       ^{widget}
-    <button.btn.btn-primary type=submit>
-      _{MsgSave}
-    $maybe dest <- ult
-      <a.btn.btn-secondary role=button href=#{dest} rel=collection>
-        _{MsgCancel}
-    $nothing
-      <a.btn.btn-secondary role=button href=@{SkillsR} rel=collection>
-        _{MsgCancel}
+    <div.text-end>
+      $maybe dest <- ult
+        <a.btn.btn-light role=button href=#{dest} rel=collection>
+          _{MsgCancel}
+      $nothing
+        <a.btn.btn-light role=button href=@{SkillsR} rel=collection>
+          _{MsgCancel}
+          
+      <button.btn.btn-primary type=submit>
+        _{MsgSave}

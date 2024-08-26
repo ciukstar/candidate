@@ -1,51 +1,22 @@
+
 <nav aria-label=_{MsgBreadcrumbs}>
   <ol.breadcrumb>
     <li.breadcrumb-item.active aria-current=page>
       _{MsgHome}
 
-<main.d-flex.flex-row>
-  <div.w-100>
-    <h1>
-      _{MsgDoc1}
-    <p>
-      _{MsgDoc11}.
+<main>
+  <h1>
+    _{MsgWelcomeTo} _{MsgAppName}
+  <p>
+    _{MsgSelectPositionToRankCandidates}
 
-    <h2>
-      _{MsgOverview}
-    <p>
-      _{MsgDoc12} <a href="@{SkillsR}?desc=id&offset=0&limit=5">_{MsgSkills}</a>.
 
-    <p>
-      _{MsgDoc13} <a href="@{JobsR}?desc=id&offset=0&limit=5">_{MsgPositions}</a>.
-
-    <p>
-      _{MsgDoc14} <a href=@{ApplicantsR}?offset=0&limit=5&desc=id>_{MsgApplicants}</a>.
-    <p>
-      _{MsgDoc15}.
-      _{MsgSeeLink} <a href="@{JobsR}?desc=id&offset=0&limit=5">_{MsgPositions}</a>.
-    <p>
-      _{MsgDoc16}.
-      _{MsgSeeLink} <a href=@{CandidatesR}>_{MsgCandidates}</a>.
-
-    <h2>_{MsgBasicEntities}
-    <dl>
-      <dt>_{MsgSkill}
-      <dd>_{MsgDoc18}
-
-      <dt>_{MsgPosition}
-      <dd>_{MsgDoc19}
-
-      <dt>_{MsgApplicant}
-      <dd>_{MsgDoc20}
-
-      <dt>_{MsgCandidate}
-      <dd>_{MsgDoc21}
-      
-    <h2>_{MsgErDiagram}
-    <figure>
-      <img src=@{StaticR img_Candidate_ERD_svg} loading=lazy alt=_{MsgEntityRelationshipDiagram}>
-      <figcaption>
-        _{MsgEntityRelationshipDiagram}
+  <nav.list-group.list-group-flush>
+    $forall Entity jid (Job _ name _ _ _ _) <- positions
+      <a.list-group-item.list-group-item-action.list-group-item-secodary href=@{JobCandidatesR jid}>
+        #{name}
+        <i.bi.bi-chevron-right>
+        
         
 
 <aside>
@@ -57,10 +28,17 @@
     <div.offcanvas-body>
       <div.d-block.d-lg-none>
         <p>
-          <a href="@{SkillsR}?desc=id&offset=0&limit=5">_{MsgSkills}
+          <a href=@{CandidatesR}>
+            _{MsgCandidates}
         <p>
-          <a href="@{JobsR}?desc=id&offset=0&limit=5">_{MsgPositions}
+          <a href=@?{(ApplicantsR,[("desc","id"),("offset","0"),("limit","5")])}>
+            _{MsgApplicants}
         <p>
-          <a href="@{ApplicantsR}?desc=id&offset=0&limit=5">_{MsgApplicants}
+          <a href=@?{(JobsR,[("desc","id"),("offset","0"),("limit","5")])}>
+            _{MsgPositions}
         <p>
-          <a href=@{CandidatesR}>_{MsgCandidates}
+          <a href=@?{(SkillsR,[("desc","id"),("offset","0"),("limit","5")])}>
+            _{MsgSkills}
+        <p>
+          <a href=@{DocsR}>
+            _{MsgDocs}

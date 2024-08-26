@@ -31,12 +31,12 @@ $maybe Job _ name _ _ _ _ <- job
     ^{fw}
 
   <div.mt-3>
+    <a.btn.btn-light.mt-3 href=#{ult} role=button>
+      _{MsgCancel}
     <button.btn.btn-success.mt-3 type=button data-bs-toggle=modal data-bs-target=#modalSkills>
       _{MsgAdd}
     <button.btn.btn-primary.mt-3 type=submit form=formPostJobSkillWeights>
       _{MsgSave}
-    <a.btn.btn-secondary.mt-3 href=#{ult} role=button>
-      _{MsgCancel}
 
 <a.btn.btn-sm.btn-outline-secondary.my-3 href=#{ult} rel=collection role=button>
   <i.bi.bi-arrow-left>
@@ -65,10 +65,10 @@ $maybe Job _ name _ _ _ _ <- job
                 <label.form-check-label.text-wrap.lh-1 for=inputSkill#{fromSqlKey id} title=#{code}>
                   #{name}
       <div.modal-footer>
+        <button.btn.btn-light type=button data-bs-dismiss=modal>
+          _{MsgCancel}
         <button.btn.btn-primary type=submit form=formSkills>
           _{MsgSelect}
-        <button.btn.btn-secondary type=button data-bs-dismiss=modal>
-          _{MsgCancel}
 
 
 $forall (Entity jsid (JobSkill _ _ _ _ _), Entity _ (Skill code _ _ _)) <- skills
@@ -95,10 +95,10 @@ $forall (Entity jsid (JobSkill _ _ _ _ _), Entity _ (Skill code _ _ _)) <- skill
                   <label.form-check-label.text-wrap.lh-1 for=inputRadio#{fromSqlKey jsid}#{fromSqlKey sid} title=#{code}>
                     #{name}
         <div.modal-footer>
+          <button.btn.btn-light type=button data-bs-dismiss=modal>
+            _{MsgCancel}
           <button.btn.btn-primary type=submit form=formChildSkills#{fromSqlKey jsid}>
             _{MsgSelect}
-          <button.btn.btn-secondary type=button data-bs-dismiss=modal>
-            _{MsgCancel}
 
   <div.modal.fade #modalChildSkillsRemove#{fromSqlKey jsid} tabindex=-1
     aria-labelledby=modalChildSkillsRemoveTitle#{fromSqlKey jsid}>
@@ -112,10 +112,10 @@ $forall (Entity jsid (JobSkill _ _ _ _ _), Entity _ (Skill code _ _ _)) <- skill
           <code>_{MsgInQuotes code}
           <h4>_{MsgReallyRemove}
         <div.modal-footer>
+          <button.btn.btn-light type=button data-bs-dismiss=modal>
+            _{MsgCancel}
           <button.btn.btn-primary.remove type=button data-url=@{JobSkillR jsid}>
             _{MsgRemove}
-          <button.btn.btn-secondary type=button data-bs-dismiss=modal>
-            _{MsgCancel}
 
 $forall (status,msg) <- filter (isInfixOf "toast" . fst) msgs
   <div.toast-container.p-3.bottom-0.start-50.translate-middle-x>

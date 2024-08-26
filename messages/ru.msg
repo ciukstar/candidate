@@ -1,3 +1,6 @@
+SelectPositionToRankCandidates: Выберите позицию для ранжирования кандидатов
+Docs: Документация
+WelcomeTo: Добро пожаловать в
 EntityRelationshipDiagram: Диаграмма отношений сущностей
 ErDiagram: ER-диаграмма
 BasicEntities: Основные сущности
@@ -115,7 +118,7 @@ Exit: Выход
 HomePage: Домашняя страница
 Home: Главная
 ToggleNavigation: Переключить навигацию
-AppName: Приложение «Кандидат»
+AppName: Кандидат
 MetaKeywords: Ранжирование, Навыки, Агрегация, Иерархический
 MetaDescription: Метод объединения (агрегации) иерархических ранжирований, Подбор кандидатов на основе иерархии атрибутов
 

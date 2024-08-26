@@ -26,7 +26,8 @@
       <div.offcanvas-body>
         <div>
           <p>
-            <a.text-nowrap href=@{JobCandidateR jid aid}?tab=0>_{MsgCalculationAnalysis}
+            <a.text-nowrap href=@?{(JobCandidateR jid aid,[("tab","0")])}>
+              _{MsgCalculationAnalysis}
           <p>
             <a href=@{JobCandidateR jid aid}?tab=1>_{MsgApplicant}
           <p>

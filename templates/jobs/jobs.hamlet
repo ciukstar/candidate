@@ -261,10 +261,10 @@ $forall (Entity jid (Job _ name _ _ _ _), _, _) <- jobs
           <code>_{MsgInQuotes name}
           <h4>_{MsgReallyDelete}
         <div.modal-footer>
-          <button.btn.btn-primary.delete type=button data-url=@{JobR jid}>
-            _{MsgDelete}
           <button.btn.btn-secondary type=button data-bs-dismiss=modal>
             _{MsgCancel}
+          <button.btn.btn-primary.delete type=button data-url=@{JobR jid}>
+            _{MsgDelete}
 
 
 $forall (status,msg) <- filter (isInfixOf "toast" . fst) msgs
