@@ -4,9 +4,14 @@
 
 # Clasamentul candidaților
 
-Această aplicație oferă o metodă simplă de agregare a clasamentelor ierarhice. Aplicația ajută la luarea deciziilor cu privire la selecția candidaților pe baza unei ierarhii de atribute, abilități și ponderea acestora.
+Această aplicație oferă o metodă simplă de agregare a clasamentelor ierarhice. 
+
+Aplicația ajută la luarea deciziilor cu privire la selecția candidaților pe baza unei ierarhii de atribute, abilități și ponderea acestora.
 
 ## Prezentare generală
+
+*Diagrama cazurilor de utilizare*  
+![Diagrama cazurilor de utilizare](static/img/Candidate_UCD.svg)
 
 Abilitățile cerute de un loc de muncă ar trebui să fie definite în dicționar [Aptitudini](https://candidatero-i4rimw5qwq-de.a.run.app/skills?desc=id&offset=0&limit=5).
 
@@ -36,7 +41,7 @@ Un solicitant este entitatea ale cărei abilități vor fi comparate cu abilită
 
 Un candidat este un solicitant ale cărui abilități au fost comparate cu cele ale unei anumite poziții și pentru care se calculează o pondere (evaluare) agregată pentru a-l diferenția de alți candidați pentru aceeași poziție.
 
-*Diagrama relație-entitate*
+*Diagrama relație-entitate*  
 ![Entity Relationship Diagram](static/img/Candidate_ERD.svg)
 
 # Demo

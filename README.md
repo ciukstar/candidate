@@ -8,6 +8,9 @@ This application provides a simple method for aggregating hierarchical rankings.
 
 ## Overview
 
+*Use Case Diagram*  
+![Use Case Diagram](static/img/Candidate_UCD.svg)
+
 The skills required by a job position should be defined in the dictionary [Skills](https://candidate-i4rimw5qwq-de.a.run.app/skills?desc=id&offset=0&limit=5).
 
 Job positions and their required skills are defined in the section [Positions](https://candidate-i4rimw5qwq-de.a.run.app/jobs?desc=id&offset=0&limit=5).
@@ -36,7 +39,7 @@ An Applicant is the entity whose Skills will be matched against the Skills requi
 
 A Candidate is an Applicant whose Skills have been compared to those of a particular Position and for whom an aggregate weight (rating) is calculated to distinguish him from other applicants for the same position.
 
-*Entity Relationship Diagram*
+*Entity Relationship Diagram*  
 ![Entity Relationship Diagram](static/img/Candidate_ERD.svg)
 
 # Demo

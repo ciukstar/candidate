@@ -14,7 +14,7 @@ module Handler.Candidates
   ) where
 
 import Tree ( Tree(..), leafs, width, height, children)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, isJust)
 import Data.Text (pack, unpack, Text)
 import Data.Text.ICU
   ( LocaleName (Locale), FormatStyle (NoFormatStyle, ShortFormatStyle)
@@ -32,7 +32,7 @@ import Yesod.Core.Content (TypedContent)
 import Yesod.Core
   ( Yesod(defaultLayout), MonadIO (liftIO), WidgetFor, whamlet, setTitleI
   , lookupSession, getUrlRender, setUltDestCurrent
-  , MonadHandler (liftHandler)
+  , MonadHandler (liftHandler), ToWidget (toWidget), julius
   )
 import Yesod.Form (unTextarea)
 import Yesod.Form.Input (runInputGet, iopt)
@@ -41,7 +41,7 @@ import Settings (widgetFile)
 import Yesod (YesodPersist(runDB))
 import Database.Persist (Entity (Entity), entityVal, entityKey)
 import Database.Persist.Sql (SqlBackend, fromSqlKey, toSqlKey)
-import ClassyPrelude.Yesod (ReaderT)
+import ClassyPrelude.Yesod (ReaderT, when)
 import Yesod.Core.Handler
   ( HandlerFor, selectRep, provideRep, languages, getRequest
   , YesodRequest (reqGetParams), getYesod
@@ -84,54 +84,64 @@ import Database.Esqueleto.Experimental
 
 getCandidatesR :: HandlerFor App TypedContent
 getCandidatesR = do
-  (mjid,limit) <- runInputGet $ (,)
-    <$> ((toSqlKey <$>) <$> iopt YF.intField "job")
-    <*> (fromMaybe 5 <$> iopt YF.intField "limit")
+    (mjid,limit) <- runInputGet $ (,)
+        <$> ((toSqlKey <$>) <$> iopt YF.intField "job")
+        <*> (fromMaybe 5 <$> iopt YF.intField "limit")
 
-  aids <- (toSqlKey . read . unpack . snd <$>) . filter ((== "app") . fst) . reqGetParams <$> getRequest
+    aids <- (toSqlKey . read . unpack . snd <$>) . filter ((== "app") . fst) . reqGetParams <$> getRequest
 
-  job <- case mjid of
-    Just jid -> do
-      applicants <- runDB $ fetchSkilledApplicants jid aids
-      appSkills <- mapM (\e@(Entity aid _) -> (e,) <$> runDB (fetchAppSkillsForJob aid jid)) applicants
-      mjob <- runDB $ selectOne $ do
-        j <- from $ table @Job
-        where_ $ j ^. JobId ==. val jid
-        return j
-      case mjob of
-        Just job -> do
-          skillTree <- bldTree <$> runDB (fetchJobSkills jid)
-          return $ Just ((job, skillTree), appSkills)
-        _ -> return Nothing
-    _ -> return Nothing
+    job <- case mjid of
+      Just jid -> do
+        applicants <- runDB $ fetchSkilledApplicants jid aids
+        appSkills <- mapM (\e@(Entity aid _) -> (e,) <$> runDB (fetchAppSkillsForJob aid jid)) applicants
+        mjob <- runDB $ selectOne $ do
+          j <- from $ table @Job
+          where_ $ j ^. JobId ==. val jid
+          return j
+        case mjob of
+          Just job -> do
+            skillTree <- bldTree <$> runDB (fetchJobSkills jid)
+            return $ Just ((job, skillTree), appSkills)
+          _ -> return Nothing
+      _ -> return Nothing
 
-  applicants <- runDB $ select $ do
-    x <- from $ table @Applicant
-    orderBy [desc (x ^. ApplicantId)]
-    return x
-  jobs <- runDB $ select $ do
-    x <- from $ table @Job
-    orderBy [desc (x ^. JobId)]
-    return x
-  loc <- Locale . unpack . fromMaybe "en" . LS.head <$> languages
-  selectRep $ provideRep $ defaultLayout $ do
-    setTitleI MsgCandidate
-    setUltDestCurrent
-    $(widgetFile "candidates/candidates")
+    applicants <- runDB $ select $ do
+        x <- from $ table @Applicant
+        orderBy [desc (x ^. ApplicantId)]
+        return x
+    jobs <- runDB $ select $ do
+        x <- from $ table @Job
+        orderBy [desc (x ^. JobId)]
+        return x
+    loc <- Locale . unpack . fromMaybe "en" . LS.head <$> languages
+    selectRep $ provideRep $ defaultLayout $ do
+        setTitleI MsgCandidate
+        setUltDestCurrent
+        when (isJust job) $ toWidget [julius|
+                                            [['selectLimit','selectTop'],['selectTop','selectLimit']].map(
+                                              ([x,y]) => [document.getElementById(x),document.getElementById(y)]
+                                            ).forEach(([x,y]) => {
+                                              x.addEventListener('change', e => {
+                                                y.value = e.target.value;
+                                                document.getElementById('formGetCandidates').submit();
+                                              });
+                                            });
+                                            |]
+        $(widgetFile "candidates/candidates")
 
 
 getCandidateR :: JobId -> ApplicantId -> HandlerFor App TypedContent
 getCandidateR jid aid = selectRep $ provideRep $ defaultLayout $ do
-  setTitleI MsgCandidate
-  ult <- getUrlRender >>= \rndr -> fromMaybe (rndr CandidatesR) <$> lookupSession ultDestKey
-  $(widgetFile "candidates/candidate")
+    setTitleI MsgCandidate
+    ult <- getUrlRender >>= \rndr -> fromMaybe (rndr CandidatesR) <$> lookupSession ultDestKey
+    $(widgetFile "candidates/candidate")
 
 
 getJobCandidateR :: JobId -> ApplicantId -> HandlerFor App TypedContent
 getJobCandidateR jid aid = selectRep $ provideRep $ defaultLayout $ do
-  setTitleI MsgCandidate
-  ult <- getUrlRender >>= \rndr -> fromMaybe (rndr CandidatesR) <$> lookupSession ultDestKey
-  $(widgetFile "candidates/job-candidate")
+    setTitleI MsgCandidate
+    ult <- getUrlRender >>= \rndr -> fromMaybe (rndr CandidatesR) <$> lookupSession ultDestKey
+    $(widgetFile "candidates/job-candidate")
 
 
 candidateInfo :: JobId -> ApplicantId -> WidgetFor App ()

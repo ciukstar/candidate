@@ -1,8 +1,31 @@
 
 a.app-link
-  text-decoration: none
+    text-decoration: none
+
 a.app-link:hover
-  text-decoration: underline
+    text-decoration: underline
+          
+ul#skillList
+
+    li.list-group-item
+        display: grid
+        grid-template-columns: auto auto 48px
+        grid-template-rows: auto
+        grid-template-areas: "skill skill actions" "code code code"
+        gap: 0.5rem
+          
+        a.skill
+            grid-area: skill
+            align-self: center
+            white-space: nowrap
+            overflow: hidden
+            text-overflow: ellipsis
+          
+        div.actions
+            grid-area: actions
+          
+        small.code
+            grid-area: code
     
 table
   thead
@@ -13,8 +36,8 @@ table
       padding: 0
       margin: 0
       .bi-arrow-down-up
-        visibility: hidden
+          visibility: hidden
 
     button.sort:hover
       .bi-arrow-down-up
-        visibility: visible
+          visibility: visible

@@ -10,9 +10,16 @@
       _{MsgDoc1}
     <p>
       _{MsgDoc11}.
+    <p>
+      _{MsgDoc111}.
 
     <h2>
       _{MsgOverview}
+      
+    <figure>
+      <img src=@{StaticR img_Candidate_UCD_svg} loading=lazy alt=_{MsgUseCaseDiagram}>
+      <figcaption>
+        _{MsgUseCaseDiagram}
     <p>
       _{MsgDoc12} <a href=@?{(SkillsR,[("desc","id"),("offset","0"),("limit","5")])}>_{MsgSkills}</a>.
 

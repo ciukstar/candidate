@@ -307,34 +307,34 @@ postJobSkillsEditR jid = do
 
 getJobSkillsEditFormR :: JobId -> HandlerFor App Html
 getJobSkillsEditFormR jid = do
-  selected <- fromMaybe [] . mapM ((toSqlKey <$>) . readMaybe . unpack) <$> lookupGetParams "jsid"
-  job <- runDB $ get jid
-  skills <- runDB $ fetchJobSkills jid :: HandlerFor App [(Entity JobSkill, Entity Skill)]
-  let trees = bldTree skills
-  skillPool <- runDB $ fetchJoblessSkills (snd <$> skills)
-  location <- getUrlRender >>= \rndr -> return $ rndr (JobSkillsEditFormR jid)
-  (fw,fe) <- generateFormPost $ formSkills trees (fmtDbl ".######" (Locale "en")) selected
-  when (any (> 1) (weightLevels trees)) $ addMessageI "alert-warning" MsgCumulativeWeightNotNormal
-  loc <- maybe "en" (Locale . unpack) . LS.head <$> languages
-  unless (null selected) $ addMessageI "alert-info"
-    (MsgTotalValue (fmtDbl ".######" loc $ calcLevelWeight selected trees))
-  msgs <- getMessages
-  defaultLayout $ do
-    setTitleI MsgEditSkills
-    let params = [("desc","id"),("offset","0"),("limit","5")]
-    ult <- getUrlRenderParams >>= \rndr -> fromMaybe (rndr JobsR params) <$> lookupSession ultDestKey
-    $(widgetFile "jobs/skills")
+    selected <- fromMaybe [] . mapM ((toSqlKey <$>) . readMaybe . unpack) <$> lookupGetParams "jsid"
+    job <- runDB $ get jid
+    skills <- runDB $ fetchJobSkills jid :: HandlerFor App [(Entity JobSkill, Entity Skill)]
+    let trees = bldTree skills
+    skillPool <- runDB $ fetchJoblessSkills (snd <$> skills)
+    location <- getUrlRender >>= \rndr -> return $ rndr (JobSkillsEditFormR jid)
+    (fw,fe) <- generateFormPost $ formSkills trees (fmtDbl ".######" (Locale "en")) selected
+    when (any (> 1) (weightLevels trees)) $ addMessageI "alert-warning" MsgCumulativeWeightNotNormal
+    loc <- maybe "en" (Locale . unpack) . LS.head <$> languages
+    unless (null selected) $ addMessageI "alert-info"
+        (MsgTotalValue (fmtDbl ".######" loc $ calcLevelWeight selected trees))
+    msgs <- getMessages
+    defaultLayout $ do
+        setTitleI MsgEditSkills
+        let params = [("desc","id"),("offset","0"),("limit","5")]
+        ult <- getUrlRenderParams >>= \rndr -> fromMaybe (rndr JobsR params) <$> lookupSession ultDestKey
+        $(widgetFile "jobs/skills")
 
 
 calcLevelWeight :: [JobSkillId] -> [Tree (Entity JobSkill, Entity Skill)] -> Double
 calcLevelWeight _ [] = 0
 calcLevelWeight jsids ((Node (Entity jsid (JobSkill _ _ w _ _),_) []):rs)
-  | jsid `elem` jsids = w + calcLevelWeight jsids rs
-  | otherwise = calcLevelWeight jsids rs
+    | jsid `elem` jsids = w + calcLevelWeight jsids rs
+    | otherwise = calcLevelWeight jsids rs
 calcLevelWeight jsids ((Node (Entity jsid (JobSkill _ _ w _ _),_) cs):rs)
-  | (jsid `elem` jsids) && hasSelectedChildren jsids cs = (w * calcLevelWeight jsids cs) + calcLevelWeight jsids rs
-  | (jsid `elem` jsids) && not (hasSelectedChildren jsids cs) = w + calcLevelWeight jsids rs
-  | otherwise = calcLevelWeight jsids cs + calcLevelWeight jsids rs
+    | (jsid `elem` jsids) && hasSelectedChildren jsids cs = (w * calcLevelWeight jsids cs) + calcLevelWeight jsids rs
+    | (jsid `elem` jsids) && not (hasSelectedChildren jsids cs) = w + calcLevelWeight jsids rs
+    | otherwise = calcLevelWeight jsids cs + calcLevelWeight jsids rs
 
   where
     hasSelectedChildren :: [JobSkillId] -> [Tree (Entity JobSkill, Entity Skill)] -> Bool
@@ -350,68 +350,71 @@ calcLevelWeight jsids ((Node (Entity jsid (JobSkill _ _ w _ _),_) cs):rs)
 
 weightLevels :: [Tree (Entity JobSkill, Entity Skill)] -> [Double]
 weightLevels trees =
-  sum ((\(Node (Entity _ (JobSkill _ _ w _ _),_) _) -> w) <$> trees) : concatMap weightTree trees
+    sum ((\(Node (Entity _ (JobSkill _ _ w _ _),_) _) -> w) <$> trees) : concatMap weightTree trees
 
 
 weightTree :: Tree (Entity JobSkill, Entity Skill) -> [Double]
 weightTree (Node _ []) = [0]
 weightTree (Node _ xs@(c:_)) =
-  sum ((\(Node (Entity _ (JobSkill _ _ w _ _),_) _) -> w) <$> xs) : weightTree c
+    sum ((\(Node (Entity _ (JobSkill _ _ w _ _),_) _) -> w) <$> xs) : weightTree c
 
 
 getJobEditFormR :: JobId -> HandlerFor App Html
 getJobEditFormR jid = do
-  selected <- fromMaybe [] . mapM ((toSqlKey <$>) . readMaybe . unpack) <$> lookupGetParams "jsid"
-  tab <- fromMaybe 0 <$> runInputGet (iopt intField "tab") :: HandlerFor App Int
-  job <- runDB $ selectOne $ do
-    x <- from $ table @Job
-    where_ $ x ^. JobId ==. val jid
-    return x
-  skills <- runDB $ fetchJobSkills jid :: HandlerFor App [(Entity JobSkill, Entity Skill)]
-  let trees = bldTree skills
-  skillPool <- runDB $ fetchJoblessSkills (snd <$> skills)
-  (widget,enctype) <- generateFormPost $ formJob job False
-  location <- getUrlRenderParams >>= \rndr -> return $ rndr (JobEditFormR jid) [("tab","1")]
-  (fw,fe) <- generateFormPost $ formSkills trees (fmtDbl ".######" (Locale "en")) selected
-  when (any (> 1) (weightLevels trees)) $ addMessageI "alert-warning tab-1" MsgCumulativeWeightNotNormal
-  loc <- maybe "en" (Locale . unpack) . LS.head <$> languages
-  unless (null selected) $ addMessageI "alert-info tab-1"
-    (MsgTotalValue (fmtDbl ".######" loc $ calcLevelWeight selected trees))
-  msgs <- getMessages
-  defaultLayout $ do
-    setTitleI MsgEditPosition
-    let params = [("desc","id"),("offset","0"),("limit","5")]
-    rndr <- getUrlRenderParams
-    ult <- fromMaybe (rndr JobsR params) <$> lookupSession ultDestKey
-    $(widgetFile "jobs/edit")
+    selected <- fromMaybe [] . mapM ((toSqlKey <$>) . readMaybe . unpack) <$> lookupGetParams "jsid"
+    tab <- fromMaybe 0 <$> runInputGet (iopt intField "tab") :: HandlerFor App Int
+    
+    job <- runDB $ selectOne $ do
+        x <- from $ table @Job
+        where_ $ x ^. JobId ==. val jid
+        return x
+      
+    skills <- runDB $ fetchJobSkills jid :: HandlerFor App [(Entity JobSkill, Entity Skill)]
+    let trees = bldTree skills
+    skillPool <- runDB $ fetchJoblessSkills (snd <$> skills)
+    (widget,enctype) <- generateFormPost $ formJob job False
+    location <- getUrlRenderParams >>= \rndr -> return $ rndr (JobEditFormR jid) [("tab","1")]
+    (fw,fe) <- generateFormPost $ formSkills trees (fmtDbl ".######" (Locale "en")) selected
+    when (any (> 1) (weightLevels trees)) $ addMessageI "alert-warning tab-1" MsgCumulativeWeightNotNormal
+    loc <- maybe "en" (Locale . unpack) . LS.head <$> languages
+    unless (null selected) $ addMessageI "alert-info tab-1"
+        (MsgTotalValue (fmtDbl ".######" loc $ calcLevelWeight selected trees))
+        
+    msgs <- getMessages
+    defaultLayout $ do
+        setTitleI MsgEditPosition
+        let params = [("desc","id"),("offset","0"),("limit","5")]
+        rndr <- getUrlRenderParams
+        ult <- fromMaybe (rndr JobsR params) <$> lookupSession ultDestKey
+        $(widgetFile "jobs/edit")
 
 
 getJobCreateFormR :: HandlerFor App Html
 getJobCreateFormR = do
-  (widget,enctype) <- generateFormPost $ formJob Nothing False
-  msgs <- getMessages
-  defaultLayout $ do
-    setTitleI MsgCreatePosition
-    ult <- lookupSession ultDestKey
-    $(widgetFile "jobs/create")
+    (widget,enctype) <- generateFormPost $ formJob Nothing False
+    msgs <- getMessages
+    defaultLayout $ do
+        setTitleI MsgCreatePosition
+        ult <- lookupSession ultDestKey
+        $(widgetFile "jobs/create")
 
 
 formJob :: Maybe (Entity Job) -> Bool -> Html -> MForm (HandlerFor App) (FormResult Job, WidgetFor App ())
 formJob job isPost extra = do
-  (codeR, codeV) <- mreq uniqueTextField (fs MsgCode) (jobCode . entityVal <$> job)
-  (nameR, nameV) <- mreq textField (fs MsgName) (jobName . entityVal <$> job)
-  (dayStartR, dayStartV) <- mreq dayField (fs MsgDayStart) (jobDayStart . entityVal <$> job)
-  (dayEndR, dayEndV) <- mreq (afterDayField dayStartR) (fs MsgDayEnd) (jobDayEnd . entityVal <$> job)
-  (descrR, descrV) <- mopt textareaField (fs MsgDescription) (jobDescr . entityVal <$> job)
+    (codeR, codeV) <- mreq uniqueTextField (fs MsgCode) (jobCode . entityVal <$> job)
+    (nameR, nameV) <- mreq textField (fs MsgName) (jobName . entityVal <$> job)
+    (dayStartR, dayStartV) <- mreq dayField (fs MsgDayStart) (jobDayStart . entityVal <$> job)
+    (dayEndR, dayEndV) <- mreq (afterDayField dayStartR) (fs MsgDayEnd) (jobDayEnd . entityVal <$> job)
+    (descrR, descrV) <- mopt textareaField (fs MsgDescription) (jobDescr . entityVal <$> job)
 
-  depts <- lift $ runDB $ selectList [] [Asc DeptName]
-  (deptR,deptV) <- mopt
-    (selectFieldList $ (\(Entity ident (Dept name _)) -> (name,ident)) <$> depts)
-    (fs MsgDivision)
-    (jobDept . entityVal <$> job)
+    depts <- lift $ runDB $ selectList [] [Asc DeptName]
+    (deptR,deptV) <- mopt
+        (selectFieldList $ (\(Entity ident (Dept name _)) -> (name,ident)) <$> depts)
+        (fs MsgDivision)
+        (jobDept . entityVal <$> job)
 
-  let r = Job <$> codeR <*> nameR <*> dayStartR <*> dayEndR <*> descrR <*> deptR
-  let w = [whamlet|
+    let r = Job <$> codeR <*> nameR <*> dayStartR <*> dayEndR <*> descrR <*> deptR
+    let w = [whamlet|
 #{extra}
 <div.d-flex.flex-column.gap-2>
   $forall v <- [codeV,nameV,dayStartV,dayEndV,descrV,deptV]
@@ -425,29 +428,29 @@ formJob job isPost extra = do
           #{errs}
 |]
 
-  return (r,w)
+    return (r,w)
   where
-    fs :: AppMessage -> FieldSettings App
-    fs lbl = FieldSettings (SomeMessage lbl) Nothing Nothing Nothing [("class","form-control")]
+      fs :: AppMessage -> FieldSettings App
+      fs lbl = FieldSettings (SomeMessage lbl) Nothing Nothing Nothing [("class","form-control")]
+    
+      afterDayField (FormSuccess x) = checkM (afterDay x) dayField
+      afterDayField _ = dayField
 
-    afterDayField (FormSuccess x) = checkM (afterDay x) dayField
-    afterDayField _ = dayField
+      afterDay :: Day -> Day -> HandlerFor App (Either AppMessage Day)
+      afterDay x y = return $ if y < x then Left MsgInvalidEndDay else Right y
 
-    afterDay :: Day -> Day -> HandlerFor App (Either AppMessage Day)
-    afterDay x y = return $ if y < x then Left MsgInvalidEndDay else Right y
+      uniqueTextField = checkM checkUniqueCode textField
 
-    uniqueTextField = checkM checkUniqueCode textField
-
-    checkUniqueCode :: Text -> HandlerFor App (Either AppMessage Text)
-    checkUniqueCode code = do
-      isDup <- (isJust <$>) <$> runDB $ selectOne $ do
-        x <- from $ table @Job
-        where_ $ x ^. JobCode ==. val code
-        case job of
-          Just (Entity jid _) -> where_ $ not_ (x ^. JobId ==. val jid)
-          Nothing -> return ()
-        return x
-      return $ if isDup then Left MsgDuplicateCode else Right code
+      checkUniqueCode :: Text -> HandlerFor App (Either AppMessage Text)
+      checkUniqueCode code = do
+          isDup <- (isJust <$>) <$> runDB $ selectOne $ do
+              x <- from $ table @Job
+              where_ $ x ^. JobCode ==. val code
+              case job of
+                Just (Entity jid _) -> where_ $ not_ (x ^. JobId ==. val jid)
+                Nothing -> return ()
+              return x
+          return $ if isDup then Left MsgDuplicateCode else Right code
 
 
 fetchJobSkillN :: MonadIO m => JobId -> ReaderT SqlBackend m Int

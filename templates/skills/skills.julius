@@ -5,6 +5,15 @@
   });
 });
 
+[['selectLimit','selectLimit2'],['selectLimit2','selectLimit']].map(
+  ([x,y]) => [document.getElementById(x),document.getElementById(y)]
+).forEach(([x,y]) => {
+  x.addEventListener('change', e => {
+    y.value = e.target.value;
+    document.getElementById('qform').submit();
+  });
+});
+
 Array.from(
   document.body.querySelectorAll('button.sort')
 ).forEach(x => {
@@ -60,21 +69,6 @@ Array.from(
     document.body.querySelector('input[name=offset]').value = 0;
   });
 });
-
-
-/*
-[["last",#{rawJS $ show maxo}],
- ["next",#{rawJS $ show next}],
- ["prev",#{rawJS $ show prev}],
- ["first",0]
-].map(([a,x]) => [document.body.querySelector(`button[rel=${a}]`),x]).forEach(([button,x]) => {
-  console.log('button: ',button);
-  console.log('x: ',x);
-  button.addEventListener('click',function (e) {
-    document.body.querySelector('input[name=offset]').value = x;
-  });
-});
-*/
 
 document.getElementById(#{idButtonSkillDelete}).addEventListener('click',(e) => {
   fetch(e.target.dataset.url, {

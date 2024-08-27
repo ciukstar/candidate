@@ -1,3 +1,4 @@
+UseCaseDiagram: Diagramme de cas d'utilisation
 SelectPositionToRankCandidates: Sélectionnez une position pour classer les candidats
 Docs: Documentation
 WelcomeTo: Bienvenue sur
@@ -123,7 +124,8 @@ MetaKeywords: Classement, Compétences, Agrégation, Hiérarchique
 MetaDescription: Classement hiérarchique, Sélection des candidats sur la base d'une hiérarchie d'attributs, Aggregating hierarchical rankings of skills
 
 Doc1: Classement des candidats
-Doc11: Cette application fournit une méthode simple pour agréger les classements hiérarchiques. L'application aide à prendre des décisions sur la sélection des candidats en fonction d'une hiérarchie d'attributs, de compétences et de leur poids
+Doc11: Cette application fournit une méthode simple pour agréger les classements hiérarchiques.
+Doc111: L'application aide à prendre des décisions sur la sélection des candidats en fonction d'une hiérarchie d'attributs, de compétences et de leur poids
 Doc12: Les Compétences requises par un Poste doivent être définies dans le dictionnaire
 Doc13: Les Postes et leurs Compétences requises sont définis dans la section
 Doc14: Les Demandeurs et leurs compétences sont ajoutés dans la section

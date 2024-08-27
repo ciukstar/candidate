@@ -1,5 +1,6 @@
 
-<h1>_{MsgCandidate}
+<h1>
+  _{MsgCandidate}
 
 $maybe (Entity _ (Job _ name _ _ _ _), _) <- mjob
   <div.display-6.mb-3>

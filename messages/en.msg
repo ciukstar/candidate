@@ -1,3 +1,4 @@
+UseCaseDiagram: Use Case Diagram
 SelectPositionToRankCandidates: Select a position to rank candidates
 Docs: Docs
 WelcomeTo: Welcome to
@@ -123,7 +124,8 @@ MetaKeywords: Ranking, Skills, Aggregation, Hierarchical
 MetaDescription: Hierarchical ranking, Selection of candidates based on a hierarchy of attributes, Aggregating hierarchical rankings of skills
 
 Doc1: Candidate Ranking
-Doc11: This application provides a simple method for aggregating hierarchical rankings. The application helps to make decisions about the selection of candidates based on a hierarchy of attributes, skills and their weight
+Doc11: This application provides a simple method for aggregating hierarchical rankings
+Doc111: The application helps to make decisions about the selection of candidates based on a hierarchy of attributes, skills and their weight
 Doc12: The skills required by a job position should be defined in the dictionary
 Doc13: Job positions and their required skills are defined in the section
 Doc14: Applicants and their skills are added in the section

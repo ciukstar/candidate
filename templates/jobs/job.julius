@@ -1,8 +1,11 @@
 
-$('ul[role=tree] li[role=treeitem] button.chevron').click(function (e) {
-  $.ajax({
-    method: 'PUT',
-    url: this.dataset.url,
-    data: `expanded=${this.getAttribute('aria-expanded')}`
-  })
-})
+Array.form(
+  document.querySelectorAll('ul[role=tree] li[role=treeitem] button.chevron')
+).forEach((x) => {
+  x.addEventListener('click', function (e) {
+    fetch(e.target.dataset.url, {
+      method: 'PUT',
+      body: `expanded=${this.getAttribute('aria-expanded')}`
+    });
+  });
+});

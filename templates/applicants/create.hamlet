@@ -21,11 +21,11 @@
 
   <form method=post action=@{ApplicantsR} enctype=#{enctype} novalidate>
     ^{widget}
-    <div.mt-3>
+    <div.mt-3.text-end>
+      <a.btn.btn-light href=#{ult} rel=collection role=button>
+        _{MsgCancel}
       <button.btn.btn-primary type=submit>
         _{MsgSave}
-      <a.btn.btn-secondary href=#{ult} rel=collection role=button>
-        _{MsgCancel}
 
 $forall (status,msg) <- filter (isInfixOf "toast" . fst) msgs
   <div.toast-container.p-3.bottom-0.start-50.translate-middle-x>

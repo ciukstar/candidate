@@ -8,11 +8,19 @@
         <a href=#{dest} rel=collection>
           _{MsgPositions}
       $nothing
-        <a href="@{JobsR}?desc=id&offset=0&limit=5" rel=collection>
+        <a href=@?{(JobsR,[("desc","id"),("offset","0"),("limit","5")])} rel=collection>
           _{MsgPositions}
     <li.breadcrumb-item.active aria-current=page>_{MsgPosition}
 
-<h1>_{MsgPosition}
+<h1>
+  $maybe dest <- ult
+    <a.btn.btn-light.border-0.rounded-circle role=button href=#{dest} rel=collection aria-label=_{MsgBack}>
+      <i.bi.bi-chevron-left>
+  $nothing
+    <a.btn.btn-light.border-0.rounded-circle role=button aria-label=_{MsgBack}
+      href=@?{(JobsR,[("desc","id"),("offset","0"),("limit","5")])}>
+      <i.bi.bi-chevron-left>
+  _{MsgPosition}
 
 <fieldset.p-3.my-3.border.rounded>
   <legend.display-6>_{MsgAttributes}
@@ -25,11 +33,12 @@
   <form method=post action=@{JobsR} rel=edit enctype=#{enctype} novalidate>
     <div.pb-3>
       ^{widget}
-    <button.btn.btn-primary type=submit>
-      _{MsgSave}
-    $maybe dest <- ult
-      <a.btn.btn-secondary role=button href=#{dest} rel=collection>
-        _{MsgCancel}
-    $nothing
-      <a.btn.btn-secondary role=button href="@{JobsR}?desc=id&offset=0&limit=5">
-        _{MsgCancel}
+    <div.text-end>
+      $maybe dest <- ult
+        <a.btn.btn-light role=button href=#{dest} rel=collection>
+          _{MsgCancel}
+      $nothing
+        <a.btn.btn-light role=button href=@?{(JobsR,[("desc","id"),("offset","0"),("limit","5")])}>
+          _{MsgCancel}
+      <button.btn.btn-primary type=submit>
+        _{MsgSave}

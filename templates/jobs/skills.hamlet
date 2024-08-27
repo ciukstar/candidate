@@ -7,7 +7,10 @@
     <li.breadcrumb-item.active aria-current=page>_{MsgSkills}
 
 $maybe Job _ name _ _ _ _ <- job
-  <h1>#{name}
+  <h1>
+    <a.btn.btn-light.border-0.rounded-circle href=#{ult} rel=collection role=button aria-label=_{MsgBack}>
+      <i.bi.bi-chevron-left>
+    #{name}
 
 <fieldset.border.rounded.p-3>
   <legend.display-6>_{MsgSkills}
@@ -30,17 +33,13 @@ $maybe Job _ name _ _ _ _ <- job
     <input type=url name=location value=@{JobSkillsEditFormR jid} hidden>
     ^{fw}
 
-  <div.mt-3>
+  <div.text-end.mt-3>
     <a.btn.btn-light.mt-3 href=#{ult} role=button>
       _{MsgCancel}
     <button.btn.btn-success.mt-3 type=button data-bs-toggle=modal data-bs-target=#modalSkills>
       _{MsgAdd}
     <button.btn.btn-primary.mt-3 type=submit form=formPostJobSkillWeights>
       _{MsgSave}
-
-<a.btn.btn-sm.btn-outline-secondary.my-3 href=#{ult} rel=collection role=button>
-  <i.bi.bi-arrow-left>
-  _{MsgBack}
 
 
 <div.modal.fade #modalSkills tabindex=-1 aria-hidden=true aria-label=_{MsgSkills}>
@@ -52,7 +51,7 @@ $maybe Job _ name _ _ _ _ <- job
       <div.modal-header.border-top-0.mt-0.pt-0>
         <div.input-group>
           <i.bi.bi-search.input-group-text>
-          <input.form-control type=search placeholder=_{MsgSearch}>
+          <input.form-control type=search placeholder=_{MsgSearch} #inputSearchSkills>
       <div.modal-body>
         <form #formSkills method=post action=@{JobSkillsR jid}>
           <input type=url name=location value=@{JobSkillsEditFormR jid} required hidden>
@@ -81,7 +80,7 @@ $forall (Entity jsid (JobSkill _ _ _ _ _), Entity _ (Skill code _ _ _)) <- skill
         <div.modal-header.border-top-0.mt-0.pt-0>
           <div.input-group>
             <i.bi.bi-search.input-group-text>
-            <input.form-control type=search placeholder=_{MsgSearch} #inputSearchSkills>
+            <input.form-control type=search placeholder=_{MsgSearch} #inputSearchSkills#{fromSqlKey jsid}>
         <div.modal-body>
           <form #formChildSkills#{fromSqlKey jsid} method=post action=@{JobSkillsR jid}>
             <input type=url name=location value=#{location} required hidden>

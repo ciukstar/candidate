@@ -54,8 +54,7 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
             <small>
               <small>
                 <small.fw-light>_{MsgRowsPerPage}
-            <select.form-select #selectLimit2 
-              onchange="$('#selectLimit').val($(this).val());$('#qform').submit()">
+            <select.form-select #selectLimit2>
               
               <option value=3 :Just 3 == mlimit:selected>3
               <option value=4 :Just 4 == mlimit:selected>4
@@ -86,8 +85,8 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
           <li.list-group-item>
             <img.photo.rounded-circle src=@{AppPhotoR aid} height=48 width=48
               alt=_{MsgPhoto} onerror="this.src='@{PhotoPlaceholderR}'">
-            <a.applicant.app-link.lh-1 href=@{ApplicantR aid}?tab=0 rel=item>
-              <span.fs-5.fw-bold>
+            <a.applicant.app-link.lh-1 href=@?{(ApplicantR aid,[("tab","0")])} rel=item>
+              <span.fs-5>
                 $maybe p <- mp
                   #{s} #{n} #{p}
                 $nothing
@@ -146,7 +145,7 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
         <div>
           <label.fw-light for=selectLimit>
             <small>_{MsgRowsPerPage}
-          <select.form-select name=limit form=qform #selectLimit onchange="this.form.submit()">
+          <select.form-select name=limit form=qform #selectLimit>
             <option value=3 :Just 3 == mlimit:selected>3
             <option value=4 :Just 4 == mlimit:selected>4
             <option value=5 :Just 5 == mlimit:selected>5

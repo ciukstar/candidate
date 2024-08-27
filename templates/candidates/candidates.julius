@@ -1,18 +1,13 @@
 
-$('#inputSearchApplicants').on('input', e => {
-  var skey = e.target.value.toLowerCase();
-  var items = $('.modal#applicants .modal-body ul > li');
-  items.hide();
-  items.filter(
-    (i,x) => $(x).children('label').text().toLowerCase().indexOf(skey) >= 0
-  ).show();
-})
-
-$('#inputSearchJobs').on('input', e => {
-  var skey = e.target.value.toLowerCase();
-  var items = $('.modal#positions .modal-body ul > li');
-  items.hide();
-  items.filter(
-    (i,x) => $(x).children('label').text().toLowerCase().indexOf(skey) >= 0
-  ).show();
-})
+[['idModalPositions','inputSearchJobs'],['idModalApplicants','inputSearchApplicants']].map(
+  ([dialog,input]) => [document.getElementById(dialog),document.getElementById(input)]
+).forEach(([dialog,input]) => {
+  input.addEventListener('input', (e) => {
+    var skey = e.target.value.toLowerCase();
+    var items = Array.from(dialog.querySelectorAll('.modal-body ul > li'));
+    items.forEach(x => { x.setAttribute('hidden',''); });
+    items.filter(
+      (x) => x.querySelector('label').textContent.toLowerCase().indexOf(skey) >= 0
+    ).forEach(x => { x.removeAttribute('hidden'); });
+  });
+});

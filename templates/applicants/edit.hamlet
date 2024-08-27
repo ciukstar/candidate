@@ -7,7 +7,11 @@
     <li.breadcrumb-item.active aria-current=page>
       _{MsgApplicant}
 
-<h1>_{MsgApplicant}: _{MsgNumberSign}#{fromSqlKey aid}
+<h1>
+  <a.btn.btn-ligt.border-0.rounded-circle href=#{ult} role=button rel=collection aria-label=_{MsgBack}>
+    <i.bi.bi-chevron-left>
+    
+  _{MsgApplicant}: _{MsgNumberSign}#{fromSqlKey aid}
 
 <div.d-flex.flex-row.gap-lg-5>
   <div.flex-grow-1.d-flex.flex-column.gap-3>
@@ -31,11 +35,12 @@
             <form method=post action=@{ApplicantR aid} enctype=#{fe} novalidate>
               <div.flex-column>
                 ^{fw}
-              <div.mt-3>
+              <div.mt-3.text-end>
+                <a.btn.btn-light role=button href=#{ult} rel=collection>
+                  _{MsgCancel}
                 <button.btn.btn-primary type=submit>
                   _{MsgSave}
-                <a.btn.btn-secondary role=button href=#{ult} rel=collection>
-                  _{MsgCancel}
+                  
       <div.accordion-item>
         <h2.accordion-header #accordionHeaderSkills>
           <button.accordion-button.py-2.px-3 :tab /= 1:.collapsed type=button :tab == 1:autofocus
@@ -53,21 +58,16 @@
                 <button.btn-close type=button data-bs-dismiss=alert aria-label=_{MsgClose}>
 
             <form method=post action=@{ApplicantSkillsR aid} #formPostSkills enctype=#{sfe} novalidate>
-              <input type=url name=location value=@{ApplicantEditFormR aid}?tab=1 hidden>
+              <input type=url name=location value=@?{(ApplicantEditFormR aid,[("tab","1")])} hidden>
               ^{sfw}
 
-              <div.d-flex.flex-row.gap-2>
+              <div.text-end>
+                <a.btn.btn-light href=#{ult} role=button>
+                  _{MsgCancel}
                 <button.btn.btn-success type=button data-bs-toggle=modal data-bs-target=#modalSkills>
                   _{MsgAdd}
                 <button.btn.btn-primary type=submit form=formPostSkills>
                   _{MsgSave}
-                <a.btn.btn-secondary href=#{ult} role=button>
-                  _{MsgCancel}
-
-    <nav>
-      <a.btn.btn-sm.btn-outline-secondary href=#{ult} role=button rel=collection>
-        <i.bi.bi-arrow-left>
-        _{MsgBack}
 
   <aside>
     <div.offcanvas-lg.offcanvas-end tabindex=-1 #offcanvasMainRight>
@@ -100,10 +100,10 @@ $forall (Entity asid (AppSkill aid _ _), Entity sid (Skill _ name _ _)) <- appSk
           <code>_{MsgInQuotes name}
           <h4>_{MsgReallyRemove}
         <div.modal-footer>
-          <button.btn.btn-primary.delete type=button data-url=@{AppSkillR aid sid}>
-            _{MsgRemove}
-          <button.btn.btn-secondary type=button data-bs-dismiss=modal>
+          <button.btn.btn-light type=button data-bs-dismiss=modal>
             _{MsgCancel}
+          <button.btn.btn-warning.delete type=button data-url=@{AppSkillR aid sid}>
+            _{MsgRemove}
 
 <div.modal #modalSkills tabindex=-1 aria-hidden=true>
   <div.modal-dialog.modal-dialog-scrollable>
@@ -127,10 +127,10 @@ $forall (Entity asid (AppSkill aid _ _), Entity sid (Skill _ name _ _)) <- appSk
                 <label.form-check-label.text-wrap.lh-1 for=inputSkill#{fromSqlKey sid} title=_{code}>
                   #{name}
       <div.modal-footer>
+        <button.btn.btn-light type=button data-bs-dismiss=modal>
+          _{MsgCancel}
         <button.btn.btn-primary type=submit form=formSkills>
           _{MsgSelect}
-        <button.btn.btn-secondary type=button data-bs-dismiss=modal>
-          _{MsgCancel}
 
 $forall (status,msg) <- filter (isInfixOf "toast" . fst) msgs
   <div.toast-container.p-3.bottom-0.start-50.translate-middle-x>

@@ -1,3 +1,4 @@
+UseCaseDiagram: Diagrama cazurilor de utilizare
 SelectPositionToRankCandidates: Selectați o poziție pentru a clasifica candidații
 Docs: Documentația
 WelcomeTo: Bun venit la
@@ -123,7 +124,8 @@ MetaKeywords: Clasament, aptitudini, agregare, ierarhic
 MetaDescription: Clasament ierarhic, Selectarea candidaților pe baza unei ierarhii de atribute, Agregarea clasamentelor ierarhice a competențelor
 
 Doc1: Clasamentul candidaților
-Doc11: Această aplicație oferă o metodă simplă de agregare a clasamentelor ierarhice. Aplicația ajută la luarea deciziilor cu privire la selecția candidaților pe baza unei ierarhii de atribute, abilități și ponderea acestora
+Doc11: Această aplicație oferă o metodă simplă de agregare a clasamentelor ierarhice.
+Doc111: Aplicația ajută la luarea deciziilor cu privire la selecția candidaților pe baza unei ierarhii de atribute, abilități și ponderea acestora
 Doc12: Abilitățile cerute de un loc de muncă ar trebui să fie definite în dicționar
 Doc13: Posturile de muncă și competențele lor necesare sunt definite în secțiune
 Doc14: Solicitanții și abilitățile lor sunt adăugate în secțiune

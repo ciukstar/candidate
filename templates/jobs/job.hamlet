@@ -6,7 +6,10 @@
       <a href=#{ult} rel=collection>_{MsgPositions}
     <li.breadcrumb-item.active aria-current=page>_{MsgPosition}
 
-<h1>_{MsgPosition}: _{MsgNumberSign}#{fromSqlKey jid}
+<h1>
+  <a.btn.btn-light.border-0.rounded-circle role=button href=#{ult} rel=collection aria-label=_{MsgBack}>
+    <i.bi.bi-chevron-left>
+  _{MsgPosition}: _{MsgNumberSign}#{fromSqlKey jid}
 
 <div.d-flex.gap-lg-5>
   <div.flex-grow-1.d-flex.flex-column.gap-3>
@@ -68,10 +71,6 @@
             <ul role=tree>
               ^{rndrTree (fmtDbl ".######" loc) trees}
 
-    <nav>
-      <a.btn.btn-sm.btn-outline-secondary role=button href=#{ult} rel=collection>
-        <i.bi.bi-arrow-left>
-        _{MsgBack}
 
   <aside>
     <div.offcanvas-lg.offcanvas-end tabindex=-1 #offcanvasMainRight>

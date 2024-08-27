@@ -1,0 +1,18 @@
+
+document.querySelectorAll(
+  'div.is-invalid > input'
+).forEach(function (x) { x.classList.add('is-invalid') });
+
+document.querySelectorAll(
+  'div.is-valid > input'
+).forEach(function (x) { x.classList.add('is-valid') });
+
+
+const fr = new FileReader();
+fr.addEventListener('load', (e) => {
+  document.getElementById(#{idImgPhoto}).setAttribute('src',e.target.result);
+});
+
+document.getElementById(#{fvId fV}).addEventListener('change', function (e) {
+  fr.readAsDataURL(e.target.files[0]);
+});

@@ -1,38 +1,44 @@
 
 document.querySelectorAll(
   'div.is-invalid > input,div.is-invalid > textarea,div.is-invalid > select'
-).forEach(function (x) {
-  x.classList.add('is-invalid');
-})
+).forEach(function (x) { x.classList.add('is-invalid'); });
 
 document.querySelectorAll(
   'div.is-valid > input,div.is-valid > textarea,div.is-valid > select'
-).forEach(function (x) {
-  x.classList.add('is-valid');
-})
+).forEach(function (x) { x.classList.add('is-valid'); });
 
-$('input#inputSearchSkills').on('input', function (e) {
-  var skey = e.target.value.toLowerCase();
-  var items = $('.modal.skillOptions .modal-body ul > li');
-  items.hide();
-  items.filter(
-    (i,x) => $(x).children('label').text().toLowerCase().indexOf(skey) >= 0
-  ).show();
-})
+Array.from(
+  document.body.querySelectorAll('.modal.skillOptions')
+).map(dialog => [dialog,dialog.querySelector('input[type=search]')]).forEach(([dialog,input]) => {
+  input.addEventListener('input', function (e) {
+    var skey = e.target.value.toLowerCase();
+    var items = Array.from(dialog.querySelectorAll('.modal-body ul > li'));
+    items.forEach(x => { x.setAttribute('hidden',''); });
+    items.filter(
+      (x) => x.querySelector('label').textContent.toLowerCase().indexOf(skey) >= 0
+    ).forEach(x => { x.removeAttribute('hidden'); });
+  });
+});
 
-$('ul[role=tree] li[role=treeitem] button.chevron').click(function (e) {
-  $.ajax({
-    method: 'PUT',
-    url: this.dataset.url,
-    data: `expanded=${this.getAttribute('aria-expanded')}`
+Array.from(
+  document.body.querySelectorAll('ul[role=tree] li[role=treeitem] button.chevron')
+).forEach(x => {
+  x.addEventListener('click',function (e) {
+    fetch(e.target.dataset.url, {
+      method: 'PUT',
+      data: `expanded=${this.getAttribute('aria-expanded')}`
+    });
+  });
+});
+
+Array.from(
+  document.body.querySelectorAll('button.delete')
+).forEach(x => {
+  x.addEventListener('click',function (e) {
+    fetch(e.target.dataset.url, {
+      method: 'DELETE'
+    }).then(res => {
+      window.location = '@?{(JobEditFormR jid,[("tab","1")])}';
+    });
   })
-})
-
-$('button.delete').click(function () {
-  $.ajax({
-    method: 'DELETE',
-    url: this.dataset.url
-  }).done(function () {
-    window.location = '@{JobEditFormR jid}?tab=1';
-  })
-})
+});

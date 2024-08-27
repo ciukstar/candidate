@@ -4,9 +4,14 @@
 
 # Classement des candidats
 
-Cette application fournit une méthode simple pour agréger les classements hiérarchiques. L'application aide à prendre des décisions sur la sélection des candidats en fonction d'une hiérarchie d'attributs, de compétences et de leur poids.
+Cette application fournit une méthode simple pour agréger les classements hiérarchiques. 
+
+L'application aide à prendre des décisions sur la sélection des candidats en fonction d'une hiérarchie d'attributs, de compétences et de leur poids.
 
 ## Aperçu
+
+*Diagramme de cas d'utilisation*  
+![Diagramme de cas d'utilisation](static/img/Candidate_UCD.svg)
 
 Les Compétences requises par un Poste doivent être définies dans le dictionnaire [Compétences](https://candidatefr-i4rimw5qwq-de.a.run.app/skills?desc=id&offset=0&limit=5).
 
@@ -36,7 +41,7 @@ Un Demandeur est l'entité dont les Compétences seront mises en correspondance 
 
 Un Candidat est un Demandeur dont les Compétences ont été comparées à celles d'un Poste particulier et pour lequel un poids global (classement) est calculé pour le distinguer des autres candidats pour le même poste.
 
-*Diagramme entité-relation*
+*Diagramme entité-relation*  
 ![Entity Relationship Diagram](static/img/Candidate_ERD.svg)
 
 # Démo

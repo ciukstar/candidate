@@ -6,10 +6,14 @@
       <a href=#{ult} rel=collection>_{MsgPositions}
     <li.breadcrumb-item.active aria-current=page>_{MsgCandidates}
 
-<h1>_{MsgCandidates}
+<h1>
+  <a.btn.btn-light.border-0.rounded-circle href=#{ult} role=button aria-label=_{MsgBack}>
+    <i.bi.bi-chevron-left>
+    
+  _{MsgCandidates}
 
 $maybe (Entity jid (Job _ name _ _ _ _), jobSkills) <- job
-  <h2.flex-grow-1.fw-light.lh-1>
+  <h2.flex-grow-1.fw-light.lh-1 #idJobName>
     #{name}
   $with weights <- filter gtZero $ calcWeights appSkills jobSkills
     <ul.d-block.d-lg-none.list-group #listGroupCandidates>
@@ -64,7 +68,3 @@ $maybe (Entity jid (Job _ name _ _ _ _), jobSkills) <- job
                 <td.fw-light title=_{MsgExpertAssessment}>
                   $maybe (Entity _ (AppSkill _ _ weight)) <- filterAppSkills sid appSkills
                     #{fmtDbl ".##" loc weight}
-
-<a.btn.btn-sm.btn-outline-secondary.mt-3 href=#{ult} role=button>
-  <i.bi.bi-arrow-left>
-  _{MsgBack}

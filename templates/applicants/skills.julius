@@ -1,24 +1,31 @@
 
 document.querySelectorAll(
   'div.is-invalid > input'
-).forEach(function (x) {
-  x.classList.add('is-invalid')
-})
+).forEach(function (x) { x.classList.add('is-invalid') });
 
-$('input#modalInputSearchSkills').on('input', e => {
-  var skey = e.target.value.toLowerCase();
-  var items = $('.modal#modalSkills .modal-body ul > li');
-  items.hide();
-  items.filter(
-    (i,x) => $(x).children('label').text().toLowerCase().indexOf(skey) >= 0
-  ).show();
-})
+[ ['modalSkills', 'modalInputSearchSkills']
+].map(
+  ([dialog,input]) => [document.getElementById(dialog),document.getElementById(input)]
+).forEach(([dialog,input]) => {
+  input.addEventListener('input', e => {
+    var skey = e.target.value.toLowerCase();
+    var items = Array.from(dialog.querySelectorAll('.modal-body ul > li'));
+    items.forEach(x => { x.setAttribute('hidden',''); });
+    items.filter(
+      (x) => x.querySelector('label').textContent.toLowerCase().indexOf(skey) >= 0
+    ).forEach(x => { x.removeAttribute('hidden'); });
+  });
+});
 
-$('button.delete').click(function () {
-  $.ajax({
-    method: 'DELETE',
-    url: this.dataset.url
-  }).done(function () {
-    window.location = '@{AppSkillsEditFormR aid}';
-  })
-})
+
+Array.from(
+  document.body.querySelectorAll('button.delete')
+).forEach(x => {
+  x.addEventListener('click', e => {
+    fetch(x.dataset.url, {
+      method: 'DELETE'
+    }).then(function (x) {
+      window.location = '@{AppSkillsEditFormR aid}';
+    });
+  });
+});

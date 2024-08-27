@@ -6,7 +6,11 @@
       <a href=#{ult} rel=collection>_{MsgPositions}
     <li.breadcrumb-item.active aria-current=page>_{MsgPosition}
 
-<h1>_{MsgPosition}: _{MsgNumberSign}#{fromSqlKey jid}
+<h1>
+  <a.btn.btn-light.border-0.rounded-circle href=#{ult} role=button rel=collection aria-label=_{MsgBack}>
+    <i.bi.bi-chevron-left>
+      
+  _{MsgPosition}: _{MsgNumberSign}#{fromSqlKey jid}
 
 <div.d-flex.flex-row.gap-lg-5>
   <div.d-flex.flex-column.w-100>
@@ -32,10 +36,11 @@
             <form method=post action=@{JobR jid} enctype=#{enctype} novalidate>
               <div.pb-3>
                 ^{widget}
-              <button.btn.btn-primary type=submit>
-                _{MsgSave}
-              <a.btn.btn-secondary href=#{ult} rel=collection role=button>
-                _{MsgCancel}
+              <div.text-end>
+                <a.btn.btn-light href=#{ult} rel=collection role=button>
+                  _{MsgCancel}
+                <button.btn.btn-primary type=submit>
+                  _{MsgSave}
 
       <div.accordion-item>
         <h2.accordion-header #accordionHeaderSkills>
@@ -58,28 +63,23 @@
                 $else
                   <i.bi.bi-info-circle.me-2>
                   #{msg}
-                  <a.btn-close href=@{JobEditFormR jid}?tab=1 aria-label=_{MsgClose}>
+                  <a.btn-close href=@?{(JobEditFormR jid,[("tab","1")])} aria-label=_{MsgClose}>
 
             <form method=get action=@{JobEditFormR jid} enctype=#{fe} #formGetJobSkillWeights novalidate>
               <input type=number name=tab value=1 hidden>
 
             <form method=post action=@{JobSkillsEditR jid} enctype=#{fe} #formPostJobSkillWeights novalidate>
               <input type=submit hidden>
-              <input type=url name=location value=@{JobEditFormR jid}?tab=1 hidden>
+              <input type=url name=location value=@?{(JobEditFormR jid,[("tab","1")])} hidden>
               ^{fw}
 
-            <div.mt-3>
+            <div.mt-3.text-end>
+              <a.btn.btn-light.mt-3 href=#{ult} role=button>
+                _{MsgCancel}
               <button.btn.btn-success.mt-3 type=button data-bs-toggle=modal data-bs-target=#modalSkills>
                 _{MsgAdd}
               <button.btn.btn-primary.mt-3 type=submit form=formPostJobSkillWeights>
                 _{MsgSave}
-              <a.btn.btn-secondary.mt-3 href=#{ult} role=button>
-                _{MsgCancel}
-
-    <div.d-block>
-      <a.btn.btn-sm.btn-outline-secondary.my-3 href=#{ult} role=button rel=collection>
-        <i.bi.bi-arrow-left>
-        _{MsgBack}
 
   <aside>
     <div.offcanvas-lg.offcanvas-end tabindex=-1 #offcanvasMainRight>
@@ -122,10 +122,10 @@
                    #rootInputSkill#{fromSqlKey sid} required>
                 <label.form-check-label.text-wrap.lh-1 for=rootInputSkill#{fromSqlKey sid} title=#{code}>#{name}
       <div.modal-footer>
+        <button.btn.btn-light type=button data-bs-dismiss=modal>
+          _{MsgCancel}
         <button.btn.btn-primary type=submit form=formSkills>
           _{MsgSelect}
-        <button.btn.btn-secondary type=button data-bs-dismiss=modal>
-          _{MsgCancel}
 
 
 $forall (Entity jsid (JobSkill _ _ _ _ _), Entity _ (Skill code _ _ _)) <- skills
@@ -139,7 +139,7 @@ $forall (Entity jsid (JobSkill _ _ _ _ _), Entity _ (Skill code _ _ _)) <- skill
         <div.modal-header.border-top-0.mt-0.pt-0>
           <div.input-group>
             <i.bi.bi-search.input-group-text>
-            <input.form-control type=search placeholder=_{MsgSearch} #inputSearchSkills>
+            <input.form-control type=search placeholder=_{MsgSearch} #inputSearch#{fromSqlKey jsid}>
         <div.modal-body>
           <form #formChildSkills#{fromSqlKey jsid} method=post action=@{JobSkillsR jid}>
             <input type=url name=location value=#{location} required hidden>
@@ -153,10 +153,10 @@ $forall (Entity jsid (JobSkill _ _ _ _ _), Entity _ (Skill code _ _ _)) <- skill
                   <label.form-check-label.text-wrap.lh-1 for=inputRadio#{fromSqlKey jsid}#{fromSqlKey sid} title=#{code}>
                     #{name}
         <div.modal-footer>
+          <button.btn.btn-light type=button data-bs-dismiss=modal>
+            _{MsgCancel}
           <button.btn.btn-primary type=submit form=formChildSkills#{fromSqlKey jsid}>
             _{MsgSelect}
-          <button.btn.btn-secondary type=button data-bs-dismiss=modal>
-            _{MsgCancel}
 
   <div.modal.fade #modalChildSkillsRemove#{fromSqlKey jsid} tabindex=-1
     aria-labelledby=modalChildSkillsRemoveTitle#{fromSqlKey jsid}>
@@ -170,10 +170,10 @@ $forall (Entity jsid (JobSkill _ _ _ _ _), Entity _ (Skill code _ _ _)) <- skill
           <code>_{MsgInQuotes code}
           <h4>_{MsgReallyRemove}
         <div.modal-footer>
+          <button.btn.btn-light type=button data-bs-dismiss=modal>
+            _{MsgCancel}
           <button.btn.btn-primary.delete type=button data-url=@{JobSkillR jsid}>
             _{MsgRemove}
-          <button.btn.btn-secondary type=button data-bs-dismiss=modal>
-            _{MsgCancel}
 
 $forall (status,msg) <- filter (isInfixOf "toast" . fst) msgs
   <div.toast-container.p-3.bottom-0.start-50.translate-middle-x>

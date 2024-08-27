@@ -5,25 +5,26 @@
     <li.breadcrumb-item.active aria-current=page>
       _{MsgCandidates}
 
-<h1>_{MsgCandidates}
+<h1>
+  _{MsgCandidates}
 
 <div.mb-1>
   $maybe ((Entity _ (Job _ name _ _ _ _), _), _) <- job
     <div.d-flex.flex-row.flex-nowrap.justify-content-between.align-items-center>
-      <h2.flex-grow-1.fw-light.lh-1>
+      <h2.flex-grow-1.fw-light.lh-1 #idJobName>
         #{name}
       <div>
         <button.d-block.d-lg-none.btn.btn-light.rounded-circle type=button
-          title=_{MsgSelect} data-bs-toggle=modal data-bs-target=#positions>
+          title=_{MsgSelect} data-bs-toggle=modal data-bs-target=#idModalPositions>
           <i.bi.bi-list-ul>
   $nothing
     <div.d-flex.justify-content-center.align-items-center.mt-5.d-lg-none>
       <button.btn.btn-primary type=button
-        data-bs-toggle=modal data-bs-target=#positions>
+        data-bs-toggle=modal data-bs-target=#idModalPositions>
         _{MsgSelectAPosition}
     <div.d-none.mt-5.d-lg-block>
       <button.btn.btn-primary type=button
-        data-bs-toggle=modal data-bs-target=#positions>
+        data-bs-toggle=modal data-bs-target=#idModalPositions>
         _{MsgSelectAPosition}
 
 
@@ -36,21 +37,20 @@
             $if length aids > 0
               <div.position-relative>
                 <button.btn.btn-light.rounded-circle type=button
-                  title=_{MsgApplicants} data-bs-toggle=modal data-bs-target=#applicants>
+                  title=_{MsgApplicants} data-bs-toggle=modal data-bs-target=#idModalApplicants>
                   <i.bi.bi-person-fill>
                 <small>
                   <span.badge.rounded-pill.bg-success #applicantsBadge>
                     <small>#{length aids}
             $else
               <button.btn.btn-light.rounded-circle type=button
-                title=_{MsgApplicants} data-bs-toggle=modal data-bs-target=#applicants>
+                title=_{MsgApplicants} data-bs-toggle=modal data-bs-target=#idModalApplicants>
                 <i.bi.bi-person-check-fill>
 
             <div>
               <label.col-form-label for=selectTop>
                 _{MsgTop}
-              <select.form-select.d-inline-block.w-auto
-                #selectTop onchange="$('#selectLimit').val($(this).val());$('#formGetCandidates').submit()">
+              <select.form-select.d-inline-block.w-auto #selectTop>
                 <option :limit == 3:selected value=3>3
                 <option :limit == 5:selected value=5>5
                 <option :limit == 10:selected value=10>10
@@ -63,8 +63,8 @@
             <li.list-group-item>
               <img.photo.rounded-circle src=@{AppPhotoR aid} height=48 width=48
                 alt=_{MsgPhoto} onerror="this.src='@{PhotoPlaceholderR}'">
-              <a.candidate.lh-1 href=@{CandidateR jid aid}?tab=1 rel-item>
-                <span.fs-5.fw-bold>
+              <a.candidate.lh-1 href=@?{(CandidateR jid aid,[("tab","1")])} rel-item>
+                <span.fs-5>
                   $maybe p <- mp
                     #{s} #{n} #{p}
                   $nothing
@@ -124,18 +124,17 @@
       <div.offcanvas-body>
         <div.d-grid.gap-3>
           $maybe _ <- job
-            <button.btn.btn-primary type=button data-bs-toggle=modal data-bs-target=#positions>
+            <button.btn.btn-primary type=button data-bs-toggle=modal data-bs-target=#idModalPositions>
               _{MsgSelectAPosition}
             <button.btn.btn-primary.position-relative type=button
-              data-bs-toggle=modal data-bs-target=#applicants>
+              data-bs-toggle=modal data-bs-target=#idModalApplicants>
               _{MsgSelectApplicants}
               $if length aids > 0
                 <span.badge.rounded-pill.position-absolute.top-0.start-100.translate-middle.bg-success>
                   #{length aids}
 
             <div.form-floating>
-              <select.form-select name=limit required form=formGetCandidates
-                #selectLimit onchange=this.form.submit()>
+              <select.form-select name=limit required form=formGetCandidates #selectLimit>
                 <option :limit == 3:selected value=3>3
                 <option :limit == 5:selected value=5>5
                 <option :limit == 10:selected value=10>10
@@ -145,11 +144,11 @@
               <label for=selectLimit>_{MsgShowTop}
           $nothing
             <button.d-lg-none.btn.btn-primary type=button
-              data-bs-toggle=modal data-bs-target=#positions>
+              data-bs-toggle=modal data-bs-target=#idModalPositions>
               _{MsgSelectAPosition}
 
 
-<div.modal.fade #positions tabindex=-1 aria-hidden=true aria-label=_{MsgPositions}>
+<div.modal.fade #idModalPositions tabindex=-1 aria-hidden=true aria-label=_{MsgPositions}>
   <div.modal-dialog.modal-dialog-scrollable>
     <div.modal-content>
       <div.modal-header.border-bottom-0>
@@ -170,12 +169,12 @@
                 <label.form-check-label.text-wrap.lh-1 for=inputJob#{fromSqlKey jid} title=#{code}>
                   <span.text-wrap>#{name}
       <div.modal-footer>
+        <button.btn.btn-ligt type=button data-bs-dismiss=modal aria-lable=_{MsgClose}>
+          _{MsgCancel}
         <button.btn.btn-primary type=submit form=formGetCandidates>
           _{MsgSelect}
-        <button.btn.btn-secondary type=button data-bs-dismiss=modal aria-lable=_{MsgClose}>
-          _{MsgCancel}
 
-<div.modal.fade #applicants tabindex=-1 aria-hidden=true aria-label=_{MsgApplicants}>
+<div.modal.fade #idModalApplicants tabindex=-1 aria-hidden=true aria-label=_{MsgApplicants}>
   <div.modal-dialog.modal-dialog-scrollable>
     <div.modal-content>
       <div.modal-header.border-bottom-0>
@@ -199,7 +198,7 @@
                 <label.from-check-label.text-wrap.lh-1 for=inputAid#{fromSqlKey aid}>
                   #{s} #{n}
       <div.modal-footer>
+        <button.btn.btn-ligt type=button data-bs-dismiss=modal>
+          _{MsgCancel}
         <button.btn.btn-primary type=submit form=formGetCandidates>
           _{MsgSelect}
-        <button.btn.btn-secondary type=button data-bs-dismiss=modal>
-          _{MsgCancel}

@@ -1,0 +1,45 @@
+
+#{extra}
+
+<div.text-center>
+  <label for=#{fvId fV}>    
+    <figure.text-center>
+      $maybe (Entity aid _) <- applicant
+        <img.rounded-2 ##{idImgPhoto} src=@{AppPhotoR aid} height=64 loading=lazy alt=_{MsgPhoto}>
+      $nothing
+        <img ##{idImgPhoto} src=@{PhotoPlaceholderR} height=64 loading=lazy alt=_{MsgPhoto}>
+      <figcaption>
+        <button.btn.btn-sm.btn-light type=button onclick="document.getElementById('#{fvId fV}').click()">
+          <i.bi.bi-file-arrow-up>
+          _{MsgPhoto}
+      
+  ^{fvInput fV}
+  
+<div.d-flex.flex-column.gap-2>
+  $forall v <- [sV,nV,pV,bV]
+    <div :isJust (fvErrors v):.is-invalid :not (isJust (fvErrors v)) && isPost:.is-valid>
+      <label.form-label.mb-0.ps-1 for=#{fvId v}>#{fvLabel v}
+      ^{fvInput v}
+      $maybe errs <- fvErrors v
+        <div.invalid-feedback>
+          #{errs}
+  <div>
+    <label.form-label.mb-0.ps-1 for=#{fvId tV}>#{fvLabel tV}
+    <div.input-group :isJust (fvErrors tV):.is-invalid :not (isJust (fvErrors tV)) && isPost:.is-valid>
+      ^{fvInput tV}
+      $maybe errs <- fvErrors tV
+        <div.invalid-feedback>
+          #{errs}
+      <button.btn.btn-outline-secondary.dropdown-toggle type=button
+        data-bs-toggle=dropdown data-bs-target=#dropdownCategory
+        aria-expanded=false aria-label=_{MsgCategory}>
+      <ul.dropdown-menu.w-100>
+        $forall categ <- categs
+          <li>
+            <input.btn-check type=radio name=categ value=#{categ} ##{categ}
+              onchange="$('##{fvId tV}').val(this.value)">
+            <label.btn.dropdown-item for=#{categ}>#{categ}
+
+    <datalist #datalistCategory>
+      $forall categ <- categs
+        <option value=#{categ}>#{categ}

@@ -11,13 +11,24 @@
 {-# LANGUAGE TypeOperators #-}
 
 module Foundation
-  ( Handler
+  ( Handler, Form
   , App(..)
   , Route(..)
   , AppMessage(..)
   , resourcesApp
   , unsafeHandler
   ) where
+
+import Control.Monad.Logger (LogSource)
+
+import qualified Data.CaseInsensitive as CI
+import qualified Data.List.Safe as LS
+import Data.Maybe (Maybe (..), fromMaybe)
+import qualified Data.Text.Encoding as TE
+
+import Database.Persist.Sql (ConnectionPool, runSqlPool)
+
+import Model (JobSkillId, SkillId, ApplicantId, JobId, DeptId)
 
 import Import.NoFoundation
   ( (<$>), flip, (||), (.), (++), ($), Eq((==))
@@ -81,37 +92,28 @@ import Import.NoFoundation
   , YesodAuthPersist
   , DBRunner
   , YesodPersist(..)
-  , YesodPersistRunner(..)
+  , YesodPersistRunner(..), FormResult
   )
-
-import Data.Maybe (Maybe (..), fromMaybe)
-import Text.Hamlet (hamletFile)
-import Text.Jasmine (minifym)
-import Control.Monad.Logger (LogSource)
 
 import Settings.StaticFiles (js_cookie_3_0_1_dist_js_cookie_js)
 
--- Used only when in "auth-dummy-login" setting is enabled.
-import Yesod.Auth.Dummy
-import Yesod.Core (hamlet)
-import Yesod.Core.Handler
-  ( defaultCsrfCookieName, defaultCsrfHeaderName, getCurrentRoute
-  , getYesod, languages, withUrlRenderer
-  )
-import Yesod.Auth.OpenId    (authOpenId, IdentifierType (Claimed))
-import Yesod.Default.Util   (addStaticContentExternal)
-import Yesod.Core.Types     (Logger)
-import Yesod.Core.Widget (toWidgetHead)
-import qualified Yesod.Core.Unsafe as Unsafe
-import qualified Data.CaseInsensitive as CI
-import qualified Data.Text.Encoding as TE
+import Text.Hamlet (hamletFile)
+import Text.Jasmine (minifym)
 import Text.Shakespeare.I18N (mkMessage)
 
-import Database.Persist.Sql (ConnectionPool, runSqlPool)
-
-import Model (JobSkillId, SkillId, ApplicantId, JobId, DeptId)
-import qualified Data.List.Safe as LS
-
+-- Used only when in "auth-dummy-login" setting is enabled.
+import Yesod.Auth.Dummy
+import Yesod.Auth.OpenId (authOpenId, IdentifierType (Claimed))
+import Yesod.Core (hamlet)
+import Yesod.Core.Handler
+  ( HandlerFor, defaultCsrfCookieName, defaultCsrfHeaderName, getCurrentRoute
+  , getYesod, languages, withUrlRenderer
+  )
+import Yesod.Default.Util (addStaticContentExternal)
+import Yesod.Core.Types (Logger)
+import qualified Yesod.Core.Unsafe as Unsafe
+import Yesod.Core.Widget (toWidgetHead)
+import Yesod.Form (MForm)
 import Yesod.Form.I18n.English (englishFormMessage)
 import Yesod.Form.I18n.French (frenchFormMessage)
 import Yesod.Form.I18n.Romanian (romanianFormMessage)
@@ -145,6 +147,8 @@ data App = App
 mkYesodData "App" $(parseRoutesFile "config/routes.yesodroutes")
 
 mkMessage "App" "messages" "en"
+
+type Form x = Html -> MForm (HandlerFor App) (FormResult x, Widget)
 
 -- Please see the documentation for the Yesod typeclass. There are a number
 -- of settings which can be configured by overriding methods here.
