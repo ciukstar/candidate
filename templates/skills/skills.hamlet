@@ -7,6 +7,9 @@
       _{MsgSkills}
 
 <h1>
+  <a.btn.btn-light.border-0.rounded-circle href=@{HomeR} role=button aria-label=_{MsgBack}>
+    <i.bi.bi-chevron-left>
+    
   _{MsgSkills}
 
 <div.d-flex.flex-row.gap-lg-3>
@@ -22,12 +25,12 @@
               <i.bi-search>
             $maybe q <- mq
               <input.form-control type=search name=q value=#{q} list=qlist
-                #inputSearch placeholder=_{MsgSearch}>
+                ##{idInputSearch} placeholder=_{MsgSearch}>
             $nothing
               <input.form-control type=search name=q list=qlist
-                #inputSearch placeholder=_{MsgSearch}>
+                ##{idInputSearch} placeholder=_{MsgSearch}>
 
-          <datalist#qlist>
+          <datalist #qlist>
             $forall (_,lbl) <- labels
               <option value=#{lbl}>
 
@@ -55,7 +58,7 @@
               <small>
                 <small.form-label.fw-light>
                   _{MsgRowsPerPage}
-            <select.form-select #selectLimit2>
+            <select.form-select ##{idSelectLimit2}>
 
               <option value="3" :Just 3 == mlimit:selected>3
               <option value="4" :Just 4 == mlimit:selected>4
@@ -86,12 +89,12 @@
                   <button.page-link.app-page-link-last type=submit form=qform rel=last
                     title=_{MsgLast} aria-label=_{MsgLast}>
                     <i.bi.bi-chevron-bar-right>
-      <ul.list-group.list-group-flush #skillList>
+      <ul.list-group.list-group-flush ##{idListSkills}>
         $forall Entity sid (Skill code name _ _) <- skills
           <li.list-group-item>
-            <a.skill.fs-5.lh-1.app-link href=@{SkillR sid} rel=item>
+            <a.skill.fs-5.app-link href=@{SkillR sid} rel=item>
               #{name}
-            <small.code.fw-light>
+            <div.code.fw-light>
               #{code}
             <div.actions.dropdown>
               <button.btn.btn-light.rounded-circle.border-0 type=button title=_{MsgActions}
@@ -166,7 +169,7 @@
           $maybe _ <- moffset <|> mlimit
             <small.form-label.fw-light.text-nowrap>
               _{MsgRowsPerPage}
-            <select.form-select form=qform name=limit #selectLimit>
+            <select.form-select form=qform name=limit ##{idSelectLimit}>
               <option value="3" :Just 3 == mlimit:selected>3
               <option value="4" :Just 4 == mlimit:selected>4
               <option value="5" :Just 5 == mlimit:selected>5
@@ -218,18 +221,27 @@
                 <button.btn.btn-sm.btn-light.rounded-circle type=button title=_{MsgEdit}
                   data-bs-toggle=modal data-bs-target=#modalEditLbl#{ident}>
                   <i.bi.bi-pencil>
+                  
     $forall (ident,lbl) <- labels
       <div.modal.fade #modalEditLbl#{ident} tabindex="-1" aria-labeledby=modalTitle#{ident} aria-hidden=true>
         <div.modal-dialog>
           <div.modal-content>
             <div.modal-header>
-              <h5.modal-title #modalTitle#{ident}>_{MsgEdit}
+              <h5.modal-title #modalTitle#{ident}>
+                _{MsgEditCategory}
               <button.btn-close type=button data-bs-dismiss=modal aria-label=_{MsgClose}>
             <div.modal-body>
+              <p.form-text>
+                _{MsgEditTheFormAndSavePlease}
+  
               <form #form-edit-lbl-#{ident} method=post action=@{SkillsLabelR} rel=edit>
                 <input type=hidden name=old value=#{lbl}>
-                <label.form-label for=inputFormControlTag#{ident}>_{MsgInQuotes lbl}
-                <input.form-control type=text name=new placeholder=_{MsgEnterNewName} #inputFormControlTag#{ident}>
+                <input.form-control type=text name=new value=#{lbl} #inputFormControlTag#{ident}>
+                <div.form-text>
+                  <sup>*
+                  <span.text-lowercase>
+                    _{MsgBlankValueResetsCategory}
+                
             <div.modal-footer>
               <button.btn.btn-light type=button data-bs-dismiss=modal>
                 _{MsgCancel}
@@ -238,7 +250,7 @@
 
 
 $forall Entity sid (Skill code _ _ _) <- skills
-  <div.modal #modal#{fromSqlKey sid}>
+  <div.modal.skill #modal#{fromSqlKey sid}>
     <div.modal-dialog>
       <div.modal-content>
         <div.modal-header>
@@ -251,7 +263,7 @@ $forall Entity sid (Skill code _ _ _) <- skills
         <div.modal-footer>
           <button.btn.btn-light type=button data-bs-dismiss=modal>
             _{MsgCancel}
-          <button.btn.btn-danger.delete type=button data-url=@{SkillR sid} ##{idButtonSkillDelete}>
+          <button.delete.btn.btn-danger type=button data-url=@{SkillR sid}>
             _{MsgDelete}
 
 $forall (status,msg) <- filter (isInfixOf "toast" . fst) msgs

@@ -1,22 +1,29 @@
 
 a.app-link
-  text-decoration: none
+    text-decoration: none
+    
 a.app-link:hover
-  text-decoration: underline
+    text-decoration: underline
 
 div.card div.list-group div.list-group-item
-  display: grid
-  grid-template-columns: auto 48px
-  grid-template-rows: auto
-  grid-template-areas: "job actions" "details details"
-  gap: 0.5rem
-  a.job
-    grid-area: job
-    align-self: center
-  div.actions
-    grid-area: actions
-  div.details
-    grid-area: details
+    display: grid
+    grid-template-columns: auto 48px
+    grid-template-rows: auto
+    grid-template-areas: "job actions" "details details"
+    gap: 0.5rem
+    
+    a.job
+        grid-area: job
+        align-self: center
+        white-space: nowrap
+        overflow: hidden
+        text-overflow: ellipsis
+        
+    div.actions
+        grid-area: actions
+        
+    div.details
+        grid-area: details
 
 table
   thead

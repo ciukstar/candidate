@@ -3,14 +3,18 @@
     <li.breadcrumb-item>
       <a href=@{HomeR}>_{MsgHome}
     <li.breadcrumb-item>
-      $maybe dest <- ult
-        <a href=#{dest}>_{MsgSkills}
-      $nothing
-        <a href=@{SkillsR}>_{MsgSkills}
+      <a href=#{ult}>_{MsgSkills}
     <li.breadcrumb-item.active aria-current=page>_{MsgSkill}
-      
+
+<h1>
+  <a.btn.btn-light.border-0.rounded-circle href=#{ult} role=button aria-label=_{MsgBack}>
+    <i.bi.bi-chevron-left>
+    
+  _{MsgNewSkill}
+  
 <fieldset.border.rounded.p-3>
-  <legend>_{MsgSkill}
+  <legend.form-text>
+    _{MsgFillOutTheFormAndSavePlease}
 
   $forall (status,msg) <- msgs
     <div.alert.#{status}.alert-dismissible.fade.show>
@@ -22,12 +26,8 @@
     <div.pb-3>
       ^{widget}
     <div.text-end>
-      $maybe dest <- ult
-        <a.btn.btn-light role=button href=#{dest} rel=collection>
-          _{MsgCancel}
-      $nothing
-        <a.btn.btn-light role=button href=@{SkillsR} rel=collection>
-          _{MsgCancel}
+      <a.btn.btn-light role=button href=#{ult} rel=collection>
+        _{MsgCancel}
           
       <button.btn.btn-primary type=submit>
         _{MsgSave}

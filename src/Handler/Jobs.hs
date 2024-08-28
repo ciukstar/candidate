@@ -20,14 +20,17 @@ module Handler.Jobs
   , postJobSkillsEditR
   ) where
 
+import ClassyPrelude.Yesod (ReaderT)
+
 import Control.Monad (forM, forM_, when, unless)
+
 import Data.Bifunctor (first)
+import Data.List (sortBy)
+import Data.List.Safe as LS (head)
 import Data.Maybe (fromMaybe, isJust)
 import Data.Text (Text, pack, unpack, isInfixOf)
 import qualified Data.Text as T (null)
-import Text.Read (readMaybe)
 import Data.Time (formatTime, Day, defaultTimeLocale)
-import Text.Julius (rawJS)
 import Data.Text.ICU.Calendar (setDay)
 import Data.Text.ICU
   ( LocaleName(Locale), calendar
@@ -37,71 +40,17 @@ import Data.Text.ICU.DateFormatter
   ( formatCalendar, standardDateFormatter
   , FormatStyle (ShortFormatStyle, NoFormatStyle)
   )
-import Yesod.Core.Content (TypedContent)
-import Yesod.Core
-  ( Yesod(defaultLayout)
-  , Html, WidgetFor, whamlet, SomeMessage (SomeMessage)
-  , MonadIO (liftIO), setTitleI, setUltDestCurrent, redirectUltDest
-  , lookupSession, getRequest, YesodRequest (reqGetParams)
-  , languages, MonadTrans (lift), getUrlRenderParams, newIdent
-  , lookupGetParams, getMessages, addMessageI
+  
+import Database.Esqueleto.Experimental
+  ( select, from, table, SqlQuery, SqlExpr, orderBy, desc
+  , (^.), (?.), (==.), (%), (++.), (||.), (&&.), (:&)((:&)), (=.)
+  , where_, valList, notIn, select, val
+  , innerJoin, on, withRecursive, unionAll_
+  , isNothing, just, like, limit, offset, asc, countRows
+  , Value (Value, unValue), selectOne, coalesceDefault, groupBy
+  , not_, exists, leftJoin, in_, justList, update, set, selectQuery
+  , upper_
   )
-import Settings (widgetFile)
-import Data.List (sortBy)
-import Data.List.Safe as LS (head)
-import Yesod.Core.Handler
-  ( HandlerFor, selectRep, provideRep, redirect
-  , getUrlRender
-  )
-
-import Foundation
-  ( App
-  , Route
-    ( JobsR, JobR, JobSkillsR, JobSkillR, JobCreateFormR, JobEditFormR
-    , JobCandidatesR, HomeR, JobSkillsEditFormR, DeptsR, JobSkillsEditR
-    , DeptR
-    )
-  , AppMessage
-    ( MsgPositions, MsgSearch, MsgAdd, MsgSave, MsgCancel
-    , MsgCode, MsgName, MsgDescription, MsgDayStart, MsgDayEnd
-    , MsgDenom, MsgPosition, MsgNoDataFound, MsgEdit, MsgRemove
-    , MsgNumberSign, MsgInvalidFormData, MsgClose, MsgPleaseConfirm
-    , MsgReallyDelete, MsgSkills, MsgSelect, MsgReallyRemove
-    , MsgCandidates, MsgActions, MsgEditPosition, MsgCreatePosition
-    , MsgHome, MsgDetails, MsgId, MsgBack, MsgDayStart, MsgDayEnd
-    , MsgRowsPerPage, MsgPaginationLabel, MsgPagination, MsgFirst
-    , MsgPrevious, MsgNext, MsgLast, MsgNumberOfSkills, MsgEditSkills
-    , MsgNumberOfCandidates, MsgDivisions, MsgDivision, MsgLabels
-    , MsgAttributes, MsgActions, MsgSections, MsgCumulativeWeightNotNormal
-    , MsgTotalValue, MsgExpand, MsgCollapse, MsgDuplicateCode, MsgInvalidEndDay
-    , MsgJobSkillAlreadyExists, MsgInQuotes, MsgDelete, MsgRecordAdded
-    , MsgRecordDeleted, MsgRecordEdited, MsgEnterNewName
-    )
-  )
-
-import Yesod.Form.Types
-  ( MForm, FormResult (FormSuccess), FieldView (fvInput, fvId, fvLabel, fvErrors)
-  , FieldSettings (FieldSettings, fsLabel, fsAttrs, fsName, fsId, fsTooltip)
-  )
-
-import Model
-  ( Job (Job, jobCode, jobName, jobDayStart, jobDayEnd, jobDescr, jobDept)
-  , JobId, JobSkillId, Skill (Skill), JobSkill (JobSkill)
-  , EntityField
-    ( JobId, SkillId, JobSkillJob, JobSkillSkill , JobSkillParent
-    , JobSkillId, JobSkillWeight, JobCode , JobName, JobDescr
-    , JobDayStart, JobDayEnd, DeptName, DeptId, JobDept, JobSkillExpanded
-    )
-  , Params (Params), ultDestKey, Dept (Dept)
-  )
-
-import Yesod.Form.Functions (mreq, mopt, generateFormPost, runFormPost, checkM)
-import Yesod.Form.Fields
-  ( Textarea (Textarea), selectFieldList, intField, doubleField
-  , urlField, boolField, textField, dayField, textareaField
-  )
-import Yesod.Form.Input (runInputGet, iopt, ireq, runInputPost)
-
 import qualified Database.Persist as P ((=.), update)
 import Database.Persist as P
   ( PersistStoreWrite(insert_, replace, delete)
@@ -109,97 +58,162 @@ import Database.Persist as P
   , Entity (Entity, entityKey, entityVal)
   , selectList, SelectOpt (Asc)
   )
-
-import Yesod (YesodPersist(runDB))
-import ClassyPrelude.Yesod (ReaderT)
 import Database.Persist.Sql (SqlBackend, fromSqlKey, toSqlKey)
 
-import Database.Esqueleto.Experimental
-  ( select, from, table, SqlQuery, SqlExpr, orderBy, desc
-  , (^.), (?.), (==.), (%), (++.), (||.), (&&.), (:&)((:&)), (=.)
-  , where_, valList, notIn, select, val
-  , innerJoin, on, withRecursive, unionAll_
-  , isNothing, just, like, limit, offset, asc, countRows
-  , Value (Value, unValue), selectOne
-  , coalesceDefault, groupBy, not_, exists, leftJoin, in_, justList
-  , update, set, selectQuery, upper_
-  )
-import Tree (Tree (Node))
 import Handler.Candidates (fetchNumCandidates)
 import Handler.Depts (deptTreeWidget)
+
+import Foundation
+    ( App, Form
+    , Route
+      ( JobsR, JobR, JobSkillsR, JobSkillR, JobCreateFormR, JobEditFormR
+      , JobCandidatesR, HomeR, JobSkillsEditFormR, DeptsR, JobSkillsEditR
+      , DeptR
+      )
+    , AppMessage
+      ( MsgPositions, MsgSearch, MsgAdd, MsgSave, MsgCancel
+      , MsgCode, MsgName, MsgDescription, MsgDayStart, MsgDayEnd
+      , MsgDenom, MsgPosition, MsgNoDataFound, MsgEdit, MsgRemove
+      , MsgNumberSign, MsgInvalidFormData, MsgClose, MsgPleaseConfirm
+      , MsgReallyDelete, MsgSkills, MsgSelect, MsgReallyRemove
+      , MsgCandidates, MsgActions, MsgEditPosition, MsgCreatePosition
+      , MsgHome, MsgDetails, MsgId, MsgBack, MsgDayStart, MsgDayEnd
+      , MsgRowsPerPage, MsgPaginationLabel, MsgPagination, MsgFirst
+      , MsgPrevious, MsgNext, MsgLast, MsgNumberOfSkills, MsgEditSkills
+      , MsgNumberOfCandidates, MsgDivisions, MsgDivision, MsgLabels
+      , MsgAttributes, MsgActions, MsgSections, MsgCumulativeWeightNotNormal
+      , MsgTotalValue, MsgExpand, MsgCollapse, MsgDuplicateCode, MsgInvalidEndDay
+      , MsgJobSkillAlreadyExists, MsgInQuotes, MsgDelete, MsgRecordAdded
+      , MsgRecordDeleted, MsgRecordEdited, MsgFillOutTheFormAndSavePlease
+      , MsgNewPosition, MsgEditTheFormAndSavePlease, MsgNewDivision
+      , MsgEditDivision, MsgFieldRequired, MsgNewSubdivision
+      )
+    )
+
+import Model
+  ( Job (Job, jobCode, jobName, jobDayStart, jobDayEnd, jobDescr, jobDept)
+  , JobId, JobSkillId, Skill (Skill), JobSkill (JobSkill)
+  , Params (Params), ultDestKey, Dept (Dept)
+  , EntityField
+    ( JobId, SkillId, JobSkillJob, JobSkillSkill , JobSkillParent
+    , JobSkillId, JobSkillWeight, JobCode , JobName, JobDescr
+    , JobDayStart, JobDayEnd, DeptName, DeptId, JobDept, JobSkillExpanded
+    )
+  )
+  
+import Settings (widgetFile)
+
+import Text.Julius (rawJS)
+import Text.Read (readMaybe)
+import Tree (Tree (Node))
+
 import Widgets (thSort, thSortDir)
+
+import Yesod (YesodPersist(runDB))
+import Yesod.Core
+    ( Yesod(defaultLayout)
+    , Html, WidgetFor, whamlet, SomeMessage (SomeMessage)
+    , MonadIO (liftIO), setTitleI, redirectUltDest
+    , lookupSession, getRequest, YesodRequest (reqGetParams)
+    , languages, MonadTrans (lift), getUrlRenderParams, newIdent
+    , lookupGetParams, getMessages, addMessageI
+    )
+import Yesod.Core.Content (TypedContent)
+import Yesod.Core.Handler
+    ( HandlerFor, selectRep, provideRep, redirect
+    , getUrlRender
+    )
+import Yesod.Form.Fields
+    ( Textarea (Textarea), selectFieldList, intField, doubleField
+    , urlField, boolField, textField, dayField, textareaField
+    )
+import Yesod.Form.Functions (mreq, mopt, generateFormPost, runFormPost, checkM)
+import Yesod.Form.Input (runInputGet, iopt, ireq, runInputPost)
+import Yesod.Form.Types
+    ( MForm, FormResult (FormSuccess)
+    , FieldView (fvInput, fvId, fvLabel, fvErrors, fvRequired)
+    , FieldSettings (FieldSettings, fsLabel, fsAttrs, fsName, fsId, fsTooltip)
+    )
 
 
 putJobSkillR :: JobSkillId -> HandlerFor App ()
 putJobSkillR jsid = do
-  expanded <- runInputPost $ ireq boolField "expanded"
-  runDB $ P.update jsid [JobSkillExpanded P.=. expanded]
+    expanded <- runInputPost $ ireq boolField "expanded"
+    runDB $ P.update jsid [JobSkillExpanded P.=. expanded]
 
 
 deleteJobSkillR :: JobSkillId -> HandlerFor App ()
 deleteJobSkillR jsid = do
-  runDB $ delete jsid
-  addMessageI "alert-info toast" MsgRecordDeleted
+    runDB $ delete jsid
+    addMessageI "alert-info toast" MsgRecordDeleted
 
 
 postJobSkillsR :: JobId -> HandlerFor App TypedContent
 postJobSkillsR jid = do
-  (sid,w,p,l) <- runInputPost $ (,,,)
-    <$> (toSqlKey <$> ireq intField "skill")
-    <*> ireq doubleField "weight"
-    <*> ((toSqlKey <$>) <$> iopt intField "parent")
-    <*> ireq urlField "location"
+    (sid,w,p,l) <- runInputPost $ (,,,)
+        <$> (toSqlKey <$> ireq intField "skill")
+        <*> ireq doubleField "weight"
+        <*> ((toSqlKey <$>) <$> iopt intField "parent")
+        <*> ireq urlField "location"
 
-  mJobSkill <- runDB $ selectOne $ do
-    x <- from $ table @JobSkill
-    where_ $ x ^. JobSkillJob ==. val jid &&. x ^. JobSkillSkill ==. val sid
+    mJobSkill <- runDB $ selectOne $ do
+        x <- from $ table @JobSkill
+        where_ $ x ^. JobSkillJob ==. val jid &&. x ^. JobSkillSkill ==. val sid
 
-  case mJobSkill of
-    Nothing -> do
-      runDB $ insert_ $ JobSkill jid sid w p True
-      addMessageI "alert-info toast" MsgRecordAdded
-    _ -> addMessageI "alert-danger tab-1" MsgJobSkillAlreadyExists
-  redirect l
+    case mJobSkill of
+      Nothing -> do
+          runDB $ insert_ $ JobSkill jid sid w p True
+          addMessageI "alert-info toast" MsgRecordAdded
+      Just _ -> addMessageI "alert-danger tab-1" MsgJobSkillAlreadyExists
+    redirect l
 
 
 deleteJobR :: JobId -> HandlerFor App ()
 deleteJobR jid = do
-  runDB $ delete jid
-  addMessageI "alert-info toast" MsgRecordDeleted
+    runDB $ delete jid
+    addMessageI "alert-info toast" MsgRecordDeleted
 
 
 postJobR :: JobId -> HandlerFor App TypedContent
 postJobR jid = selectRep $ provideRep $ do
-  job <- runDB $ selectOne $ do
-    x <- from $ table @Job
-    where_ $ x ^. JobId ==. val jid
-    return x
-  ((fr,widget),enctype) <- runFormPost $ formJob job True
-  case fr of
-    FormSuccess r -> do
-      runDB $ replace jid r
-      addMessageI "alert-info toast" MsgRecordEdited
-      redirectUltDest JobsR
-    _ -> do
-      selected <- fromMaybe [] . mapM ((toSqlKey <$>) . readMaybe . unpack) <$> lookupGetParams "jsid"
-      tab <- fromMaybe 0 <$> runInputGet (iopt intField "tab") :: HandlerFor App Int
-      addMessageI "alert-danger tab-0" MsgInvalidFormData
-      skills <- runDB $ fetchJobSkills jid :: HandlerFor App [(Entity JobSkill, Entity Skill)]
-      let trees = bldTree skills
-      skillPool <- runDB $ fetchJoblessSkills (snd <$> skills)
-      location <- getUrlRenderParams >>= \rndr -> return $ rndr (JobEditFormR jid) [("tab","1")]
-      (fw,fe) <- generateFormPost $ formSkills trees (fmtDbl ".######" (Locale "en")) selected
-      when (any (> 1) (weightLevels trees)) $ addMessageI "alert-warning tab-1" MsgCumulativeWeightNotNormal
-      loc <- maybe "en" (Locale . unpack) . LS.head <$> languages
-      unless (null selected) $ addMessageI "alert-info tab-1"
-        (MsgTotalValue (fmtDbl ".######" loc $ calcLevelWeight selected trees))
-      msgs <- getMessages
-      defaultLayout $ do
-        setTitleI MsgEditPosition
-        let params = [("desc","id"),("offset","0"),("limit","5")]
-        rndr <- getUrlRenderParams
-        ult <- fromMaybe (rndr JobsR params) <$> lookupSession ultDestKey
-        $(widgetFile "jobs/edit")
+    
+    job <- runDB $ selectOne $ do
+        x <- from $ table @Job
+        where_ $ x ^. JobId ==. val jid
+        return x
+      
+    ((fr,widget),enctype) <- runFormPost $ formJob job True
+    
+    case fr of
+      FormSuccess r -> do
+          runDB $ replace jid r
+          addMessageI "alert-info toast" MsgRecordEdited 
+          redirectUltDest JobsR
+          
+      _otherwise -> do
+          selected <- fromMaybe [] . mapM ((toSqlKey <$>) . readMaybe . unpack) <$> lookupGetParams "jsid"
+          tab <- fromMaybe 0 <$> runInputGet (iopt intField "tab") :: HandlerFor App Int
+          addMessageI "alert-danger tab-0" MsgInvalidFormData
+          skills <- runDB $ fetchJobSkills jid :: HandlerFor App [(Entity JobSkill, Entity Skill)]
+          let trees = bldTree skills
+          skillPool <- runDB $ fetchJoblessSkills (snd <$> skills)
+          location <- getUrlRenderParams >>= \rndr -> return $ rndr (JobEditFormR jid) [("tab","1")]
+          
+          (fw,fe) <- generateFormPost $ formSkills trees (fmtDbl ".######" (Locale "en")) selected
+
+          when (any (> 1) (weightLevels trees)) $ addMessageI "alert-warning tab-1" MsgCumulativeWeightNotNormal
+
+          loc <- maybe "en" (Locale . unpack) . LS.head <$> languages
+          unless (null selected) $ addMessageI "alert-info tab-1"
+              (MsgTotalValue (fmtDbl ".######" loc $ calcLevelWeight selected trees))
+            
+          msgs <- getMessages
+          defaultLayout $ do
+              setTitleI MsgEditPosition
+              let params = [("desc","id"),("offset","0"),("limit","5")]
+              rndr <- getUrlRenderParams
+              ult <- fromMaybe (rndr JobsR params) <$> lookupSession ultDestKey
+              $(widgetFile "jobs/edit")
 
 
 getJobR :: JobId -> HandlerFor App TypedContent
@@ -246,37 +260,40 @@ postJobsR = do
 
 getJobsR :: HandlerFor App TypedContent
 getJobsR = do
-  params@(Params mq moffset mlimit msort labels) <- do
-    params <- reqGetParams <$> getRequest
-    return $ Params
-        (snd <$> LS.head (filter (\(x,y) -> x == "q" && not (T.null y)) params))
-        (readMaybe . unpack . snd =<< LS.head (filter ((== "offset") . fst) params))
-        (readMaybe . unpack . snd =<< LS.head (filter ((== "limit") . fst) params))
-        (LS.head (filter ((\x -> x == "asc" || x == "desc") . fst) params))
-        (snd <$> filter (\(x,y) -> x == "label" && not (T.null y)) params)
+    params@(Params mq moffset mlimit msort labels) <- do
+        params <- reqGetParams <$> getRequest
+        return $ Params
+            (snd <$> LS.head (filter (\(x,y) -> x == "q" && not (T.null y)) params))
+            (readMaybe . unpack . snd =<< LS.head (filter ((== "offset") . fst) params))
+            (readMaybe . unpack . snd =<< LS.head (filter ((== "limit") . fst) params))
+            (LS.head (filter ((\x -> x == "asc" || x == "desc") . fst) params))
+            (snd <$> filter (\(x,y) -> x == "label" && not (T.null y)) params)
 
-  rcnt <- runDB $ fetchJobCount params
-  jobs <- do
-    jobs <- runDB $ fetchJobs params :: HandlerFor App [(Entity Job, Value Int)]
-    forM jobs (\(j@(Entity jid _), n) -> fetchNumCandidates jid >>= \m -> return (j,n,m))
+    rcnt <- runDB $ fetchJobCount params
+    jobs <- do
+        jobs <- runDB $ fetchJobs params :: HandlerFor App [(Entity Job, Value Int)]
+        forM jobs (\(j@(Entity jid _), n) -> fetchNumCandidates jid >>= \m -> return (j,n,m))
 
-  let maxo = fromMaybe 0 $ (*)
-        <$> ((+) <$> (div rcnt <$> mlimit) <*> ((\x -> if x > 0 then 0 else -1) . mod rcnt <$> mlimit))
-        <*> mlimit
-  let prev = fromMaybe 0 $ max <$> ((-) <$> moffset <*> mlimit) <*> pure 0
-  let next = fromMaybe 0 $ min <$> ((+) <$> moffset <*> mlimit) <*> pure maxo
-  let start = maybe 0 (\x -> if maxo < 0 then 0 else x + 1) moffset
-  let end = fromMaybe 0 $ min <$> ((+) <$> moffset <*> mlimit) <*> pure rcnt
-  depts <- runDB $ select $ from $ table @Dept
-  msgs <- getMessages
-  selectRep $ provideRep $ defaultLayout $ do
-    loc <- Locale . unpack . fromMaybe "en" . LS.head <$> languages
-    fmt <- liftIO $ standardDateFormatter NoFormatStyle ShortFormatStyle loc "GMT+0300"
-    cal <- liftIO $ calendar "GMT+0300" loc TraditionalCalendarType
-    setUltDestCurrent
-    ult <- lookupSession ultDestKey
-    setTitleI MsgPositions
-    $(widgetFile "jobs/jobs")
+    let maxo = fromMaybe 0 $ (*)
+            <$> ((+) <$> (div rcnt <$> mlimit) <*> ((\x -> if x > 0 then 0 else -1) . mod rcnt <$> mlimit))
+            <*> mlimit
+    let prev = fromMaybe 0 $ max <$> ((-) <$> moffset <*> mlimit) <*> pure 0
+    let next = fromMaybe 0 $ min <$> ((+) <$> moffset <*> mlimit) <*> pure maxo
+    let start = maybe 0 (\x -> if maxo < 0 then 0 else x + 1) moffset
+    let end = fromMaybe 0 $ min <$> ((+) <$> moffset <*> mlimit) <*> pure rcnt
+
+    depts <- runDB $ select $ from $ table @Dept
+    
+    msgs <- getMessages
+    selectRep $ provideRep $ defaultLayout $ do
+        setTitleI MsgPositions
+        loc <- Locale . unpack . fromMaybe "en" . LS.head <$> languages
+        fmt <- liftIO $ standardDateFormatter NoFormatStyle ShortFormatStyle loc "GMT+0300"
+        cal <- liftIO $ calendar "GMT+0300" loc TraditionalCalendarType
+        ult <- lookupSession ultDestKey
+        idInputSearch <- newIdent
+        idSelectLimit2 <- newIdent
+        $(widgetFile "jobs/jobs")
 
 
 postJobSkillsEditR :: JobId -> HandlerFor App TypedContent
@@ -399,7 +416,7 @@ getJobCreateFormR = do
         $(widgetFile "jobs/create")
 
 
-formJob :: Maybe (Entity Job) -> Bool -> Html -> MForm (HandlerFor App) (FormResult Job, WidgetFor App ())
+formJob :: Maybe (Entity Job) -> Bool -> Form Job
 formJob job isPost extra = do
     (codeR, codeV) <- mreq uniqueTextField (fs MsgCode) (jobCode . entityVal <$> job)
     (nameR, nameV) <- mreq textField (fs MsgName) (jobName . entityVal <$> job)
@@ -422,6 +439,8 @@ formJob job isPost extra = do
          :not (isJust (fvErrors v)) && isPost:.is-valid>
       <label.form-label.mb-0.ps-1 for=#{fvId v}>
         #{fvLabel v}
+        $if fvRequired v
+          <sup>*
       ^{fvInput v}
       $maybe errs <- fvErrors v
         <div.invalid-feedback>
@@ -430,6 +449,7 @@ formJob job isPost extra = do
 
     return (r,w)
   where
+      
       fs :: AppMessage -> FieldSettings App
       fs lbl = FieldSettings (SomeMessage lbl) Nothing Nothing Nothing [("class","form-control")]
     

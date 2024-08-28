@@ -1,3 +1,4 @@
+
 <nav aria-label=breadcrumb>
   <ol.breadcrumb>
     <li.breadcrumb-item>
@@ -5,6 +6,8 @@
     <li.breadcrumb-item.active aria-current=page>_{MsgPositions}
 
 <h1>
+  <a.btn.btn-light.border-0.rounded-circle href=@{HomeR} role=button aria-label=_{MsgBack}>
+    <i.bi.bi-chevron-left>
   _{MsgPositions}
 
 $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
@@ -26,10 +29,10 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
               <i.bi.bi-search>
             $maybe q <- mq
               <input.form-control type=search role=search name=q value=#{q}
-                #inputSearch placeholder=_{MsgSearch}>
+                ##{idInputSearch} placeholder=_{MsgSearch}>
             $nothing
               <input.form-control type=search role=search name=q
-                #inputSearch placeholder=_{MsgSearch}>
+                ##{idInputSearch} placeholder=_{MsgSearch}>
 
           $maybe (d,f) <- msort
             <input.sort type=text name=#{d} value=#{f} hidden>
@@ -54,7 +57,7 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
             <small>
               <small>
                 <small.fw-light>_{MsgRowsPerPage}
-            <select.form-select #selectLimit2>
+            <select.form-select ##{idSelectLimit2}>
               <option value=3 :Just 3 == mlimit:selected>3
               <option value=4 :Just 4 == mlimit:selected>4
               <option value=5 :Just 5 == mlimit:selected>5
@@ -83,11 +86,13 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
       <div.list-group.list-group-flush>
         $forall (Entity jid (Job _ name _ _ _ _), Value nSkills, nCandidates) <- jobs
           <div.list-group-item>
-            <a.job.app-link.fs-5.fw-bold.lh-1 href=@{JobR jid}?tab=0 rel=item>#{name}
+            <a.job.app-link.fs-5 href=@?{(JobR jid,[("tab","0")])} rel=item>
+              #{name}
+              
             <div.actions>
               ^{jobActionsWidget jid}
             <div.details.d-flex.gap-3>
-              <a.skills.app-link href=@{JobR jid}?tab=1>
+              <a.skills.app-link href=@?{(JobR jid,[("tab","1")])}>
                 <div.d-flex.align-items-center.gap-1>
                   _{MsgSkills}
                   <span.badge.rounded-pill.bg-secondary>
@@ -183,17 +188,26 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
       <div.modal-dialog>
         <div.modal-content>
           <div.modal-header>
-            <h4.modal-title #modalRootLabelTitle>_{MsgDivision}
+            <h4.modal-title #modalRootLabelTitle>
+              _{MsgNewDivision}
             <button.btn-close type=button data-bs-dismiss=modal aria-label=Close>
           <div.modal-body>
+            <p.form-text>
+              _{MsgFillOutTheFormAndSavePlease}
+              
             <form method=post action=@{DeptsR} #formRootLabel>
               <input type=hidden name=parent>
-              <div>
-                <label.form-label for=rootLabelName>_{MsgDenom}
-                <input.form-control #rootLabelName type=text name=dept>
+              <input.form-control #rootLabelName type=text name=dept placeholder=_{MsgDenom}>
+              <div.form-text>
+                <sup>*
+                <span.text-lowercase>
+                  _{MsgFieldRequired}
+                
           <div.modal-footer>
-            <button.btn.btn-primary type=submit form=formRootLabel>_{MsgSave}
-            <button.btn.btn-secondary type=button data-bs-dismiss=modal>_{MsgCancel}
+            <button.btn.btn-light type=button data-bs-dismiss=modal>
+              _{MsgCancel}
+            <button.btn.btn-primary type=submit form=formRootLabel>
+              _{MsgSave}
 
 $forall Entity did (Dept name _) <- depts
 
@@ -207,46 +221,56 @@ $forall Entity did (Dept name _) <- depts
           <code>_{MsgInQuotes name}
           <h4>_{MsgReallyDelete}
         <div.modal-footer>
-          <button.btn.btn-primary.delete type=button data-url=@{DeptR did}>
-            _{MsgDelete}
-          <button.btn.btn-secondary type=button data-bs-dismiss=modal>
+          <button.btn.btn-light type=button data-bs-dismiss=modal>
             _{MsgCancel}
+          <button.btn.btn-danger.delete type=button data-url=@{DeptR did}>
+            _{MsgDelete}
 
   <div.modal.fade #modalEditDept#{fromSqlKey did} tabindex=-1 aria-hidden=true aria-label=_{MsgDivision}>
     <div.modal-dialog>
       <div.modal-content>
         <div.modal-header>
-          <h4.modal-title>_{MsgEdit}
+          <h4.modal-title>
+            _{MsgEditDivision}
           <button.btn-close type=button data-bs-dismiss=modal aria-label=_{MsgClose}>
         <div.modal-body>
+          <p.form-text>
+            _{MsgEditTheFormAndSavePlease}
+            
           <form method=post action=@{DeptR did} #formEditDept#{fromSqlKey did}>
-            <div>
-              <label.form-label for=inputFormEditDept#{fromSqlKey did}>_{MsgInQuotes name}
-              <input.form-control type=text name=dept required
-                #inputFormEditDept#{fromSqlKey did} placeholder=_{MsgEnterNewName}>
+            <input.form-control type=text name=dept required #inputFormEditDept#{fromSqlKey did} value=#{name}>
+            <div.form-text>
+              <sup>*
+              <span.text-lowercase>
+                _{MsgFieldRequired}
+            
         <div.modal-footer>
+          <button.btn.btn-light type=button data-bs-dismiss=modal>
+            _{MsgCancel}
           <button.btn.btn-primary type=submit form=formEditDept#{fromSqlKey did}>
             _{MsgSave}
-          <button.btn.btn-secondary type=button data-bs-dismiss=modal>
-            _{MsgCancel}
 
   <div.modal.fade #modalSubdept#{fromSqlKey did} tabindex=-1 aria-hidden=true>
     <div.modal-dialog>
       <div.modal-content>
         <div.modal-header>
-          <h4.modal-title>_{MsgDivision}
+          <h4.modal-title>_{MsgNewSubdivision}
           <button.btn-close type=button data-bs-dismiss=modal aria-label=_{MsgClose}>
         <div.modal-body>
           <form method=post action=@{DeptsR} #formDept#{fromSqlKey did}>
+            <p.form-field>
+              _{MsgFillOutTheFormAndSavePlease}
             <input type=hidden name=parent value=#{fromSqlKey did}>
-            <div>
-              <label.form-label for=inputFormDept#{fromSqlKey did}>_{MsgDenom}
-              <input.form-control type=text name=dept required #inputFormDept#{fromSqlKey did}>
+            <input.form-control type=text name=dept required #inputFormDept#{fromSqlKey did} placeholder=_{MsgDenom}>
+            <div.form-text>
+              <sup>*
+              <span.text-lowercase>
+                _{MsgFieldRequired}
         <div.modal-footer>
+          <button.btn.btn-light type=button data-bs-dismiss=modal>
+            _{MsgCancel}
           <button.btn.btn-primary type=submit form=formDept#{fromSqlKey did}>
             _{MsgSave}
-          <button.btn.btn-secondary type=button data-bs-dismiss=modal>
-            _{MsgCancel}
 
 
 $forall (Entity jid (Job _ name _ _ _ _), _, _) <- jobs

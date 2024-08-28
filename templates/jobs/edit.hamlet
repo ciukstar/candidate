@@ -1,3 +1,4 @@
+
 <nav aria-label=breadcrumb>
   <ol.breadcrumb>
     <li.breadcrumb-item>
@@ -10,7 +11,7 @@
   <a.btn.btn-light.border-0.rounded-circle href=#{ult} role=button rel=collection aria-label=_{MsgBack}>
     <i.bi.bi-chevron-left>
       
-  _{MsgPosition}: _{MsgNumberSign}#{fromSqlKey jid}
+  _{MsgEditPosition}
 
 <div.d-flex.flex-row.gap-lg-5>
   <div.d-flex.flex-column.w-100>
@@ -26,6 +27,8 @@
           data-bs-parent=#accordionJob aria-labelledby=accordionHeaderAttributes>
 
           <div.accordion-body>
+            <p.form-text>
+              _{MsgEditTheFormAndSavePlease}
 
             $forall (status,msg) <- (filter (isInfixOf "tab-0" . fst) . filter (not . (isInfixOf "toast" . fst))) msgs
               <div.alert.#{status}.alert-dismissible.fade.show>
@@ -53,6 +56,8 @@
           data-bs-parent=#accordionJob aria-labelledby=accordionHeaderSkills>
 
           <div.accordion-body>
+            <p.form-text>
+              _{MsgEditTheFormAndSavePlease}
 
             $forall (status,msg) <- (filter (isInfixOf "tab-1" . fst) . filter (not . (isInfixOf "toast" . fst))) msgs
               <div.alert.#{status}.alert-dismissible.fade.show>
@@ -95,10 +100,10 @@
           <nav>
             <ul.list-unstyled>
               <li.ms-3.mb-3>
-                <a href=@{JobEditFormR jid}?tab=0 rel=section>
+                <a href=@?{(JobEditFormR jid,[("tab","0")])} rel=section>
                   _{MsgAttributes}
               <li.ms-3>
-                <a href=@{JobEditFormR jid}?tab=1 rel=section>
+                <a href=@?{(JobEditFormR jid,[("tab","1")])} rel=section>
                   _{MsgSkills}
 
 <div.modal.fade.skillOptions #modalSkills>
@@ -113,7 +118,7 @@
           <input.form-control type=search placeholder=_{MsgSearch} #inputSearchSkills>
       <div.modal-body>
         <form method=post action=@{JobSkillsR jid} #formSkills>
-          <input type=url name=location value="@{JobEditFormR jid}?tab=1" required hidden>
+          <input type=url name=location value=@?{(JobEditFormR jid,[("tab","1")])} required hidden>
           <input type=number name=weight value=0 required hidden>
           <ul.list-group.list-group-flush>
             $forall Entity sid (Skill code name _ _) <- skillPool

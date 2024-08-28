@@ -1,3 +1,15 @@
+EditApplicant: Modifier le demandeur
+NewApplicant: Nouveau demandeur
+EditCategory: Modifier la catégorie
+BlankValueResetsCategory: Une valeur vide réinitialisera la catégorie
+NewSubdivision: Nouveau lotissement
+FieldRequired: Le champ est obligatoire
+EditDivision: Modifier la division
+NewDivision: Nouvelle division
+NewPosition: Nouveau poste
+EditSkill: Modifier la compétence
+EditTheFormAndSavePlease: Veuillez modifier le formulaire et l'enregistrer
+FillOutTheFormAndSavePlease: Veuillez remplir le formulaire et l'enregistrer
 UseCaseDiagram: Diagramme de cas d'utilisation
 SelectPositionToRankCandidates: Sélectionnez une position pour classer les candidats
 Docs: Documentation

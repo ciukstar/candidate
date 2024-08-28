@@ -1,3 +1,4 @@
+
 <nav aria-label=breadcrumb>
   <ol.breadcrumb>
     <li.breadcrumb-item>
@@ -12,6 +13,7 @@
           _{MsgPositions}
     <li.breadcrumb-item.active aria-current=page>_{MsgPosition}
 
+
 <h1>
   $maybe dest <- ult
     <a.btn.btn-light.border-0.rounded-circle role=button href=#{dest} rel=collection aria-label=_{MsgBack}>
@@ -20,10 +22,13 @@
     <a.btn.btn-light.border-0.rounded-circle role=button aria-label=_{MsgBack}
       href=@?{(JobsR,[("desc","id"),("offset","0"),("limit","5")])}>
       <i.bi.bi-chevron-left>
-  _{MsgPosition}
+  _{MsgNewPosition}
+
 
 <fieldset.p-3.my-3.border.rounded>
-  <legend.display-6>_{MsgAttributes}
+  <legend.form-text>
+    _{MsgFillOutTheFormAndSavePlease}
+    
   $forall (status,msg) <- msgs
     <div.alert.#{status}.alert-dismissible.fade.show role=alert>
       <i.bi.bi-exclamation-circle.me-2>

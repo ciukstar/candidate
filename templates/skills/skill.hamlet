@@ -7,13 +7,15 @@
     <li.breadcrumb-item.active aria-current=page>_{MsgSkill}
 
 <h1>
-  <a.btn.btn-light href=#{ult} role=button aria-label=_{MsgBack}>
+  <a.btn.btn-light.border-0.rounded-circle href=#{ult} role=button aria-label=_{MsgBack}>
     <i.bi.bi-chevron-left>
     
-  _{MsgSkill}: _{MsgNumberSign}#{fromSqlKey ident}
+  _{MsgSkill}
 
 <fieldset.p-3.mb-3.border.rounded>
-  <legend.display-6>_{MsgAttributes}
+  <legend.form-text>
+    _{MsgAttributes}
+  
   $maybe (Skill code name descr label) <- skill
     <table.table.table-hover.w-auto>
       <tbody>

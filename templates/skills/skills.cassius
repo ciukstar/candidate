@@ -5,11 +5,11 @@ a.app-link
 a.app-link:hover
     text-decoration: underline
           
-ul#skillList
+##{idListSkills}
 
     li.list-group-item
         display: grid
-        grid-template-columns: auto auto 48px
+        grid-template-columns: 1fr 1fr 48px
         grid-template-rows: auto
         grid-template-areas: "skill skill actions" "code code code"
         gap: 0.5rem
@@ -24,7 +24,7 @@ ul#skillList
         div.actions
             grid-area: actions
           
-        small.code
+        div.code
             grid-area: code
     
 table

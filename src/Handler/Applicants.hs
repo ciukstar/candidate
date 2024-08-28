@@ -21,77 +21,28 @@ module Handler.Applicants
   , postApplicantSkillsR
   ) where
 
-import qualified Data.Text as T (null)
-import Data.Text (Text, unpack, isInfixOf)
-import Data.Text.ICU.Calendar (setDay, calendar, CalendarType (TraditionalCalendarType))
-import Data.Text.ICU.DateFormatter
-  ( formatCalendar, standardDateFormatter, FormatStyle (NoFormatStyle, ShortFormatStyle)
-  )
-import Data.Text.ICU (LocaleName (Locale))
-import Data.Text.ICU.NumberFormatter (formatDouble')
-import Text.Julius (rawJS)
-import qualified Data.List.Safe as LS (head)
-import Control.Monad (when, forM, forM_)
-import Control.Monad.IO.Class (liftIO)
-import Data.Time.Clock (getCurrentTime, UTCTime (utctDay))
-import Data.Time.Calendar (toGregorian)
-import Data.Maybe (fromMaybe, isJust)
-import Text.Read (readMaybe)
-import Settings (widgetFile)
 
 import ClassyPrelude.Yesod
-  ( ReaderT, MonadIO, YesodPersist (runDB)
-  )
-
-import Yesod.Core.Types (TypedContent (TypedContent), WidgetFor, FileInfo)
-import Yesod.Core
-  ( Yesod(defaultLayout), Html, whamlet, toContent, emptyContent
-  , setTitleI, typeJpeg
-  )
-import Yesod.Core.Handler
-  ( HandlerFor, setUltDestCurrent, lookupSession, reqGetParams
-  , getRequest, selectRep, provideRep, redirect
-  , getMessages, redirectUltDest, newIdent, fileSourceByteString
-  , getUrlRenderParams, getUrlRender, languages, addMessageI
-  )
-
-import Yesod.Form.Functions (mreq, mopt, generateFormPost,runFormPost)
-import Text.Shakespeare.I18N (SomeMessage (SomeMessage))
-import Yesod.Form.Types
-  ( MForm, FormResult (FormSuccess)
-  , FieldSettings (FieldSettings, fsAttrs, fsLabel, fsId, fsTooltip, fsName)
-  , FieldView (fvId, fvLabel, fvInput, fvErrors)
-  )
-
-import Yesod.Form.Input (runInputPost, runInputGet, ireq, iopt)
-import Yesod.Form.Fields
-  (textField, fileField, urlField, doubleField, intField, dayField)
-import Widgets (thSort, thSortDir)
-
-import Foundation
-  ( App, Form
-  , Route
-    ( ApplicantsR, ApplicantR, AppSkillsR, AppSkillR
-    , ApplicantCreateFormR, ApplicantEditFormR, HomeR
-    , ApplicantTagR, AppPhotoR, PhotoPlaceholderR
-    , AppSkillsEditFormR, AppSkillsEditR, ApplicantSkillsR
+    ( ReaderT, MonadIO, YesodPersist (runDB)
     )
-  , AppMessage
-    ( MsgId, MsgApplicants, MsgSearch, MsgAdd, MsgNoDataFound
-    , MsgSave, MsgCancel, MsgDelete, MsgReallyRemove
-    , MsgInvalidFormData, MsgEdit, MsgRemove, MsgBreadcrumbs
-    , MsgPleaseConfirm, MsgReallyDelete, MsgSkills
-    , MsgClose, MsgWeight, MsgSelect, MsgNumberOfSkills, MsgApplicant
-    , MsgHome, MsgLabels, MsgPaginationLabel, MsgRowsPerPage
-    , MsgPagination, MsgFirst, MsgPrevious, MsgNext, MsgLast
-    , MsgDetails, MsgActions, MsgBirthday, MsgFullName
-    , MsgBack, MsgAttributes, MsgDenom, MsgCategories, MsgCategory
-    , MsgAge, MsgEnterNewName, MsgPhoto, MsgNumberSign
-    , MsgSections, MsgWeightNotNormal, MsgInQuotes, MsgAppSkillAlreadyExists
-    , MsgFamilyName, MsgGivenName, MsgAdditionalName, MsgRecordEdited
-    , MsgRecordAdded, MsgRecordDeleted
-    )
+  
+import Control.Monad (when, forM, forM_)
+import Control.Monad.IO.Class (liftIO)
+  
+import qualified Data.List.Safe as LS (head)
+import Data.Maybe (fromMaybe, isJust)
+import qualified Data.Text as T (null)
+import Data.Text (Text, unpack, isInfixOf)
+import Data.Text.ICU (LocaleName (Locale))
+import Data.Text.ICU.Calendar
+    ( setDay, calendar, CalendarType (TraditionalCalendarType) )
+import Data.Text.ICU.DateFormatter
+  ( formatCalendar, standardDateFormatter
+  , FormatStyle (NoFormatStyle, ShortFormatStyle)
   )
+import Data.Text.ICU.NumberFormatter (formatDouble')
+import Data.Time.Clock (getCurrentTime, UTCTime (utctDay))
+import Data.Time.Calendar (toGregorian)
 
 import qualified Database.Persist as P ((=.))
 import Database.Persist
@@ -114,22 +65,78 @@ import Database.Esqueleto.Experimental
   , set, upsert, upper_
   )
 
-import Model
-  ( Applicant
-    ( Applicant, applicantFamilyName, applicantGivenName, applicantAdditionalName
-    , applicantBday, applicantTag
+import Settings (widgetFile)
+
+import Text.Julius (rawJS)
+import Text.Read (readMaybe)
+
+import Foundation
+    ( App, Form
+    , Route
+      ( ApplicantsR, ApplicantR, AppSkillsR, AppSkillR
+      , ApplicantCreateFormR, ApplicantEditFormR, HomeR
+      , ApplicantTagR, AppPhotoR, PhotoPlaceholderR
+      , AppSkillsEditFormR, AppSkillsEditR, ApplicantSkillsR
+      )
+    , AppMessage
+      ( MsgId, MsgApplicants, MsgSearch, MsgAdd, MsgNoDataFound
+      , MsgSave, MsgCancel, MsgDelete, MsgReallyRemove
+      , MsgInvalidFormData, MsgEdit, MsgRemove, MsgBreadcrumbs
+      , MsgPleaseConfirm, MsgReallyDelete, MsgSkills, MsgEditApplicant
+      , MsgClose, MsgWeight, MsgSelect, MsgNumberOfSkills, MsgApplicant
+      , MsgHome, MsgLabels, MsgPaginationLabel, MsgRowsPerPage
+      , MsgPagination, MsgFirst, MsgPrevious, MsgNext, MsgLast
+      , MsgDetails, MsgActions, MsgBirthday, MsgFullName
+      , MsgBack, MsgAttributes, MsgDenom, MsgCategories, MsgCategory
+      , MsgAge, MsgEnterNewName, MsgPhoto, MsgNumberSign, MsgNewApplicant
+      , MsgSections, MsgWeightNotNormal, MsgInQuotes, MsgAppSkillAlreadyExists
+      , MsgFamilyName, MsgGivenName, MsgAdditionalName, MsgRecordEdited
+      , MsgRecordAdded, MsgRecordDeleted, MsgFillOutTheFormAndSavePlease
+      , MsgEditTheFormAndSavePlease
+      )
     )
-  , ApplicantId
-  , Skill (Skill, skillName), SkillId, AppSkillId
-  , AppSkill (AppSkill, appSkillWeight)
-  , EntityField
-    ( AppSkillApplicant, AppSkillSkill, SkillId, ApplicantId
-    , AppSkillWeight, AppSkillId, ApplicantFamilyName, ApplicantGivenName
-    , ApplicantAdditionalName, ApplicantTag, AppPhotoApplicant, AppPhotoPhoto, SkillName
-    )
-  , Unique (UniqueAppSkill)
-  , ultDestKey, Params (Params), AppPhoto (AppPhoto)
+  
+import Text.Shakespeare.I18N (SomeMessage (SomeMessage))
+
+import Widgets (thSort, thSortDir)
+
+import Yesod.Core
+  ( Yesod(defaultLayout), Html, whamlet, toContent, emptyContent
+  , setTitleI, typeJpeg
   )
+import Yesod.Core.Handler
+    ( HandlerFor, lookupSession, reqGetParams
+    , getRequest, selectRep, provideRep, redirect
+    , getMessages, redirectUltDest, newIdent, fileSourceByteString
+    , getUrlRenderParams, getUrlRender, languages, addMessageI
+    )
+import Yesod.Core.Types (TypedContent (TypedContent), WidgetFor, FileInfo)
+import Yesod.Form.Input (runInputPost, runInputGet, ireq, iopt)
+import Yesod.Form.Fields
+    (textField, fileField, urlField, doubleField, intField, dayField)
+import Yesod.Form.Functions (mreq, mopt, generateFormPost,runFormPost)
+import Yesod.Form.Types
+    ( MForm, FormResult (FormSuccess)
+    , FieldSettings (FieldSettings, fsAttrs, fsLabel, fsId, fsTooltip, fsName)
+    , FieldView (fvId, fvLabel, fvInput, fvErrors, fvRequired)
+    )
+
+import Model
+    ( Applicant
+      ( Applicant, applicantFamilyName, applicantGivenName, applicantBday
+      , applicantAdditionalName, applicantTag
+      )
+    , ApplicantId
+    , Skill (Skill, skillName), SkillId, AppSkillId
+    , AppSkill (AppSkill, appSkillWeight)
+    , Unique (UniqueAppSkill)
+    , ultDestKey, Params (Params), AppPhoto (AppPhoto)
+    , EntityField
+      ( AppSkillApplicant, AppSkillSkill, SkillId, ApplicantId, SkillName
+      , AppSkillWeight, AppSkillId, ApplicantFamilyName, ApplicantGivenName
+      , ApplicantAdditionalName, ApplicantTag, AppPhotoApplicant, AppPhotoPhoto
+      )
+    )
 
 
 getAppPhotoR :: ApplicantId -> HandlerFor App TypedContent
@@ -447,63 +454,66 @@ postApplicantsR = selectRep $ provideRep $ do
 
 postApplicantTagR :: HandlerFor App TypedContent
 postApplicantTagR = do
-  (old,mnew) <- runInputPost $ (,)
-    <$> ireq textField "old"
-    <*> iopt textField "new"
-  case mnew of
-    Just new -> runDB $ update $ \a -> do
-      set a [ApplicantTag =. just (val new)]
-      where_ $ a ^. ApplicantTag ==. just (val old)
-    _ -> runDB $ update $ \a -> do
-      set a [ApplicantTag =. val Nothing]
-      where_ $ a ^. ApplicantTag ==. just (val old)
-  addMessageI "alert-info toast" MsgRecordEdited
-  redirectUltDest ApplicantsR
+    (old,mnew) <- runInputPost $ (,) <$> ireq textField "old" <*> iopt textField "new"
+    
+    case mnew of
+      Just new -> runDB $ update $ \a -> do
+          set a [ApplicantTag =. just (val new)]
+          where_ $ a ^. ApplicantTag ==. just (val old)
+      _otherwise -> runDB $ update $ \a -> do
+          set a [ApplicantTag =. val Nothing]
+          where_ $ a ^. ApplicantTag ==. just (val old)
+          
+    addMessageI "alert-info toast" MsgRecordEdited
+    redirectUltDest ApplicantsR
 
 
 getApplicantsR :: HandlerFor App TypedContent
 getApplicantsR = do
-  params@(Params mq moffset mlimit msort tags) <- do
-    params <- reqGetParams <$> getRequest
-    return $ Params
-      (snd <$> LS.head (filter (\(k,v) -> (k == "q") && not (T.null v)) params))
-      (readMaybe . unpack . snd =<< LS.head (filter ((== "offset") . fst) params))
-      (readMaybe . unpack . snd =<< LS.head (filter ((== "limit") . fst) params))
-      (LS.head (filter ((\x -> x == "asc" || x == "desc") . fst) params))
-      (snd <$> filter ((== "tag") . fst) params)
+    params@(Params mq moffset mlimit msort tags) <- do
+        params <- reqGetParams <$> getRequest
+        return $ Params
+            (snd <$> LS.head (filter (\(k,v) -> (k == "q") && not (T.null v)) params))
+            (readMaybe . unpack . snd =<< LS.head (filter ((== "offset") . fst) params))
+            (readMaybe . unpack . snd =<< LS.head (filter ((== "limit") . fst) params))
+            (LS.head (filter ((\x -> x == "asc" || x == "desc") . fst) params))
+            (snd <$> filter ((== "tag") . fst) params)
 
-  msgs <- getMessages
-  rc <- runDB $ fetchCount params
-  applicants <- do
-    xs <- runDB $ fetchApplicants params
-    y <- liftIO $ (\(a,_,_) -> a) . toGregorian . utctDay <$> getCurrentTime
-    return $ (\(e,ns) ->
-                (e,ns, (y -) . (\(y',_,_) -> y') . toGregorian <$> (applicantBday . entityVal) e)
-             ) <$> xs
-  alltags <- do
-    xs <- (unValue <$>) <$> runDB
-      ( select $ distinct $ do
-          a <- from $ table @Applicant
-          where_ $ not_ $ isNothing (a ^. ApplicantTag)
-          orderBy [asc (a ^. ApplicantTag)]
-          return (a ^. ApplicantTag)
-      )
-    forM xs (\x -> newIdent >>= \i -> return (i,x))
+    rc <- runDB $ fetchCount params
+    applicants <- do
+        xs <- runDB $ fetchApplicants params
+        y <- liftIO $ (\(a,_,_) -> a) . toGregorian . utctDay <$> getCurrentTime
+        return $ (\(e,ns) ->
+                    (e,ns, (y -) . (\(y',_,_) -> y') . toGregorian <$> (applicantBday . entityVal) e)
+                 ) <$> xs
+    alltags <- do
+        xs <- (unValue <$>) <$> runDB
+            ( select $ distinct $ do
+                  a <- from $ table @Applicant
+                  where_ $ not_ $ isNothing (a ^. ApplicantTag)
+                  orderBy [asc (a ^. ApplicantTag)]
+                  return (a ^. ApplicantTag)
+            )
+        forM xs (\x -> newIdent >>= \i -> return (i,x))
 
-  let maxo = fromMaybe 0 $ (*)
-        <$> ((+) <$> (div rc <$> mlimit) <*> ((\x -> if mod rc x > 0 then 0 else -1) <$> mlimit))
-        <*> mlimit
-  let next = maybe 0 (min maxo) $ (+) <$> moffset <*> mlimit
-  let prev = maybe 0 (max 0) $ (-) <$> moffset <*> mlimit
-  let start = maybe 0 (\x -> if maxo < 0 then 0 else x + 1) moffset
-  let end = fromMaybe 0 $ min <$> ((+) <$> moffset <*> mlimit) <*> pure rc
+    let maxo = fromMaybe 0 $ (*)
+            <$> ((+) <$> (div rc <$> mlimit) <*> ((\x -> if mod rc x > 0 then 0 else -1) <$> mlimit))
+            <*> mlimit
+    let next = maybe 0 (min maxo) $ (+) <$> moffset <*> mlimit
+    let prev = maybe 0 (max 0) $ (-) <$> moffset <*> mlimit
+    let start = maybe 0 (\x -> if maxo < 0 then 0 else x + 1) moffset
+    let end = fromMaybe 0 $ min <$> ((+) <$> moffset <*> mlimit) <*> pure rc
 
-  selectRep $ provideRep $ defaultLayout $ do
-    setTitleI MsgApplicants
-    setUltDestCurrent
     let ultParams  = [("desc","id"),("offset","0"),("limit","5")]
-    ult <- getUrlRenderParams >>= \rndr -> fromMaybe (rndr ApplicantsR ultParams) <$> lookupSession ultDestKey
-    $(widgetFile "applicants/applicants")
+    ult <- getUrlRenderParams >>= \r -> fromMaybe (r ApplicantsR ultParams) <$> lookupSession ultDestKey
+        
+    msgs <- getMessages
+    selectRep $ provideRep $ defaultLayout $ do
+        setTitleI MsgApplicants
+        idInputSearch <- newIdent
+        idSelectLimit <- newIdent
+        idSelectLimit2 <- newIdent
+        $(widgetFile "applicants/applicants")
 
 
 getApplicantEditFormR :: ApplicantId -> HandlerFor App Html
@@ -543,13 +553,17 @@ getApplicantEditFormR aid = do
 
 getApplicantCreateFormR :: HandlerFor App Html
 getApplicantCreateFormR = do
-    msgs <- getMessages
+    
     categs <- runDB fetchCategs
+    
     (widget,enctype) <- generateFormPost $ formApplicant categs False Nothing
+    
+    let ultParams  = [("desc","id"),("offset","0"),("limit","5")]
+    ult <- getUrlRenderParams >>= \rndr -> fromMaybe (rndr ApplicantsR ultParams) <$> lookupSession ultDestKey
+    
+    msgs <- getMessages
     defaultLayout $ do
         setTitleI MsgApplicant
-        let ultParams  = [("desc","id"),("offset","0"),("limit","5")]
-        ult <- getUrlRenderParams >>= \rndr -> fromMaybe (rndr ApplicantsR ultParams) <$> lookupSession ultDestKey
         $(widgetFile "applicants/create")
 
 

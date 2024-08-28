@@ -1,3 +1,15 @@
+EditApplicant: Edit applicant
+NewApplicant: New applicant
+EditCategory: Edit category
+BlankValueResetsCategory: A blank value will reset the category
+NewSubdivision: New subdivision
+FieldRequired: Field is required
+EditDivision: Edit division
+NewDivision: New division
+NewPosition: New position
+EditSkill: Edit skill
+EditTheFormAndSavePlease: Please edit the form and save
+FillOutTheFormAndSavePlease: Please fill out the form and save
 UseCaseDiagram: Use Case Diagram
 SelectPositionToRankCandidates: Select a position to rank candidates
 Docs: Docs

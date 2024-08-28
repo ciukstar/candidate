@@ -1,3 +1,15 @@
+EditApplicant: Редактировать соискатель 
+NewApplicant: Новый соискатель
+EditCategory: Редактировать категорию
+BlankValueResetsCategory: Пустое значение обнулит категорию
+NewSubdivision: Новое подразделение
+FieldRequired: Поле обязательно для заполнения
+EditDivision: Редактировать подразделение
+NewDivision: Новое подразделение
+NewPosition: Новая должность
+EditSkill: Редактировать навык
+EditTheFormAndSavePlease: Пожалуйста, отредактируйте форму и сохраните
+FillOutTheFormAndSavePlease: Пожалуйста, заполните форму и сохраните
 UseCaseDiagram: Диаграмма вариантов использования
 SelectPositionToRankCandidates: Выберите позицию для ранжирования кандидатов
 Docs: Документация

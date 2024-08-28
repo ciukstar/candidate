@@ -7,10 +7,16 @@
     <li.breadcrumb-item.active aria-current=page>
       _{MsgSkill}
 
-<h1>_{MsgSkill}: _{MsgNumberSign}#{fromSqlKey sid}
+<h1>
+  <a.btn.btn-light.border-0.rounded-circle href=#{ult} role=button aria-label=_{MsgBack}>
+    <i.bi.bi-chevron-left>
+    
+  _{MsgEditSkill}
 
 <fieldset.border.rounded.p-3>
-  <legend.display-6>_{MsgAttributes}
+  <legend.form-text>
+    _{MsgEditTheFormAndSavePlease}
+  
   $forall (status,msg) <- msgs
     <div.alert.#{status}.alert-dismissible.fade.show role=alert>
       #{msg}

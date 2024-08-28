@@ -16,15 +16,21 @@
   ^{fvInput fV}
   
 <div.d-flex.flex-column.gap-2>
-  $forall v <- [sV,nV,pV,bV]
+  $forall v <- [nV,pV,sV,bV]
     <div :isJust (fvErrors v):.is-invalid :not (isJust (fvErrors v)) && isPost:.is-valid>
-      <label.form-label.mb-0.ps-1 for=#{fvId v}>#{fvLabel v}
+      <label.form-label.mb-0.ps-1 for=#{fvId v}>
+        #{fvLabel v}
+        $if fvRequired v
+          <sup>*
       ^{fvInput v}
       $maybe errs <- fvErrors v
         <div.invalid-feedback>
           #{errs}
   <div>
-    <label.form-label.mb-0.ps-1 for=#{fvId tV}>#{fvLabel tV}
+    <label.form-label.mb-0.ps-1 for=#{fvId tV}>
+      #{fvLabel tV}
+      $if fvRequired tV
+        <sup>*
     <div.input-group :isJust (fvErrors tV):.is-invalid :not (isJust (fvErrors tV)) && isPost:.is-valid>
       ^{fvInput tV}
       $maybe errs <- fvErrors tV

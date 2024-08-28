@@ -1,3 +1,4 @@
+
 <nav aria-label=_{MsgBreadcrumbs}>
   <ol.breadcrumb>
     <li.breadcrumb-item>
@@ -11,7 +12,7 @@
   <a.btn.btn-ligt.border-0.rounded-circle href=#{ult} role=button rel=collection aria-label=_{MsgBack}>
     <i.bi.bi-chevron-left>
     
-  _{MsgApplicant}: _{MsgNumberSign}#{fromSqlKey aid}
+  _{MsgEditApplicant}
 
 <div.d-flex.flex-row.gap-lg-5>
   <div.flex-grow-1.d-flex.flex-column.gap-3>
@@ -25,6 +26,8 @@
         <div.collapse.accordion-collapse :tab == 0:.show #collapseAttributes
           aria-labelledby=accordionHeaderAttributes data-bs-parent=#accordionApplicant>
           <div.accordion-body>
+            <p.form-text>
+              _{MsgEditTheFormAndSavePlease}
 
             $forall (status,msg) <- (filter (isInfixOf "tab-0" . fst) . filter (not . (isInfixOf "toast" . fst))) msgs
               <div.alert.#{status}.alert-dismissible.fade.show role=alert>
@@ -51,6 +54,9 @@
         <div.collapse.accordion-collapse :tab == 1:.show #collapseSkills
           aria-labelledby=accordionHeaderSkills data-bs-parent=#accordionApplicant>
           <div.accordion-body>
+            <p.form-text>
+              _{MsgEditTheFormAndSavePlease}
+              
             $forall (status,msg) <- (filter (isInfixOf "tab-1" . fst) . filter (not . (isInfixOf "toast" . fst))) msgs
               <div.alert.#{status}.alert-dismissible.fade.show role=alert>
                 <i.bi.bi-exclamation-circle.me-2>

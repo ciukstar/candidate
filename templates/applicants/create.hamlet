@@ -1,3 +1,4 @@
+
 <nav aria-label=_{MsgBreadcrumbs}>
   <ol.breadcrumb>
     <li.breadcrumb-item>
@@ -10,9 +11,14 @@
       _{MsgApplicant}
 
 <h1>
-  _{MsgApplicant}
+  <a.btn.btn-light.border-0.rounded-circle href=#{ult} role=button aria-label=_{MsgBack}>
+    <i.bi.bi-chevron-left>
+  _{MsgNewApplicant}
 
 <fieldset.border.rounded.p-3>
+  <legend.form-text>
+    _{MsgFillOutTheFormAndSavePlease}
+  
   $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
     <div.alert.#{status}.alert-dismissible.fade.show>
       <i.bi.bi-exclamation-circle.me-2>

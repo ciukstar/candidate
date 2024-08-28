@@ -19,6 +19,8 @@ module Foundation
   , unsafeHandler
   ) where
 
+
+import Control.Monad((>>), return)
 import Control.Monad.Logger (LogSource)
 
 import qualified Data.CaseInsensitive as CI
@@ -32,7 +34,6 @@ import Model (JobSkillId, SkillId, ApplicantId, JobId, DeptId)
 
 import Import.NoFoundation
   ( (<$>), flip, (||), (.), (++), ($), Eq((==))
-  , Monad (return)
   , Bool (True, False), Int, show, IO, Either
   , widgetFile
   , AppSettings
@@ -68,9 +69,10 @@ import Import.NoFoundation
   , Lang
   , RenderMessage(..)
   , MonadHandler (liftHandler, HandlerSite)
-  , Yesod (approot, makeLogger, shouldLogIO, addStaticContent, isAuthorized
-          , authRoute, defaultLayout, yesodMiddleware, makeSessionBackend
-          )
+  , Yesod
+    ( approot, makeLogger, shouldLogIO, addStaticContent, isAuthorized
+    , authRoute, defaultLayout, yesodMiddleware, makeSessionBackend
+    )
   , ToTypedContent
   , Approot(ApprootRequest)
   , AuthResult(Authorized)
@@ -92,7 +94,7 @@ import Import.NoFoundation
   , YesodAuthPersist
   , DBRunner
   , YesodPersist(..)
-  , YesodPersistRunner(..), FormResult
+  , YesodPersistRunner(..), FormResult, setUltDestCurrent
   )
 
 import Settings.StaticFiles (js_cookie_3_0_1_dist_js_cookie_js)
@@ -200,27 +202,26 @@ instance Yesod App where
     authRoute :: App -> Maybe (Route App)
     authRoute _ = Just $ AuthR LoginR
 
-    isAuthorized :: Route App  -- ^ The route the user is visiting.
-                 -> Bool       -- ^ Whether or not this is a "write" request.
-                 -> Handler AuthResult
+    isAuthorized :: Route App -> Bool -> Handler AuthResult
+    
     isAuthorized (AuthR _) _ = return Authorized
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
     isAuthorized PhotoPlaceholderR _ = return Authorized
 
-    isAuthorized HomeR _ = return Authorized
+    isAuthorized HomeR _ = setUltDestCurrent >> return Authorized
     isAuthorized DocsR _ = return Authorized
     
     isAuthorized (StaticR _) _ = return Authorized
-    isAuthorized SkillsR _ = return Authorized
+    isAuthorized SkillsR _ = setUltDestCurrent >> return Authorized
     isAuthorized (SkillR _) _ = return Authorized
-    isAuthorized ApplicantsR _ = return Authorized
+    isAuthorized ApplicantsR _ = setUltDestCurrent >> return Authorized
     isAuthorized (ApplicantR _) _ = return Authorized
     isAuthorized (AppSkillsR _) _ = return Authorized
     isAuthorized (AppSkillsEditR _) _ = return Authorized
     isAuthorized (AppSkillR _ _) _ = return Authorized
     isAuthorized (JobR _) _ = return Authorized
-    isAuthorized JobsR _ = return Authorized
+    isAuthorized JobsR _ = setUltDestCurrent >> return Authorized
     isAuthorized JobCreateFormR _ = return Authorized
     isAuthorized (JobEditFormR _) _ = return Authorized
     isAuthorized (JobSkillsR _) _ = return Authorized

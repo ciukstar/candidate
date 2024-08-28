@@ -1,3 +1,15 @@
+EditApplicant: Editați solicitantul
+NewApplicant: Solicitant nou
+EditCategory: Editați categoria
+BlankValueResetsCategory: O valoare goală va reseta categoria
+NewSubdivision: Subdiviziune nouă
+FieldRequired: Câmpul este obligatoriu
+EditDivision: Editați diviziunea
+NewDivision: Diviziune nouă
+NewPosition: Poziție nouă
+EditSkill: Editați abilitate
+EditTheFormAndSavePlease: Vă rugăm să editați formularul și să salvați
+FillOutTheFormAndSavePlease: Vă rugăm să completați formularul și să salvați
 UseCaseDiagram: Diagrama cazurilor de utilizare
 SelectPositionToRankCandidates: Selectați o poziție pentru a clasifica candidații
 Docs: Documentația
