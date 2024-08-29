@@ -1,3 +1,4 @@
+Links: Ссылки
 EditApplicant: Редактировать соискатель 
 NewApplicant: Новый соискатель
 EditCategory: Редактировать категорию

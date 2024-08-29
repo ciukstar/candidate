@@ -1,9 +1,17 @@
 
 a.app-link
-  text-decoration: none
+    text-decoration: none
   
 a.app-link:hover
-  text-decoration: underline
+    text-decoration: underline
+
+h1.title
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
+
+label.form-text
+    font-size: 0.7rem
 
 ul.list-group#applicantList
 

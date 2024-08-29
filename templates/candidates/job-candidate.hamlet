@@ -11,7 +11,7 @@
 
 <div.d-flex.flex-row.gap-lg-5>
   <div.flex-grow-1.d-column>
-    ^{candidateInfo jid aid}
+    ^{candidateInfo ult jid aid}
 
     <a.btn.btn-sm.btn-outline-secondary.mt-3 href=@{JobCandidatesR jid} role=button>
       <i.bi.bi-arrow-left>

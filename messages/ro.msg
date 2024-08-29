@@ -1,3 +1,4 @@
+Links: Linkuri
 EditApplicant: Editați solicitantul
 NewApplicant: Solicitant nou
 EditCategory: Editați categoria

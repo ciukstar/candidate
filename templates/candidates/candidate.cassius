@@ -1,6 +1,6 @@
 
 aside a
-  text-decoration: none
+    text-decoration: none
 
 aside a:hover
-  text-decoration: underline
+    text-decoration: underline

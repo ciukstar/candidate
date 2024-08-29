@@ -24,103 +24,104 @@ import Control.Monad((>>), return)
 import Control.Monad.Logger (LogSource)
 
 import qualified Data.CaseInsensitive as CI
+import Data.Bool (Bool (True, False), (||))
+import Data.Either (Either)
+import Data.Eq ((==))
+import Data.Function (flip, (.), ($))
+import Data.Functor ((<$>))
+import Data.List ((++))
 import qualified Data.List.Safe as LS
 import Data.Maybe (Maybe (..), fromMaybe)
+import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 
-import Database.Persist.Sql (ConnectionPool, runSqlPool)
+import Database.Persist.Sql (ConnectionPool, runSqlPool, SqlBackend)
 
-import Model (JobSkillId, SkillId, ApplicantId, JobId, DeptId)
+import Model
+    ( JobSkillId, SkillId, ApplicantId, JobId, DeptId
+    , Unique(UniqueUser)
+    , UserId, User(User, userPassword, userIdent)
+    )
 
 import Import.NoFoundation
-  ( (<$>), flip, (||), (.), (++), ($), Eq((==))
-  , Bool (True, False), Int, show, IO, Either
-  , widgetFile
-  , AppSettings
-    ( appShouldLogAll ,appAuthDummyLogin ,appRoot ,appAnalytics
-    , appStaticDir
+    ( Int, show, IO
+    , AppSettings
+      ( appShouldLogAll ,appAuthDummyLogin ,appRoot ,appAnalytics
+      , appStaticDir
+      )
+    , Route(StaticRoute, LoginR)
+    , Static
+    , defaultClientSessionBackend
+    , defaultYesodMiddleware
+    , getApprootText
+    , guessApproot
+    , widgetToPageContent
+    , mkYesodData
+    , parseRoutesFile
+    , defaultFormMessage
+    , defaultGetDBRunner
+    , base64md5
+    , LByteString
+    , HasHttpManager(..)
+    , Manager
+    , LogLevel(LevelError, LevelWarn)
+    , Entity(Entity)
+    , PersistStoreWrite(insert)
+    , PersistUniqueRead(getBy)
+    , SqlPersistT
+    , Lang
+    , RenderMessage(..)
+    , MonadHandler (liftHandler, HandlerSite)
+    , Yesod
+      ( approot, makeLogger, shouldLogIO, addStaticContent, isAuthorized
+      , authRoute, defaultLayout, yesodMiddleware, makeSessionBackend
+      )
+    , ToTypedContent
+    , Approot(ApprootRequest)
+    , AuthResult(Authorized)
+    , PageContent(pageBody, pageTitle, pageHead)
+    , SessionBackend
+    , RenderRoute(Route, renderRoute)
+    , FormMessage
+    , Creds(credsIdent)
+    , YesodAuthPersist
+    , DBRunner
+    , YesodPersist(..)
+    , YesodPersistRunner(..)
     )
-  , Text
-  , Route(StaticRoute, LoginR)
-  , Static
-  , User(User, userPassword, userIdent)
-  , UserId
-  , Unique(UniqueUser)
-  , SqlBackend
-  , defaultClientSessionBackend
-  , defaultYesodMiddleware
-  , getApprootText
-  , guessApproot
-  , widgetToPageContent
-  , mkYesodData
-  , parseRoutesFile
-  , defaultFormMessage
-  , defaultGetDBRunner
-  , base64md5
-  , LByteString
-  , Html
-  , HasHttpManager(..)
-  , Manager
-  , LogLevel(LevelError, LevelWarn)
-  , Entity(Entity)
-  , PersistStoreWrite(insert)
-  , PersistUniqueRead(getBy)
-  , SqlPersistT
-  , Lang
-  , RenderMessage(..)
-  , MonadHandler (liftHandler, HandlerSite)
-  , Yesod
-    ( approot, makeLogger, shouldLogIO, addStaticContent, isAuthorized
-    , authRoute, defaultLayout, yesodMiddleware, makeSessionBackend
-    )
-  , ToTypedContent
-  , Approot(ApprootRequest)
-  , AuthResult(Authorized)
-  , PageContent(pageBody, pageTitle, pageHead)
-  , SessionBackend
-  , RenderRoute(Route, renderRoute)
-  , FormMessage
-  , getAuth, Auth, AuthPlugin
-  , AuthenticationResult(Authenticated)
-  , Creds(credsIdent)
-  , YesodAuth
-    ( authPlugins
-    , authenticate
-    , redirectToReferer
-    , logoutDest
-    , loginDest
-    , AuthId
-    )
-  , YesodAuthPersist
-  , DBRunner
-  , YesodPersist(..)
-  , YesodPersistRunner(..), FormResult, setUltDestCurrent
-  )
 
+import Settings (widgetFile)
 import Settings.StaticFiles (js_cookie_3_0_1_dist_js_cookie_js)
 
-import Text.Hamlet (hamletFile)
+import Text.Hamlet (hamletFile, Html)
 import Text.Jasmine (minifym)
 import Text.Shakespeare.I18N (mkMessage)
 
+import Yesod.Auth
+    ( YesodAuth
+      ( AuthId, authPlugins, authenticate, redirectToReferer, logoutDest
+      , loginDest
+      )
+    , getAuth, Auth, AuthPlugin
+    , AuthenticationResult(Authenticated)
+    )
 -- Used only when in "auth-dummy-login" setting is enabled.
 import Yesod.Auth.Dummy
 import Yesod.Auth.OpenId (authOpenId, IdentifierType (Claimed))
 import Yesod.Core (hamlet)
 import Yesod.Core.Handler
   ( HandlerFor, defaultCsrfCookieName, defaultCsrfHeaderName, getCurrentRoute
-  , getYesod, languages, withUrlRenderer
+  , getYesod, languages, withUrlRenderer, setUltDestCurrent
   )
 import Yesod.Default.Util (addStaticContentExternal)
 import Yesod.Core.Types (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
 import Yesod.Core.Widget (toWidgetHead)
-import Yesod.Form (MForm)
+import Yesod.Form (MForm, FormResult)
 import Yesod.Form.I18n.English (englishFormMessage)
 import Yesod.Form.I18n.French (frenchFormMessage)
 import Yesod.Form.I18n.Romanian (romanianFormMessage)
 import Yesod.Form.I18n.Russian (russianFormMessage)
-
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -226,9 +227,9 @@ instance Yesod App where
     isAuthorized (JobEditFormR _) _ = return Authorized
     isAuthorized (JobSkillsR _) _ = return Authorized
     isAuthorized (JobSkillR _) _ = return Authorized
-    isAuthorized (JobCandidatesR _) _ = return Authorized
+    isAuthorized (JobCandidatesR _) _ = setUltDestCurrent >> return Authorized
     isAuthorized (CandidateR _ _) _ = return Authorized
-    isAuthorized CandidatesR _ = return Authorized
+    isAuthorized CandidatesR _ = setUltDestCurrent >> return Authorized
     isAuthorized SkillCreateFormR _ = return Authorized
     isAuthorized (SkillEditFormR _) _ = return Authorized
     isAuthorized (JobSkillsEditFormR _) _ = return Authorized

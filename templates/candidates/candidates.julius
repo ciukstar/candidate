@@ -1,5 +1,5 @@
 
-[['idModalPositions','inputSearchJobs'],['idModalApplicants','inputSearchApplicants']].map(
+[[#{idModalPositions},#{idInputSearchJobs}],[#{idModalApplicants},#{idInputSearchApplicants}]].map(
   ([dialog,input]) => [document.getElementById(dialog),document.getElementById(input)]
 ).forEach(([dialog,input]) => {
   input.addEventListener('input', (e) => {

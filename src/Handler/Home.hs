@@ -6,18 +6,21 @@
 
 module Handler.Home (getHomeR) where
 
+import Data.Text (pack)
+
 import Database.Esqueleto.Experimental
     ( select, from, table, orderBy, asc
     , (^.)
     )
 import Database.Persist (Entity (Entity))
+import Database.Persist.Sql (fromSqlKey)
 
 import Foundation
   ( App
-  , Route (SkillsR, ApplicantsR, JobsR , CandidatesR, JobCandidatesR, DocsR)
+  , Route (SkillsR, ApplicantsR, JobsR , CandidatesR, DocsR)
   , AppMessage
     ( MsgApplicants, MsgHome, MsgDescription , MsgPositions, MsgBreadcrumbs
-    , MsgCandidates, MsgClose, MsgDocs, MsgTags, MsgWelcomeTo, MsgAppName
+    , MsgCandidates, MsgClose, MsgDocs, MsgLinks, MsgWelcomeTo, MsgAppName
     , MsgSkills, MsgSelectPositionToRankCandidates
     )
   )

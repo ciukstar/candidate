@@ -13,7 +13,10 @@ module Handler.Candidates
   , getJobCandidateR
   ) where
 
-import Tree ( Tree(..), leafs, width, height, children)
+import ClassyPrelude.Yesod (ReaderT, when)
+
+import Data.List (sortBy)
+import qualified Data.List.Safe as LS (head)
 import Data.Maybe (fromMaybe, isJust)
 import Data.Text (pack, unpack, Text)
 import Data.Text.ICU
@@ -23,63 +26,64 @@ import Data.Text.ICU
   )
 import Data.Text.ICU.Calendar (setDay)
 import Data.Text.ICU.NumberFormatter (formatDouble')
-import Text.Shakespeare.I18N (renderMessage, Lang)
-import Data.List (sortBy)
-import qualified Data.List.Safe as LS (head)
 import Data.Time.Clock (getCurrentTime, utctDay)
 import Data.Time.Calendar (toGregorian)
-import Yesod.Core.Content (TypedContent)
-import Yesod.Core
-  ( Yesod(defaultLayout), MonadIO (liftIO), WidgetFor, whamlet, setTitleI
-  , lookupSession, getUrlRender, setUltDestCurrent
-  , MonadHandler (liftHandler), ToWidget (toWidget), julius
-  )
-import Yesod.Form (unTextarea)
-import Yesod.Form.Input (runInputGet, iopt)
-import qualified Yesod.Form.Fields as YF (intField)
-import Settings (widgetFile)
-import Yesod (YesodPersist(runDB))
-import Database.Persist (Entity (Entity), entityVal, entityKey)
-import Database.Persist.Sql (SqlBackend, fromSqlKey, toSqlKey)
-import ClassyPrelude.Yesod (ReaderT, when)
-import Yesod.Core.Handler
-  ( HandlerFor, selectRep, provideRep, languages, getRequest
-  , YesodRequest (reqGetParams), getYesod
-  )
-
-import Foundation
-  ( App
-  , Route
-    ( AppPhotoR, PhotoPlaceholderR, JobCandidatesR, JobCandidateR
-    , CandidatesR, CandidateR, JobsR, HomeR
-    )
-  , AppMessage
-    ( MsgCandidates, MsgSelectAPosition, MsgClose, MsgActions
-    , MsgSelect, MsgCancel, MsgSelectApplicants, MsgApplicants
-    , MsgCandidate, MsgWeight, MsgFullName, MsgId
-    , MsgHome, MsgBreadcrumbs, MsgCalculationAnalysis
-    , MsgSearch, MsgPositions, MsgPosition, MsgExpertAssessment
-    , MsgTop, MsgShowTop, MsgAge, MsgApplicant, MsgBirthday
-    , MsgPhoto, MsgCode, MsgDenom, MsgDayStart, MsgDayEnd
-    , MsgDescription, MsgDivision, MsgTags, MsgBack, MsgToggle
-    )
-  )
-
-import Model
-  ( Job (Job), JobId, SkillId, Skill (Skill), JobSkill (JobSkill)
-  , Applicant (Applicant), ApplicantId, AppSkill (AppSkill, appSkillWeight)
-  , EntityField
-    ( JobId, SkillId, JobSkillSkill, JobSkillJob, ApplicantId
-    , AppSkillApplicant, AppSkillSkill, JobDept, DeptId
-    )
-  , ultDestKey, Dept (Dept)
-  )
 
 import Database.Esqueleto.Experimental
   ( SqlQuery, SqlExpr, select, from, table, orderBy, desc
   , innerJoin, on, where_, val, in_, valList
   , (^.), (?.), (:&)((:&)), (==.), exists, selectOne, leftJoin
   )
+import Database.Persist (Entity (Entity), entityVal, entityKey)
+import Database.Persist.Sql (SqlBackend, fromSqlKey, toSqlKey)
+
+import Foundation
+    ( App
+    , Route
+      ( AppPhotoR, PhotoPlaceholderR, JobCandidatesR, JobCandidateR
+      , CandidatesR, CandidateR, JobsR, HomeR
+      )
+    , AppMessage
+      ( MsgCandidates, MsgSelectAPosition, MsgClose, MsgActions
+      , MsgSelect, MsgCancel, MsgSelectApplicants, MsgApplicants
+      , MsgCandidate, MsgWeight, MsgFullName, MsgId
+      , MsgHome, MsgBreadcrumbs, MsgCalculationAnalysis
+      , MsgSearch, MsgPositions, MsgPosition, MsgExpertAssessment
+      , MsgTop, MsgShowTop, MsgAge, MsgApplicant, MsgBirthday
+      , MsgPhoto, MsgCode, MsgDenom, MsgDayStart, MsgDayEnd
+      , MsgDescription, MsgDivision, MsgTags, MsgBack, MsgToggle
+      )
+    )
+
+import Model
+  ( ultDestKey, Dept (Dept), Job (Job), JobId, SkillId, Skill (Skill)
+  , JobSkill (JobSkill)
+  , Applicant (Applicant), ApplicantId, AppSkill (AppSkill, appSkillWeight)
+  , EntityField
+    ( JobId, SkillId, JobSkillSkill, JobSkillJob, ApplicantId
+    , AppSkillApplicant, AppSkillSkill, JobDept, DeptId
+    )
+  )
+
+import Settings (widgetFile)
+
+import Text.Shakespeare.I18N (renderMessage, Lang)
+import Tree ( Tree(..), leafs, width, height, children)
+
+import Yesod (YesodPersist(runDB))
+import Yesod.Core
+    ( Yesod(defaultLayout), MonadIO (liftIO), WidgetFor, whamlet, setTitleI
+    , lookupSession, getUrlRender, setUltDestCurrent
+    , MonadHandler (liftHandler), ToWidget (toWidget), julius, newIdent
+    )
+import Yesod.Core.Content (TypedContent)
+import Yesod.Core.Handler
+    ( HandlerFor, selectRep, provideRep, languages, getRequest
+    , YesodRequest (reqGetParams), getYesod
+    )
+import Yesod.Form (unTextarea)
+import Yesod.Form.Input (runInputGet, iopt)
+import qualified Yesod.Form.Fields as YF (intField)
 
 
 getCandidatesR :: HandlerFor App TypedContent
@@ -92,18 +96,18 @@ getCandidatesR = do
 
     job <- case mjid of
       Just jid -> do
-        applicants <- runDB $ fetchSkilledApplicants jid aids
-        appSkills <- mapM (\e@(Entity aid _) -> (e,) <$> runDB (fetchAppSkillsForJob aid jid)) applicants
-        mjob <- runDB $ selectOne $ do
-          j <- from $ table @Job
-          where_ $ j ^. JobId ==. val jid
-          return j
-        case mjob of
-          Just job -> do
-            skillTree <- bldTree <$> runDB (fetchJobSkills jid)
-            return $ Just ((job, skillTree), appSkills)
-          _ -> return Nothing
-      _ -> return Nothing
+          applicants <- runDB $ fetchSkilledApplicants jid aids
+          appSkills <- mapM (\e@(Entity aid _) -> (e,) <$> runDB (fetchAppSkillsForJob aid jid)) applicants
+          mjob <- runDB $ selectOne $ do
+              j <- from $ table @Job
+              where_ $ j ^. JobId ==. val jid
+              return j
+          case mjob of
+            Just job -> do
+                skillTree <- bldTree <$> runDB (fetchJobSkills jid)
+                return $ Just ((job, skillTree), appSkills)
+            _otherwise -> return Nothing
+      _otherwise -> return Nothing
 
     applicants <- runDB $ select $ do
         x <- from $ table @Applicant
@@ -117,8 +121,17 @@ getCandidatesR = do
     selectRep $ provideRep $ defaultLayout $ do
         setTitleI MsgCandidate
         setUltDestCurrent
+        idModalPositions <- newIdent
+        idInputSearchJobs <- newIdent
+        idModalApplicants <- newIdent
+        idInputSearchApplicants <- newIdent
+        idSelectLimit <- newIdent
+        idSelectTop <- newIdent
+        idJobName <- newIdent
+        idBadgeApplicants <- newIdent
+        idListCandidate <- newIdent
         when (isJust job) $ toWidget [julius|
-                                            [['selectLimit','selectTop'],['selectTop','selectLimit']].map(
+                                            [[#{idSelectLimit},#{idSelectTop}],[#{idSelectTop},#{idSelectLimit}]].map(
                                               ([x,y]) => [document.getElementById(x),document.getElementById(y)]
                                             ).forEach(([x,y]) => {
                                               x.addEventListener('change', e => {
@@ -144,45 +157,47 @@ getJobCandidateR jid aid = selectRep $ provideRep $ defaultLayout $ do
     $(widgetFile "candidates/job-candidate")
 
 
-candidateInfo :: JobId -> ApplicantId -> WidgetFor App ()
-candidateInfo jid aid = do
-  mtab <- runInputGet $ iopt YF.intField "tab" :: WidgetFor App (Maybe Int)
-  app <- liftHandler getYesod
-  mjob <- liftHandler $ runDB $ selectOne $ do
-    (x :& d) <- from $ table @Job
-      `leftJoin` table @Dept `on` (\(x :& d) -> x ^. JobDept ==. d ?. DeptId)
-    where_ $ x ^. JobId ==. val jid
-    return (x,d)
+candidateInfo :: Text -> JobId -> ApplicantId -> WidgetFor App ()
+candidateInfo ult jid aid = do
+    mtab <- runInputGet $ iopt YF.intField "tab" :: WidgetFor App (Maybe Int)
+    app <- liftHandler getYesod
+    mjob <- liftHandler $ runDB $ selectOne $ do
+        (x :& d) <- from $ table @Job
+            `leftJoin` table @Dept `on` (\(x :& d) -> x ^. JobDept ==. d ?. DeptId)
+        where_ $ x ^. JobId ==. val jid
+        return (x,d)
 
-  mapp <- liftHandler $ runDB $ selectOne $ do
-    x <- from $ table @Applicant
-    where_ $ x ^. ApplicantId ==. val aid
-    return x
+    mapp <- liftHandler $ runDB $ selectOne $ do
+        x <- from $ table @Applicant
+        where_ $ x ^. ApplicantId ==. val aid
+        return x
 
-  langs <- languages
-  let loc = Locale . unpack . fromMaybe "en" . LS.head $ langs 
-  cal <- liftIO $ calendar "GMT+0300" loc TraditionalCalendarType
-  fmtDay <- liftIO $ standardDateFormatter NoFormatStyle ShortFormatStyle loc "GMT+0300"
-  appSkills <- liftHandler $ runDB $ fetchAppSkillsForJob aid jid
-  skillTree <- liftHandler $ bldTree <$> runDB (fetchJobSkills jid)
-  mage <- age mapp
-  let weight = calcWeight appSkills skillTree
-  $(widgetFile "candidates/candidate-info")
+    langs <- languages
+    let loc = Locale . unpack . fromMaybe "en" . LS.head $ langs 
+    cal <- liftIO $ calendar "GMT+0300" loc TraditionalCalendarType
+    fmtDay <- liftIO $ standardDateFormatter NoFormatStyle ShortFormatStyle loc "GMT+0300"
+    appSkills <- liftHandler $ runDB $ fetchAppSkillsForJob aid jid
+    skillTree <- liftHandler $ bldTree <$> runDB (fetchJobSkills jid)
+    mage <- age mapp
+    let weight = calcWeight appSkills skillTree
+
+    idCollapseAnalysis <- newIdent
+    $(widgetFile "candidates/candidate-info")
 
   where
-    age :: MonadIO m => Maybe (Entity Applicant) -> m (Maybe Integer)
-    age (Just (Entity _ (Applicant _ _ _ bday _))) = do
-      (y,_,_) <- liftIO $ toGregorian . utctDay <$> getCurrentTime
-      return $ (\(y',_,_) -> y - y') . toGregorian <$> bday
-    age Nothing = return Nothing
+      age :: MonadIO m => Maybe (Entity Applicant) -> m (Maybe Integer)
+      age (Just (Entity _ (Applicant _ _ _ bday _))) = do
+          (y,_,_) <- liftIO $ toGregorian . utctDay <$> getCurrentTime
+          return $ (\(y',_,_) -> y - y') . toGregorian <$> bday
+      age Nothing = return Nothing
 
 
 rndrExpr :: (Double -> Text) -> [Tree (Text,Double,Text,Text)] -> Text
 rndrExpr _ [] = ""
 rndrExpr fmt [Node (_,w,_,_) []] = fmt w
 rndrExpr fmt (Node (_,w,_,_) cs:ns)
-  | length cs > 1 = fmt w <> " * (" <> rndrExpr fmt cs <> ")" <> (if null ns then "" else " + ") <> rndrExpr fmt ns
-  | otherwise     = fmt w <> " * " <> rndrExpr fmt cs <> (if null ns then "" else " + ") <> rndrExpr fmt ns
+    | length cs > 1 = fmt w <> " * (" <> rndrExpr fmt cs <> ")" <> (if null ns then "" else " + ") <> rndrExpr fmt ns
+    | otherwise     = fmt w <> " * " <> rndrExpr fmt cs <> (if null ns then "" else " + ") <> rndrExpr fmt ns
 
 
 rndrTree :: (Double -> Text) -> [Tree (Text,Double,Text,Text)] -> WidgetFor App ()

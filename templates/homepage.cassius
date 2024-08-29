@@ -5,9 +5,16 @@ main
     align-items: center
     gap: 2rem
 
+    h1.title, p.microcopy
+        text-align: center
+
     .list-group
         align-self: stretch
         a.list-group-item
             display: flex
             align-items: center
             justify-content: space-between
+            span.job-name
+                white-space: nowrap
+                overflow: hidden
+                text-overflow: ellipsis

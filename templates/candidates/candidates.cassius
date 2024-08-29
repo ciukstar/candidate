@@ -1,14 +1,14 @@
 
-#idJobName
+##{idJobName}
     white-space: nowrap
     overflow: hidden
     text-overflow: ellipsis
     
 
-span#applicantsBadge
+##{idBadgeApplicants}
     position: absolute
-    top: 0
-    right: 0
+    top: -4px
+    right: -4px
 
 button.btn-link, ul.list-group > li a, table a
     text-decoration: none
@@ -16,7 +16,7 @@ button.btn-link, ul.list-group > li a, table a
 button.btn-link:hover, ul.list-group > li a:hover, table a:hover
     text-decoration: underline
 
-ul#candidateList
+##{idListCandidate}
 
     li.list-group-item
         display: grid

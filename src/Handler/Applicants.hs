@@ -86,13 +86,13 @@ import Foundation
       , MsgClose, MsgWeight, MsgSelect, MsgNumberOfSkills, MsgApplicant
       , MsgHome, MsgLabels, MsgPaginationLabel, MsgRowsPerPage
       , MsgPagination, MsgFirst, MsgPrevious, MsgNext, MsgLast
-      , MsgDetails, MsgActions, MsgBirthday, MsgFullName
-      , MsgBack, MsgAttributes, MsgDenom, MsgCategories, MsgCategory
-      , MsgAge, MsgEnterNewName, MsgPhoto, MsgNumberSign, MsgNewApplicant
-      , MsgSections, MsgWeightNotNormal, MsgInQuotes, MsgAppSkillAlreadyExists
-      , MsgFamilyName, MsgGivenName, MsgAdditionalName, MsgRecordEdited
-      , MsgRecordAdded, MsgRecordDeleted, MsgFillOutTheFormAndSavePlease
-      , MsgEditTheFormAndSavePlease
+      , MsgDetails, MsgActions, MsgBirthday, MsgFullName, MsgBack
+      , MsgAttributes, MsgDenom, MsgCategories, MsgCategory, MsgAge
+      , MsgPhoto, MsgNumberSign, MsgNewApplicant, MsgWeightNotNormal
+      , MsgSections, MsgInQuotes, MsgAppSkillAlreadyExists, MsgFamilyName
+      , MsgGivenName, MsgAdditionalName, MsgRecordEdited, MsgEditCategory
+      , MsgRecordDeleted, MsgFillOutTheFormAndSavePlease, MsgRecordAdded
+      , MsgEditTheFormAndSavePlease, MsgBlankValueResetsCategory
       )
     )
   

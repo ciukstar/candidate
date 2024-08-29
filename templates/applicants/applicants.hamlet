@@ -7,7 +7,7 @@
     <li.breadcrumb-item.active aria-current=page>
       _{MsgApplicants}
       
-<h1>
+<h1.title>
   <a.btn.btn-light.border-0.rounded-circle href=@{HomeR} role=button aria-label=_{MsgBack}>
     <i.bi.bi-chevron-left>
     
@@ -54,10 +54,8 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
       <div.card-header.pt-0>
         <div.d-flex.flex-row.justify-content-between>
           <div>
-            <small>
-              <small>
-                <small.fw-light>_{MsgRowsPerPage}
-            <select.form-select ##{idSelectLimit2}>
+            <label.form-text.fw-light for=#{idSelectLimit2}>_{MsgRowsPerPage}
+            <select.form-select.form-select-sm ##{idSelectLimit2}>
               
               <option value=3 :Just 3 == mlimit:selected>3
               <option value=4 :Just 4 == mlimit:selected>4
@@ -66,10 +64,8 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
               <option value=20 :Just 20 == mlimit:selected>20
               <option value=50 :Just 50 == mlimit:selected>50
           <div>
-            <small>
-              <small>
-                <small.fw-light>_{MsgPaginationLabel start end rc}
-            <nav aria-label=_{MsgPagination}>
+            <label.form-text.fw-light for=idNavPagination2>_{MsgPaginationLabel start end rc}
+            <nav aria-label=_{MsgPagination} #idNavPagination2>
               <ul.pagination.m-0.p-0>
                 <li.page-item :moffset == Just 0:.disabled>
                   <button.page-link type=submit form=qform rel=first title=_{MsgFirst}>
@@ -99,7 +95,7 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
 
             <a.skills.app-link href=@{ApplicantR aid}?tab=1>
               <span>_{MsgSkills}
-              <small.badge.rounded-pill.bg-secondary.ms-1>
+              <sup.badge.rounded-pill.bg-secondary.ms-1>
                 #{ns}
 
     <div.d-none.d-lg-block>
@@ -220,18 +216,25 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
           <div.modal-dialog>
             <div.modal-content>
               <div.modal-header>
-                <h5.modal-title>_{MsgEdit}
+                <h5.modal-title>
+                  _{MsgEditCategory}
                 <button.btn-close type=button data-bs-dismiss=modal aria-label=_{MsgClose}>
               <div.modal-body>
+                <p.form-text>
+                  _{MsgEditTheFormAndSavePlease}
+                  
                 <form method=post action=@{ApplicantTagR} #formTagEdit#{ident}>
                   <input type=hidden name=old value=#{tag}>
-                  <label.form-label for=inputNewTag#{ident}>_{MsgInQuotes tag}
-                  <input.form-control type=text name=new placeholder=_{MsgEnterNewName} #inputNewTag#{ident}>
+                  <input.form-control type=text name=new value=_{tag} #inputNewTag#{ident}>
+                  <div.form-text>
+                    <sup>*
+                    <span.text-lowercase>_{MsgBlankValueResetsCategory}
+                  
               <div.modal-footer>
+                <button.btn.btn-light type=button data-bs-dismiss=modal>
+                  _{MsgCancel}
                 <button.btn.btn-primary type=submit form=formTagEdit#{ident}>
                   _{MsgSave}
-                <button.btn.btn-secondary type=button data-bs-dismiss=modal>
-                  _{MsgCancel}
 
 $forall (status,msg) <- filter (isInfixOf "toast" . fst) msgs
   <div.toast-container.p-3.bottom-0.start-50.translate-middle-x>

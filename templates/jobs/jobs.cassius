@@ -5,6 +5,11 @@ a.app-link
 a.app-link:hover
     text-decoration: underline
 
+h1.title
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
+
 div.card div.list-group div.list-group-item
     display: grid
     grid-template-columns: auto 48px

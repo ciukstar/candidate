@@ -1,3 +1,4 @@
+
 <nav aria-label=_{MsgBreadcrumbs}>
   <ol.breadcrumb>
     <li.breadcrumb-item>
@@ -13,7 +14,7 @@
   _{MsgCandidates}
 
 $maybe (Entity jid (Job _ name _ _ _ _), jobSkills) <- job
-  <h2.flex-grow-1.fw-light.lh-1 #idJobName>
+  <h2.flex-grow-1.fw-light #idJobName>
     #{name}
   $with weights <- filter gtZero $ calcWeights appSkills jobSkills
     <ul.d-block.d-lg-none.list-group #listGroupCandidates>
@@ -33,15 +34,15 @@ $maybe (Entity jid (Job _ name _ _ _ _), jobSkills) <- job
               <i.bi.bi-three-dots-vertical>
             <ul.dropdown-menu>
               <li>
-                <a.dropdown-item href=@{JobCandidateR jid aid}?tab=0>
+                <a.dropdown-item href=@?{(JobCandidateR jid aid,[("tab","0")])}>
                   _{MsgCalculationAnalysis}
               <li>
-                <a.dropdown-item href=@{JobCandidateR jid aid}?tab=1>
+                <a.dropdown-item href=@?{(JobCandidateR jid aid,[("tab","1")])}>
                   _{MsgApplicant}
               <li>
-                <a.dropdown-item href=@{JobCandidateR jid aid}?tab=2>
+                <a.dropdown-item href=@?{(JobCandidateR jid aid,[("tab","2")])}>
                   _{MsgPosition}
-          <a.weight href=@{JobCandidateR jid aid}?tab=0>
+          <a.weight href=@?{(JobCandidateR jid aid,[("tab","0")])}>
             <span.fw-light>_{MsgWeight}
             <span.fs-6.badge.rounded-pill.bg-success>
               #{fmtDbl ".##" loc w}

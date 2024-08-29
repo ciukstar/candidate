@@ -5,16 +5,18 @@
       _{MsgHome}
 
 <main>
-  <h1>
+  <h1.title>
     _{MsgWelcomeTo} _{MsgAppName}
-  <p>
+  <p.microcopy.form-text>
     _{MsgSelectPositionToRankCandidates}
 
 
   <nav.list-group.list-group-flush>
     $forall Entity jid (Job _ name _ _ _ _) <- positions
-      <a.list-group-item.list-group-item-action.list-group-item-secodary href=@{JobCandidatesR jid}>
-        #{name}
+      <a.list-group-item.list-group-item-action.list-group-item-secodary.py-3
+        href=@?{(CandidatesR,[("job",pack $ show $ fromSqlKey jid)])}>
+        
+        <span.job-name>#{name}
         <i.bi.bi-chevron-right>
         
         
@@ -22,7 +24,7 @@
 <aside>
   <div.offcanvas-lg.offcanvas-end #offcanvasMainRight tabindex=-1>
     <div.offcanvas-header.border-bottom>
-      <h5.offcanvas-title>_{MsgTags}
+      <h5.offcanvas-title>_{MsgLinks}
       <button.btn-close type=button aria-label=_{MsgClose}
         data-bs-dismiss=offcanvas data-bs-target=#offcanvasMainRight>
     <div.offcanvas-body>

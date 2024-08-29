@@ -1,3 +1,4 @@
+
 <nav aria-label=_{MsgBreadcrumbs}>
   <ol.breadcrumb>
     <li.breadcrumb-item>
@@ -6,25 +7,27 @@
       _{MsgCandidates}
 
 <h1>
+  <a.btn.btn-light.border-0.rounded-circle href=@{HomeR} role=button aria-label=_{MsgBack}>
+    <i.bi.bi-chevron-left>
   _{MsgCandidates}
 
 <div.mb-1>
   $maybe ((Entity _ (Job _ name _ _ _ _), _), _) <- job
     <div.d-flex.flex-row.flex-nowrap.justify-content-between.align-items-center>
-      <h2.flex-grow-1.fw-light.lh-1 #idJobName>
+      <h2.flex-grow-1.fw-light.lh-1 ##{idJobName}>
         #{name}
       <div>
         <button.d-block.d-lg-none.btn.btn-light.rounded-circle type=button
-          title=_{MsgSelect} data-bs-toggle=modal data-bs-target=#idModalPositions>
+          title=_{MsgSelect} data-bs-toggle=modal data-bs-target=##{idModalPositions}>
           <i.bi.bi-list-ul>
   $nothing
     <div.d-flex.justify-content-center.align-items-center.mt-5.d-lg-none>
       <button.btn.btn-primary type=button
-        data-bs-toggle=modal data-bs-target=#idModalPositions>
+        data-bs-toggle=modal data-bs-target=##{idModalPositions}>
         _{MsgSelectAPosition}
     <div.d-none.mt-5.d-lg-block>
       <button.btn.btn-primary type=button
-        data-bs-toggle=modal data-bs-target=#idModalPositions>
+        data-bs-toggle=modal data-bs-target=##{idModalPositions}>
         _{MsgSelectAPosition}
 
 
@@ -37,20 +40,20 @@
             $if length aids > 0
               <div.position-relative>
                 <button.btn.btn-light.rounded-circle type=button
-                  title=_{MsgApplicants} data-bs-toggle=modal data-bs-target=#idModalApplicants>
+                  title=_{MsgApplicants} data-bs-toggle=modal data-bs-target=##{idModalApplicants}>
                   <i.bi.bi-person-fill>
                 <small>
-                  <span.badge.rounded-pill.bg-success #applicantsBadge>
+                  <span.badge.rounded-pill.bg-success ##{idBadgeApplicants}>
                     <small>#{length aids}
             $else
               <button.btn.btn-light.rounded-circle type=button
-                title=_{MsgApplicants} data-bs-toggle=modal data-bs-target=#idModalApplicants>
+                title=_{MsgApplicants} data-bs-toggle=modal data-bs-target=##{idModalApplicants}>
                 <i.bi.bi-person-check-fill>
 
             <div>
-              <label.col-form-label for=selectTop>
+              <label.col-form-label for=#{idSelectTop}>
                 _{MsgTop}
-              <select.form-select.d-inline-block.w-auto #selectTop>
+              <select.form-select.d-inline-block.w-auto ##{idSelectTop}>
                 <option :limit == 3:selected value=3>3
                 <option :limit == 5:selected value=5>5
                 <option :limit == 10:selected value=10>10
@@ -58,7 +61,7 @@
                 <option :limit == 20:selected value=20>20
                 <option :limit == 50:selected value=50>50
 
-        <ul.list-group.list-group-flush #candidateList>
+        <ul.list-group.list-group-flush ##{idListCandidate}>
           $forall (w,Entity aid (Applicant s n mp _ _), _) <- weights
             <li.list-group-item>
               <img.photo.rounded-circle src=@{AppPhotoR aid} height=48 width=48
@@ -76,16 +79,16 @@
                   <i.bi.bi-three-dots-vertical>
                 <ul.dropdown-menu>
                   <li>
-                    <a.dropdown-item href="@{CandidateR jid aid}?tab=0">
+                    <a.dropdown-item href=@?{(CandidateR jid aid,[("tab","0")])}>
                       _{MsgCalculationAnalysis}
                   <li>
-                    <a.dropdown-item href="@{CandidateR jid aid}?tab=1">
+                    <a.dropdown-item href=@?{(CandidateR jid aid,[("tab","1")])}>
                       _{MsgApplicant}
                   <li>
-                    <a.dropdown-item href="@{CandidateR jid aid}?tab=2">
+                    <a.dropdown-item href=@?{(CandidateR jid aid,[("tab","2")])}>
                       _{MsgPosition}
 
-              <a.weight href=@{CandidateR jid aid}?tab=0>
+              <a.weight href=@?{(CandidateR jid aid,[("tab","0")])}>
                 <span.fw-light>_{MsgWeight}
                 <span.fs-6.badge.rounded-pill.bg-success>
                   #{fmtDbl ".##" loc w}
@@ -102,13 +105,13 @@
               <tr>
                 <td>
                   $maybe p <- mp
-                    <a href=@{CandidateR jid aid}?tab=1 rel=item>
+                    <a href=@?{(CandidateR jid aid,[("tab","1")])} rel=item>
                       #{s} #{n} #{p}
                   $nothing
-                    <a href=@{CandidateR jid aid}?tab=1 rel=item>
+                    <a href=@?{(CandidateR jid aid,[("tab","1")])} rel=item>
                       #{s} #{n}
                 <th scope=row>
-                  <a href=@{CandidateR jid aid}?tab=0>
+                  <a href=@?{(CandidateR jid aid,[("tab","0")])}>
                     #{fmtDbl ".##" loc w}
                 $forall Node (Entity _ (JobSkill _ sid _ _ _), _) _ <- (allLeafs jobSkills)
                   <td.fw-light title=_{MsgExpertAssessment}>
@@ -124,31 +127,32 @@
       <div.offcanvas-body>
         <div.d-grid.gap-3>
           $maybe _ <- job
-            <button.btn.btn-primary type=button data-bs-toggle=modal data-bs-target=#idModalPositions>
+            <button.btn.btn-primary type=button data-bs-toggle=modal data-bs-target=##{idModalPositions}>
               _{MsgSelectAPosition}
             <button.btn.btn-primary.position-relative type=button
-              data-bs-toggle=modal data-bs-target=#idModalApplicants>
+              data-bs-toggle=modal data-bs-target=##{idModalApplicants}>
               _{MsgSelectApplicants}
+              
               $if length aids > 0
                 <span.badge.rounded-pill.position-absolute.top-0.start-100.translate-middle.bg-success>
                   #{length aids}
 
             <div.form-floating>
-              <select.form-select name=limit required form=formGetCandidates #selectLimit>
+              <select.form-select name=limit required form=formGetCandidates ##{idSelectLimit}>
                 <option :limit == 3:selected value=3>3
                 <option :limit == 5:selected value=5>5
                 <option :limit == 10:selected value=10>10
                 <option :limit == 15:selected value=15>15
                 <option :limit == 20:selected value=20>20
                 <option :limit == 50:selected value=50>50
-              <label for=selectLimit>_{MsgShowTop}
+              <label for=#{idSelectLimit}>_{MsgShowTop}
           $nothing
             <button.d-lg-none.btn.btn-primary type=button
-              data-bs-toggle=modal data-bs-target=#idModalPositions>
+              data-bs-toggle=modal data-bs-target=##{idModalPositions}>
               _{MsgSelectAPosition}
 
 
-<div.modal.fade #idModalPositions tabindex=-1 aria-hidden=true aria-label=_{MsgPositions}>
+<div.modal.fade ##{idModalPositions} tabindex=-1 aria-hidden=true aria-label=_{MsgPositions}>
   <div.modal-dialog.modal-dialog-scrollable>
     <div.modal-content>
       <div.modal-header.border-bottom-0>
@@ -157,7 +161,7 @@
       <div.modal-header.border-top-0.mt-0.pt-0>
         <div.input-group>
           <i.bi.bi-search.input-group-text>
-          <input.form-control type=search placeholder=_{MsgSearch} #inputSearchJobs>
+          <input.form-control type=search placeholder=_{MsgSearch} ##{idInputSearchJobs}>
       <div.modal-body>
         <form method=get action=@{CandidatesR} #formGetCandidates>
           <ul.list-group.list-group-flush>
@@ -174,7 +178,7 @@
         <button.btn.btn-primary type=submit form=formGetCandidates>
           _{MsgSelect}
 
-<div.modal.fade #idModalApplicants tabindex=-1 aria-hidden=true aria-label=_{MsgApplicants}>
+<div.modal.fade ##{idModalApplicants} tabindex=-1 aria-hidden=true aria-label=_{MsgApplicants}>
   <div.modal-dialog.modal-dialog-scrollable>
     <div.modal-content>
       <div.modal-header.border-bottom-0>
@@ -183,7 +187,7 @@
       <div.modal-header.border-top-0.mt-0.pt-0>
         <div.input-group>
           <i.bi.bi-search.input-group-text>
-          <input.form-control type=search placeholder=_{MsgSearch} #inputSearchApplicants>
+          <input.form-control type=search placeholder=_{MsgSearch} ##{idInputSearchApplicants}>
       <div.modal-body>
         <ul.list-group.list-group-flush>
           $forall Entity aid (Applicant s n mp _ _) <- applicants

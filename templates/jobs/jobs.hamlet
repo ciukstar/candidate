@@ -5,7 +5,7 @@
       <a href=@{HomeR} rel=linkset>_{MsgHome}
     <li.breadcrumb-item.active aria-current=page>_{MsgPositions}
 
-<h1>
+<h1.title>
   <a.btn.btn-light.border-0.rounded-circle href=@{HomeR} role=button aria-label=_{MsgBack}>
     <i.bi.bi-chevron-left>
   _{MsgPositions}
@@ -95,12 +95,12 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
               <a.skills.app-link href=@?{(JobR jid,[("tab","1")])}>
                 <div.d-flex.align-items-center.gap-1>
                   _{MsgSkills}
-                  <span.badge.rounded-pill.bg-secondary>
+                  <sup.badge.rounded-pill.bg-secondary>
                     #{nSkills}
               <a.candidates.app-link href=@{JobCandidatesR jid}>
                 <div.d-flex.align-items-center.gap-1>
                   _{MsgCandidates}
-                  <span.badge.rounded-pill.bg-secondary>
+                  <sup.badge.rounded-pill.bg-secondary>
                     #{nCandidates}
 
     <div.d-none.d-lg-block>

@@ -1,6 +1,12 @@
 
+    
+h1.title
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
+    
 a.app-link
-  text-decoration: none
+    text-decoration: none
 
 a.app-link:hover
-  text-decoration: underline
+    text-decoration: underline

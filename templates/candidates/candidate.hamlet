@@ -1,3 +1,4 @@
+
 <nav aria-label=_{MsgBreadcrumbs}>
   <ol.breadcrumb>
     <li.breadcrumb-item>
@@ -8,12 +9,8 @@
       _{MsgCandidate}
 
 <div.d-flex.flex-row.gap-lg-5>
-  <div.flex-grow-1.d-column>
-    ^{candidateInfo jid aid}
-
-    <a.btn.btn-sm.btn-outline-secondary.mt-3 href=#{ult} role=button>
-      <i.bi.bi-arrow-left>
-      _{MsgBack}
+  <div.flex-grow-1.d-column style="min-width:0">
+    ^{candidateInfo ult jid aid}
   
   <aside>
     <div.offcanvas-lg.offcanvas-end tabindex=-1 #offcanvasMainRight aria-labelledby=offcanvasMainRightTitle>
@@ -24,8 +21,8 @@
       <div.offcanvas-body>
         <div>
           <p>
-            <a href=@{CandidateR jid aid}?tab=0>_{MsgCalculationAnalysis}
+            <a href=@?{(CandidateR jid aid,[("tab","0")])}>_{MsgCalculationAnalysis}
           <p>
-            <a href=@{CandidateR jid aid}?tab=1>_{MsgApplicant}
+            <a href=@?{(CandidateR jid aid,[("tab","1")])}>_{MsgApplicant}
           <p>
-            <a href=@{CandidateR jid aid}?tab=2>_{MsgPosition}
+            <a href=@?{(CandidateR jid aid,[("tab","2")])}>_{MsgPosition}
