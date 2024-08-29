@@ -244,27 +244,27 @@ rndrTree fmt (Node (eid,weight,code,name) xs:ns) = [whamlet|
 
 getJobCandidatesR :: JobId -> HandlerFor App TypedContent
 getJobCandidatesR jid = do
-  job <- do
-    mjob <- runDB $ selectOne $ do
-      j <- from $ table @Job
-      where_ $ j ^. JobId ==. val jid
-      return j
-    case mjob of
-      Just job -> do
-        skillTree <- bldTree <$> runDB (fetchJobSkills jid)
-        return $ Just (job, skillTree)
-      _ -> return Nothing
+    job <- do
+        mjob <- runDB $ selectOne $ do
+            j <- from $ table @Job
+            where_ $ j ^. JobId ==. val jid
+            return j
+        case mjob of
+          Just job -> do
+              skillTree <- bldTree <$> runDB (fetchJobSkills jid)
+              return $ Just (job, skillTree)
+          Nothing -> return Nothing
 
-  applicants <- runDB $ fetchSkilledApplicants jid []
+    applicants <- runDB $ fetchSkilledApplicants jid []
 
-  -- appSkills :: [(Entity Applicant, [Entity AppSkill])]
-  appSkills <- mapM (\e@(Entity aid _) -> (e,) <$> runDB (fetchAppSkillsForJob aid jid)) applicants
+    -- appSkills :: [(Entity Applicant, [Entity AppSkill])]
+    appSkills <- mapM (\e@(Entity aid _) -> (e,) <$> runDB (fetchAppSkillsForJob aid jid)) applicants
 
-  loc <- Locale . unpack . fromMaybe "en" . LS.head <$> languages
-  ult <- getUrlRender >>= \rndr -> fromMaybe (rndr JobsR) <$> lookupSession ultDestKey
-  selectRep $ provideRep $ defaultLayout $ do
-    setTitleI MsgCandidates
-    $(widgetFile "candidates/job-candidates")
+    loc <- Locale . unpack . fromMaybe "en" . LS.head <$> languages
+    ult <- getUrlRender >>= \rndr -> fromMaybe (rndr JobsR) <$> lookupSession ultDestKey
+    selectRep $ provideRep $ defaultLayout $ do
+        setTitleI MsgCandidates
+        $(widgetFile "candidates/job-candidates")
 
 
 fetchAppSkillsForJob :: MonadIO m => ApplicantId -> JobId -> ReaderT SqlBackend m [Entity AppSkill]

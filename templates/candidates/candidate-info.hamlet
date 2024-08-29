@@ -1,12 +1,12 @@
 
-<h1>
+<h1.title>
   <a.btn.btn-light.border-0.rounded-circle href=#{ult} role=button aria-label=_{MsgBack}>
     <i.bi.bi-chevron-left>
     
   _{MsgCandidate}
 
 $maybe (Entity _ (Job _ name _ _ _ _), _) <- mjob
-  <h2.display-6>
+  <h2.subtitle.display-6>
     #{name}
 
 $maybe Entity aid (Applicant s n mp _ _) <- mapp
