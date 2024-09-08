@@ -13,7 +13,7 @@ COPY static /opt/candidate/static
 COPY config /opt/candidate/config
 
 ENV YESOD_PORT=8080
-ENV DEMO_LANG=${YESOD_DEMO_LANG}
+ENV YESOD_DEMO_LANG=${YESOD_DEMO_LANG}
 
 EXPOSE 8080
 CMD ["./candidate"]

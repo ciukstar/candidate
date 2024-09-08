@@ -180,7 +180,7 @@ makeFoundation appSettings = do
     flip runLoggingT logFunc $ flip runSqlPool pool $ do
       runMigration migrateAll
 
-      demo <- liftIO $ getEnv "DEMO_LANG"
+      demo <- liftIO $ getEnv "YESOD_DEMO_LANG"
       case demo of
         Just "EN" -> populateEN
         Just "FR" -> populateFR
