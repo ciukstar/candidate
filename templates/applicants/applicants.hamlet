@@ -179,10 +179,10 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
               <code>_{MsgInQuotes ((<>) ((<>) ((<>) ((<>) s " ") n) " ") (fromMaybe "" mp))}
               <h4>_{MsgReallyDelete}
             <div.modal-footer>
-              <button.btn.btn-primary.delete type=button data-url=@{ApplicantR aid}>
-                _{MsgDelete}
-              <button.btn.btn-secondary type=button data-bs-dismiss=modal>
+              <button.btn.btn-light type=button data-bs-dismiss=modal>
                 _{MsgCancel}
+              <button.btn.btn-warning.delete type=button data-url=@{ApplicantR aid}>
+                _{MsgDelete}
 
   <aside>
     <div.offcanvas-lg.offcanvas-end #offcanvasMainRight tabindex=-1>

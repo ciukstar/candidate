@@ -20,15 +20,16 @@
         <button.d-block.d-lg-none.btn.btn-light.rounded-circle type=button
           title=_{MsgSelect} data-bs-toggle=modal data-bs-target=##{idModalPositions}>
           <i.bi.bi-list-ul>
+          
   $nothing
-    <div.d-flex.justify-content-center.align-items-center.mt-5.d-lg-none>
+    
+    <div.d-flex.flex-column.justify-content-center.align-items-center.mt-5>
       <button.btn.btn-primary type=button
         data-bs-toggle=modal data-bs-target=##{idModalPositions}>
         _{MsgSelectAPosition}
-    <div.d-none.mt-5.d-lg-block>
-      <button.btn.btn-primary type=button
-        data-bs-toggle=modal data-bs-target=##{idModalPositions}>
-        _{MsgSelectAPosition}
+        
+      <p.microcopy.form-text>
+        _{MsgSelectPositionToRankCandidates}.
 
 
 <div.d-flex.flex-row.gap-lg-3>
@@ -64,14 +65,16 @@
         <ul.list-group.list-group-flush ##{idListCandidate}>
           $forall (w,Entity aid (Applicant s n mp _ _), _) <- weights
             <li.list-group-item>
+            
               <img.photo.rounded-circle src=@{AppPhotoR aid} height=48 width=48
                 alt=_{MsgPhoto} onerror="this.src='@{PhotoPlaceholderR}'">
-              <a.candidate.lh-1 href=@?{(CandidateR jid aid,[("tab","1")])} rel-item>
-                <span.fs-5>
-                  $maybe p <- mp
-                    #{s} #{n} #{p}
-                  $nothing
-                    #{s} #{n}
+                
+              <a.candidate.fs-5 href=@?{(CandidateR jid aid,[("tab","1")])} rel-item>
+                $maybe p <- mp
+                  #{s} #{n} #{p}
+                $nothing
+                  #{s} #{n}
+    
               <div.actions.dropdown>
                 <button.btn.btn-light.rounded-circle.border-0 type=button
                   title=_{MsgActions} aria-label=_{MsgActions}
@@ -90,8 +93,12 @@
 
               <a.weight href=@?{(CandidateR jid aid,[("tab","0")])}>
                 <span.fw-light>_{MsgWeight}
-                <span.fs-6.badge.rounded-pill.bg-success>
-                  #{fmtDbl ".##" loc w}
+                <span.fs-6.badge.rounded-pill
+                  :w < 0.33:.bg-danger 
+                  :(w >= 0.33) && (w < 0.66):.bg-warning
+                  :w >= 0.66:.bg-success>
+                  
+                  #{fmtDbl ".00" loc w}
 
   $maybe ((Entity jid _, jobSkills), appSkills) <- job
     $with weights <- take limit (calcWeights appSkills jobSkills)

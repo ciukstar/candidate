@@ -51,7 +51,7 @@ import Foundation
       , MsgPleaseConfirm, MsgReallyDelete, MsgInvalidFormData
       , MsgRowsPerPage, MsgPaginationLabel, MsgFirst, MsgPrevious
       , MsgNext, MsgLast, MsgNoDataFound, MsgHome, MsgActions
-      , MsgDetails, MsgCategories, MsgCategory, MsgId, MsgLabels
+      , MsgDetails, MsgCategories, MsgCategory, MsgLabels
       , MsgAttributes, MsgClose, MsgDuplicateCode, MsgInQuotes
       , MsgRecordDeleted, MsgBack, MsgRecordAdded, MsgRecordEdited
       , MsgFillOutTheFormAndSavePlease, MsgNewSkill, MsgEditSkill
@@ -75,15 +75,15 @@ import Widgets (thSort, thSortDir)
 
 import Yesod ( YesodPersist(runDB) )
 import Yesod.Core
-    ( Yesod (defaultLayout), Html, whamlet, MonadIO
+    ( Yesod (defaultLayout), Html, MonadIO
     , setTitleI, SomeMessage (SomeMessage)
     )
 import Yesod.Core.Content (TypedContent)
 import Yesod.Core.Handler
     ( HandlerFor, YesodRequest (reqGetParams)
-    , selectRep, provideRep
-    , addMessageI, getRequest, redirectUltDest, setUltDestCurrent
-    , lookupSession, newIdent, getUrlRenderParams, getMessages
+    , selectRep, provideRep, redirect
+    , addMessageI, getRequest, setUltDestCurrent
+    , lookupSession, newIdent, getMessages
     )
 import Yesod.Form
     ( FormResult (FormSuccess)
@@ -107,6 +107,9 @@ deleteSkillR sid = do
 
 postSkillR :: SkillId -> HandlerFor App TypedContent
 postSkillR sid = do
+    
+    stati <- reqGetParams <$> getRequest
+    
     categs <- runDB fetchSkillCategs
     
     mskill <- runDB $ selectOne $ do
@@ -120,11 +123,10 @@ postSkillR sid = do
         FormSuccess skill -> do
             runDB $ replace sid skill
             addMessageI "alert-info toast" MsgRecordEdited
-            redirectUltDest SkillsR
+            redirect (SkillsR,stati)
+            
         _otherwise -> do
             addMessageI "alert-danger" MsgInvalidFormData
-            let params = [("desc","id"),("offset","0"),("limit","5")]
-            ult <- getUrlRenderParams >>= \rndr -> fromMaybe (rndr SkillsR params)  <$> lookupSession ultDestKey
             msgs <- getMessages
             defaultLayout $ do
                 setTitleI MsgSkill
@@ -134,16 +136,16 @@ postSkillR sid = do
 getSkillR :: SkillId -> HandlerFor App TypedContent
 getSkillR ident = selectRep $ do
     provideRep $ do
+        stati <- reqGetParams <$> getRequest
         skill <- runDB $ get ident
         defaultLayout $ do
             setTitleI MsgSkill
-            let ultParams = [("desc","id"),("offset","0"),("limit","5")]
-            ult <- getUrlRenderParams >>= \rndr -> fromMaybe (rndr SkillsR ultParams) <$> lookupSession ultDestKey
             $(widgetFile "skills/skill")
 
 
 postSkillsR :: HandlerFor App TypedContent
 postSkillsR = do
+    stati <- reqGetParams <$> getRequest
     categs <- runDB fetchSkillCategs
     selectRep $ provideRep $ do
         ((fr,widget),enctype) <- runFormPost $ formSkill categs True Nothing
@@ -151,11 +153,9 @@ postSkillsR = do
           FormSuccess skill -> do
               runDB $ insert_ skill
               addMessageI "alert-info toast" MsgRecordAdded 
-              redirectUltDest SkillsR
+              redirect (SkillsR,stati)
           _otherwise -> do
               addMessageI "alert-danger" MsgInvalidFormData
-              params <- reqGetParams <$> getRequest
-              ult <- getUrlRenderParams >>= \r -> fromMaybe (r SkillsR params)  <$> lookupSession ultDestKey
               msgs <- getMessages
               defaultLayout $ do
                   setTitleI MsgSkill
@@ -164,6 +164,7 @@ postSkillsR = do
 
 postSkillsLabelR :: HandlerFor App TypedContent
 postSkillsLabelR = do
+    stati <- reqGetParams <$> getRequest
     (old,mnew) <- runInputPost $ (,) <$> ireq YF.textField "old" <*> iopt YF.textField "new"
     case mnew of
       Just new -> runDB $ update $ \s -> do
@@ -173,11 +174,12 @@ postSkillsLabelR = do
           set s [SkillLabel =. val Nothing]
           where_ $ s ^. SkillLabel ==. just (val old)
     addMessageI "alert-info toast" MsgRecordEdited
-    redirectUltDest SkillsR
+    redirect (SkillsR,stati)
 
 
 getSkillsR :: HandlerFor App TypedContent
 getSkillsR = do
+    stati <- reqGetParams <$> getRequest
     params@(Params mq moffset mlimit msort lbls) <- do
         params <- reqGetParams <$> getRequest
         return $ Params
@@ -191,7 +193,7 @@ getSkillsR = do
     rcnt <- runDB $ fetchCount params
     skills <- runDB $ fetchSkills params
     let maxo = fromMaybe 0 $ (*)
-          <$> ((+) <$> (div rcnt <$> mlimit) <*> ((\x -> if x > 0 then 0 else -1) . mod rcnt <$> mlimit))
+          <$> (((+) . div rcnt <$> mlimit) <*> ((\x -> if x > 0 then 0 else -1) . mod rcnt <$> mlimit))
           <*> mlimit
     let prev = fromMaybe 0 $ max <$> ((-) <$> moffset <*> mlimit) <*> pure 0
     let next = fromMaybe 0 $ min <$> ((+) <$> moffset <*> mlimit) <*> pure maxo
@@ -212,26 +214,27 @@ getSkillsR = do
 
 getSkillEditFormR :: SkillId -> HandlerFor App Html
 getSkillEditFormR sid = do
-  categs <- runDB fetchSkillCategs
-  mskill <- runDB $ selectOne $ do
-    x <- from $ table @Skill
-    where_ $ x ^. SkillId ==. val sid
-    return x
     
-  (widget,enctype) <- generateFormPost $ formSkill categs False mskill
-  msgs <- getMessages
-  let params = [("desc","id"),("offset","0"),("limit","5")]
-  ult <- getUrlRenderParams >>= \r -> fromMaybe (r SkillsR params)  <$> lookupSession ultDestKey
-  defaultLayout $ do
-    setTitleI MsgSkill
-    $(widgetFile "skills/edit")
+    stati <- reqGetParams <$> getRequest
+    
+    categs <- runDB fetchSkillCategs
+    mskill <- runDB $ selectOne $ do
+        x <- from $ table @Skill
+        where_ $ x ^. SkillId ==. val sid
+        return x
+
+    (widget,enctype) <- generateFormPost $ formSkill categs False mskill
+    
+    msgs <- getMessages
+    defaultLayout $ do
+        setTitleI MsgSkill
+        $(widgetFile "skills/edit")
 
 
 getSkillCreateFormR :: HandlerFor App Html
 getSkillCreateFormR = do
-
-    params <- reqGetParams <$> getRequest
-    ult <- getUrlRenderParams >>= \r -> fromMaybe (r SkillsR params)  <$> lookupSession ultDestKey
+    
+    stati <- reqGetParams <$> getRequest
     
     categs <- runDB fetchSkillCategs
     (widget,enctype) <- generateFormPost $ formSkill categs False Nothing
@@ -249,55 +252,13 @@ formSkill categs isPost skill extra = do
     (descR,descV) <- mopt YF.textareaField (fs MsgDescription) (skillDescr . entityVal <$> skill)
     (categR,categV) <- mopt YF.textField FieldSettings
         { fsLabel = SomeMessage MsgCategory
-        , fsTooltip = Nothing
-        , fsId = Nothing
-        , fsName = Nothing
+        , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing
         , fsAttrs = [("class","form-control"),("list","taglist")]
         } (skillLabel . entityVal <$> skill)
 
-    let skillR = Skill <$> codeR <*> nameR <*> descR <*> categR
-    let widget = [whamlet|
-#{extra}
-<div.d-flex.flex-column.gap-2>
-
-  $forall v <- [codeV,nameV,descV]
-    <div :isJust (fvErrors v):.is-invalid :not (isJust (fvErrors v)) && isPost:.is-valid>
-      <label.form-label.mb-0.ps-1 for=#{fvId v} #label#{fvId v}>
-        #{fvLabel v}
-        $if fvRequired v
-          <sup>*
-        
-      ^{fvInput v}
-      
-      $maybe errs <- fvErrors v
-        <div.invalid-feedback>
-          #{errs}
-          
-  <div>
-    <label.form-label.mb-0.ps-1 for=#{fvId categV}>
-      #{fvLabel categV}
-      $if fvRequired categV
-        <sup>*
-    <div.input-group :isJust (fvErrors categV):.is-invalid
-                     :not (isJust (fvErrors categV)) && isPost:.is-valid>
-      ^{fvInput categV}
-      $maybe errs <- fvErrors categV
-        <div.invalid-feedback>
-          #{errs}
-      <button.btn.btn-outline-secondary.dropdown-toggle type=button data-bs-toggle=dropdown aria-expanded=false>
-      <ul.dropdown-menu.dropdown-menu-end.w-100>
-        $forall categ <- categs
-          <li>
-            <input.btn-check type=radio name=categ value=#{categ} ##{categ}
-              onchange="document.getElementById('#{fvId categV}').value = this.value">
-            <label.btn.dropdown-item for=#{categ}>#{categ}
-          
-    <datalist #taglist>
-      $forall categ <- categs
-        <option value=#{categ}>
-|]
-    return (skillR, widget)
-
+    return ( Skill <$> codeR <*> nameR <*> descR <*> categR
+           , $(widgetFile "skills/form")
+           )
   where
       
       fs :: AppMessage -> FieldSettings App
@@ -334,11 +295,11 @@ fetchSkillCategs = (unValue <$>) <$> (select $ distinct querySkillCategs)
 
 querySkillCategs :: SqlQuery (SqlExpr (Value Text))
 querySkillCategs = do
-  x <- from $ table @Skill
-  where_ $ not_ (isNothing (x ^. SkillLabel))
-  let categ = coalesceDefault [x ^. SkillLabel] (val "")
-  orderBy [asc categ]
-  return categ
+    x <- from $ table @Skill
+    where_ $ not_ (isNothing (x ^. SkillLabel))
+    let categ = coalesceDefault [x ^. SkillLabel] (val "")
+    orderBy [asc categ]
+    return categ
 
 
 fetchSkills :: MonadIO m => Params -> ReaderT SqlBackend m [Entity Skill]
@@ -347,39 +308,39 @@ fetchSkills params = select $ querySkills params
 
 querySkills :: Params -> SqlQuery (SqlExpr (Entity Skill))
 querySkills (Params mq mo ml ms mls) = do
-  x <- from $ table @Skill
+    x <- from $ table @Skill
 
-  case mq of
-    Nothing -> return ()
-    Just q -> where_ $ (upper_ (x ^. SkillCode) `like` ((%) ++. upper_ (val q) ++. (%)))
-      ||. (upper_ (x ^. SkillName) `like` ((%) ++. upper_ (val q) ++. (%)))
-      ||. (upper_ (x ^. SkillDescr) `like` ((%) ++. just (upper_ (val (Textarea q))) ++. (%)))
-      ||. (upper_ (x ^. SkillLabel) ==. just (upper_ (val q)))
+    case mq of
+      Nothing -> return ()
+      Just q -> where_ $ (upper_ (x ^. SkillCode) `like` ((%) ++. upper_ (val q) ++. (%)))
+          ||. (upper_ (x ^. SkillName) `like` ((%) ++. upper_ (val q) ++. (%)))
+          ||. (upper_ (x ^. SkillDescr) `like` ((%) ++. just (upper_ (val (Textarea q))) ++. (%)))
+          ||. (upper_ (x ^. SkillLabel) ==. just (upper_ (val q)))
 
-  case mls of
-    [] -> return ()
-    xs -> where_ $ x ^. SkillLabel `in_` justList (valList xs)
+    case mls of
+      [] -> return ()
+      xs -> where_ $ x ^. SkillLabel `in_` justList (valList xs)
 
-  case ms of
-    Just ("desc","id") -> orderBy [desc (x ^. SkillId)]
-    Just ("asc","id") -> orderBy [asc (x ^. SkillId)]
-    Just ("desc","code") -> orderBy [desc (x ^. SkillCode)]
-    Just ("asc","code") -> orderBy [asc (x ^. SkillCode)]
-    Just ("desc","name") -> orderBy [desc (x ^. SkillName)]
-    Just ("asc","name") -> orderBy [asc (x ^. SkillName)]
-    Just ("desc","descr") -> orderBy [desc (x ^. SkillName)]
-    Just ("asc","descr") -> orderBy [asc (x ^. SkillName)]
-    _ -> return ()
+    case ms of
+      Just ("desc","id") -> orderBy [desc (x ^. SkillId)]
+      Just ("asc","id") -> orderBy [asc (x ^. SkillId)]
+      Just ("desc","code") -> orderBy [desc (x ^. SkillCode)]
+      Just ("asc","code") -> orderBy [asc (x ^. SkillCode)]
+      Just ("desc","name") -> orderBy [desc (x ^. SkillName)]
+      Just ("asc","name") -> orderBy [asc (x ^. SkillName)]
+      Just ("desc","descr") -> orderBy [desc (x ^. SkillName)]
+      Just ("asc","descr") -> orderBy [asc (x ^. SkillName)]
+      _otherwise -> return ()
 
-  case mo of
-    Just n -> offset $ fromIntegral n
-    Nothing -> return ()
+    case mo of
+      Just n -> offset $ fromIntegral n
+      Nothing -> return ()
 
-  case ml of
-    Just n -> limit $ fromIntegral n
-    Nothing -> return ()
+    case ml of
+      Just n -> limit $ fromIntegral n
+      Nothing -> return ()
 
-  return x
+    return x
 
 
 fetchCount :: MonadIO m => Params -> ReaderT SqlBackend m Int

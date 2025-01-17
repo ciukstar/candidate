@@ -1,3 +1,4 @@
+PersonalData: Personal data
 Links: Links
 EditApplicant: Edit applicant
 NewApplicant: New applicant

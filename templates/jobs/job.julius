@@ -1,10 +1,22 @@
 
-Array.form(
+Array.from(
+  document.querySelectorAll('button.accordion-button[data-tab-index]')
+).forEach(x => {
+  x.addEventListener('click', function (e) {
+    const params = new URL(window.location).searchParams;
+    params.set('tab', x.dataset.tabIndex);   
+    history.replaceState(null,"",`${window.location.pathname}?${params}`);
+  });
+});
+
+
+Array.from(
   document.querySelectorAll('ul[role=tree] li[role=treeitem] button.chevron')
 ).forEach((x) => {
   x.addEventListener('click', function (e) {
     fetch(e.target.dataset.url, {
       method: 'PUT',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: `expanded=${this.getAttribute('aria-expanded')}`
     });
   });

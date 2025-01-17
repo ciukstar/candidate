@@ -46,12 +46,13 @@ import Foundation
     , AppMessage
       ( MsgCandidates, MsgSelectAPosition, MsgClose, MsgActions
       , MsgSelect, MsgCancel, MsgSelectApplicants, MsgApplicants
-      , MsgCandidate, MsgWeight, MsgFullName, MsgId
+      , MsgCandidate, MsgWeight, MsgFullName
       , MsgHome, MsgBreadcrumbs, MsgCalculationAnalysis
       , MsgSearch, MsgPositions, MsgPosition, MsgExpertAssessment
       , MsgTop, MsgShowTop, MsgAge, MsgApplicant, MsgBirthday
       , MsgPhoto, MsgCode, MsgDenom, MsgDayStart, MsgDayEnd
       , MsgDescription, MsgDivision, MsgTags, MsgBack, MsgToggle
+      , MsgSelectPositionToRankCandidates
       )
     )
 
@@ -88,8 +89,7 @@ import qualified Yesod.Form.Fields as YF (intField)
 
 getCandidatesR :: HandlerFor App TypedContent
 getCandidatesR = do
-    (mjid,limit) <- runInputGet $ (,)
-        <$> ((toSqlKey <$>) <$> iopt YF.intField "job")
+    (mjid,limit) <- runInputGet $ ((,) . (toSqlKey <$>) <$> iopt YF.intField "job")
         <*> (fromMaybe 5 <$> iopt YF.intField "limit")
 
     aids <- (toSqlKey . read . unpack . snd <$>) . filter ((== "app") . fst) . reqGetParams <$> getRequest
@@ -113,10 +113,12 @@ getCandidatesR = do
         x <- from $ table @Applicant
         orderBy [desc (x ^. ApplicantId)]
         return x
+        
     jobs <- runDB $ select $ do
         x <- from $ table @Job
         orderBy [desc (x ^. JobId)]
         return x
+        
     loc <- Locale . unpack . fromMaybe "en" . LS.head <$> languages
     selectRep $ provideRep $ defaultLayout $ do
         setTitleI MsgCandidate
@@ -130,16 +132,17 @@ getCandidatesR = do
         idJobName <- newIdent
         idBadgeApplicants <- newIdent
         idListCandidate <- newIdent
-        when (isJust job) $ toWidget [julius|
-                                            [[#{idSelectLimit},#{idSelectTop}],[#{idSelectTop},#{idSelectLimit}]].map(
-                                              ([x,y]) => [document.getElementById(x),document.getElementById(y)]
-                                            ).forEach(([x,y]) => {
-                                              x.addEventListener('change', e => {
-                                                y.value = e.target.value;
-                                                document.getElementById('formGetCandidates').submit();
-                                              });
-                                            });
-                                            |]
+        when (isJust job) $ toWidget
+            [julius|
+                   [[#{idSelectLimit},#{idSelectTop}],[#{idSelectTop},#{idSelectLimit}]].map(
+                     ([x,y]) => [document.getElementById(x),document.getElementById(y)]
+                   ).forEach(([x,y]) => {
+                     x.addEventListener('change', e => {
+                       y.value = e.target.value;
+                       document.getElementById('formGetCandidates').submit();
+                     });
+                   });
+                   |]
         $(widgetFile "candidates/candidates")
 
 
@@ -208,7 +211,7 @@ rndrTree fmt [Node (_,weight,code,name) []] = [whamlet|
     <div>
       <button.invisible.btn.btn-light.rounded-circle.me-1 disabled>
         <i.bi.bi-dot>
-    <span.badge.bg-success.me-1>#{fmt weight}
+    <span.badge.text-bg-secondary.me-1>#{fmt weight}
     <span.lh-1 title=#{code}>#{name}
 |]
 rndrTree fmt (Node (_,weight,code,name) []:ns) = [whamlet|
@@ -217,7 +220,7 @@ rndrTree fmt (Node (_,weight,code,name) []:ns) = [whamlet|
     <div>
       <button.invisible.btn.btn-light.rounded-circle.me-1 disabled>
         <i.bi.bi-dot>
-    <span.badge.bg-success.me-1>#{fmt weight}
+    <span.badge.text-bg-secondary.me-1>#{fmt weight}
     <span.lh-1 title=#{code}>#{name}
 ^{rndrTree fmt ns}
 |]
@@ -234,7 +237,7 @@ rndrTree fmt (Node (eid,weight,code,name) xs:ns) = [whamlet|
           data-bs-toggle=collapse data-bs-target=#ulCollapse#{eid}
           aria-expanded=false aria-controls=ulCollapse#{eid}>
     <div.d-flex.flex-row.gap-1.align-items-center>
-      <span.badge.bg-success>#{fmt weight}
+      <span.badge.text-bg-secondary>#{fmt weight}
       <span.lh-1 title=#{code}>#{name}
   <ul.collapse #ulCollapse#{eid} role=group>
     ^{rndrTree fmt xs}

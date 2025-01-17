@@ -1,3 +1,4 @@
+PersonalData: Données personnelles
 Links: Links
 EditApplicant: Modifier le demandeur
 NewApplicant: Nouveau demandeur

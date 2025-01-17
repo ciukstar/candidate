@@ -3,11 +3,11 @@
     <li.breadcrumb-item>
       <a href=@{HomeR} rel=linkset>_{MsgHome}
     <li.breadcrumb-item>
-      <a href=#{ult} rel=collection>_{MsgSkills}
+      <a href=@?{(SkillsR,stati)} rel=collection>_{MsgSkills}
     <li.breadcrumb-item.active aria-current=page>_{MsgSkill}
 
 <h1>
-  <a.btn.btn-light.border-0.rounded-circle href=#{ult} role=button aria-label=_{MsgBack}>
+  <a.btn.btn-light.border-0.rounded-circle href=@?{(SkillsR,stati)} role=button aria-label=_{MsgBack}>
     <i.bi.bi-chevron-left>
     
   _{MsgSkill}
@@ -19,9 +19,6 @@
   $maybe (Skill code name descr label) <- skill
     <table.table.table-hover.w-auto>
       <tbody>
-        <tr>
-          <th scope=row>_{MsgId}
-          <td>#{fromSqlKey ident}
         <tr>
           <th scope=row>_{MsgCode}
           <td>#{code}

@@ -1,0 +1,42 @@
+
+#{extra}
+
+<div.d-flex.flex-column.gap-2>
+
+  $forall v <- [codeV,nameV,descV]
+    <div :isJust (fvErrors v):.is-invalid :not (isJust (fvErrors v)) && isPost:.is-valid>
+      <label.form-label.mb-0.ps-1 for=#{fvId v} #label#{fvId v}>
+        #{fvLabel v}
+        $if fvRequired v
+          <sup>*
+
+      ^{fvInput v}
+
+      $maybe errs <- fvErrors v
+        <div.invalid-feedback>
+          #{errs}
+
+  <div>
+    <label.form-label.mb-0.ps-1 for=#{fvId categV}>
+      #{fvLabel categV}
+      $if fvRequired categV
+        <sup>*
+    <div.input-group :isJust (fvErrors categV):.is-invalid
+                     :not (isJust (fvErrors categV)) && isPost:.is-valid>
+      ^{fvInput categV}
+      $maybe errs <- fvErrors categV
+        <div.invalid-feedback>
+          #{errs}
+      <button.btn.btn-outline-secondary.dropdown-toggle type=button
+        data-bs-toggle=dropdown aria-expanded=false>
+
+      <ul.dropdown-menu.dropdown-menu-end.w-100>
+        $forall categ <- categs
+          <li>
+            <input.btn-check type=radio name=categ value=#{categ} ##{categ}
+              onchange="document.getElementById('#{fvId categV}').value = this.value">
+            <label.btn.dropdown-item for=#{categ}>#{categ}
+
+    <datalist #taglist>
+      $forall categ <- categs
+        <option value=#{categ}>

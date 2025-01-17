@@ -3,12 +3,12 @@
     <li.breadcrumb-item>
       <a href=@{HomeR} rel=linkset>_{MsgHome}
     <li.breadcrumb-item>
-      <a href=#{ult} rel=collection>_{MsgSkills}
+      <a href=@?{(SkillsR,stati)} rel=collection>_{MsgSkills}
     <li.breadcrumb-item.active aria-current=page>
       _{MsgSkill}
 
 <h1>
-  <a.btn.btn-light.border-0.rounded-circle href=#{ult} role=button aria-label=_{MsgBack}>
+  <a.btn.btn-light.border-0.rounded-circle href=@?{(SkillsR,stati)} role=button aria-label=_{MsgBack}>
     <i.bi.bi-chevron-left>
     
   _{MsgEditSkill}
@@ -22,11 +22,11 @@
       #{msg}
       <button.btn-close type=button data-bs-dismiss=alert>
 
-  <form method=post action=@{SkillR sid} rel=edit enctype=#{enctype} novalidate>
+  <form method=post action=@?{(SkillR sid,stati)} rel=edit enctype=#{enctype} novalidate>
     <div.d-flex.flex-column.gap-3.mb-3>
       ^{widget}
     <div.text-end>
-      <a.btn.btn-light href=#{ult} rel=collection>
+      <a.btn.btn-light href=@?{(SkillsR,stati)} rel=collection>
         _{MsgCancel}
       <button.btn.btn-primary type=submit>
         _{MsgSave}

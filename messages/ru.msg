@@ -1,3 +1,4 @@
+PersonalData: Личные данные
 Links: Ссылки
 EditApplicant: Редактировать соискатель 
 NewApplicant: Новый соискатель

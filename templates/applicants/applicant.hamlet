@@ -22,7 +22,7 @@
             data-bs-toggle=collapse data-bs-target=#collapseAttributes
             :Just 0 == tab:aria-expanded=true :Just 0 /= tab:aria-expanded=false 
             aria-controls=collapseAttributes>
-            <span.display-6>_{MsgAttributes}
+            <span.display-6>_{MsgPersonalData}
         <div.collapse.accordion-collapse :Just 0 == tab:.show #collapseAttributes data-bs-parent=#accordionApplicant>
           <div.accordion-body>
             $maybe (Applicant surn name mpatro mbday mtag, mage) <- applicant
@@ -33,9 +33,6 @@
                     <td>
                       <img src=@{AppPhotoR aid} alt=_{MsgPhoto} height=32
                         onerror="this.src='@{PhotoPlaceholderR}'">
-                  <tr>
-                    <th scope=row>_{MsgId}
-                    <td>#{fromSqlKey aid}
                   <tr>
                     <th scope=row>_{MsgFullName}
                     <td>
@@ -98,7 +95,7 @@
             <ul.list-unstyled>
               <li.ms-3.mb-3>
                 <a.app-link href=@{ApplicantR aid}?tab=0 rel=section>
-                  _{MsgAttributes}
+                  _{MsgPersonalData}
               <li.ms-3>
                 <a.app-link href=@{ApplicantR aid}?tab=1 rel=section>
                   _{MsgSkills}

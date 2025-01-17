@@ -24,13 +24,18 @@ $maybe Entity aid (Applicant s n mp _ _) <- mapp
 
           <div.card-text>
             <span.text-body-secondary.h6.fw-light>_{MsgWeight}
-            <span.badge.bg-success.fs-6>
+            <span.badge.fs-6
+              :weight < 0.33:.bg-danger 
+              :(weight >= 0.33) && (weight < 0.66):.bg-warning
+              :weight >= 0.66:.bg-success>
+       
               #{fmtDbl ".##" loc weight}
 
 <div.accordion.mt-3 #accordionCandidate>
   <div.accordion-item>
     <div.accordion-header>
-      <button.accordion-button.py-2.px-3 :Just 0 /= mtab:.collapsed :Just 0 == mtab:autofocus type=button
+      <button.accordion-button.py-2.px-3 type=button data-tab-index=0 
+        :Just 0 /= mtab:.collapsed :Just 0 == mtab:autofocus
         data-bs-toggle=collapse data-bs-target=##{idCollapseAnalysis}
         :Just 0 == mtab:aria-expanded=true :Just 0 /= mtab:aria-expanded=false aria-controls=#{idCollapseAnalysis}>
         <span.display-6>
@@ -54,7 +59,7 @@ $maybe Entity aid (Applicant s n mp _ _) <- mapp
   <div.accordion-item>
     <div.accordion-header>
       <button.accordion-button.py-2.px-3 :Just 1 /= mtab:.collapsed :Just 1 == mtab:autofocus type=button
-        data-bs-toggle=collapse data-bs-target=#collapseApplicant
+        data-bs-toggle=collapse data-bs-target=#collapseApplicant data-tab-index=1
         :Just 1 /= mtab:aria-expanded=true :Just 1 /= mtab:aria-expanded=false aria-controls=collapseApplicant>
         <span.display-6>_{MsgApplicant}
 
@@ -68,9 +73,6 @@ $maybe Entity aid (Applicant s n mp _ _) <- mapp
                 <td>
                   <img src=@{AppPhotoR aid} height=32
                     alt=_{MsgPhoto} onerror="this.src='@{PhotoPlaceholderR}'">
-              <tr>
-                <th scope=row>_{MsgId}
-                <td>#{fromSqlKey aid}
               <tr>
                 <th scope=row>_{MsgFullName}
                 <td>
@@ -92,18 +94,15 @@ $maybe Entity aid (Applicant s n mp _ _) <- mapp
   <div.accordion-item>
     <div.accordion-header>
       <button.accordion-button.py-2.px-3 :Just 2 /= mtab:.collapsed :Just 2 == mtab:autofocus type=button
-        data-bs-toggle=collapse data-bs-target=#collapseJob
+        data-bs-toggle=collapse data-bs-target=#collapseJob data-tab-index=2
         :Just 2 == mtab:aria-expanded=true :Just 2 /= mtab:aria-expanded=false aria-controls=collapseJob>
         <span.display-6>_{MsgPosition}
 
     <div.collapse.accordion-collapse :Just 2 == mtab:.show #collapseJob data-bs-parent=#accordionCandidate>
       <div.accordion-body>
-        $maybe (Entity jid (Job code name ds de mdescr _), mdept) <- mjob
+        $maybe (Entity _ (Job code name ds de mdescr _), mdept) <- mjob
           <table.table.table-sm.table-hover.w-auto>
             <tbody>
-              <tr>
-                <th scope=row>_{MsgId}
-                <td>#{fromSqlKey jid}
               <tr>
                 <th scope=row>_{MsgCode}
                 <td>#{code}

@@ -79,7 +79,7 @@ import Foundation
       , AppSkillsEditFormR, AppSkillsEditR, ApplicantSkillsR
       )
     , AppMessage
-      ( MsgId, MsgApplicants, MsgSearch, MsgAdd, MsgNoDataFound
+      ( MsgApplicants, MsgSearch, MsgAdd, MsgNoDataFound, MsgPersonalData
       , MsgSave, MsgCancel, MsgDelete, MsgReallyRemove
       , MsgInvalidFormData, MsgEdit, MsgRemove, MsgBreadcrumbs
       , MsgPleaseConfirm, MsgReallyDelete, MsgSkills, MsgEditApplicant

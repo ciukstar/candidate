@@ -33,31 +33,31 @@ import qualified Data.Text as T (null)
 import Data.Time (formatTime, Day, defaultTimeLocale)
 import Data.Text.ICU.Calendar (setDay)
 import Data.Text.ICU
-  ( LocaleName(Locale), calendar
-  , CalendarType (TraditionalCalendarType), formatDouble'
-  )
+    ( LocaleName(Locale), calendar
+    , CalendarType (TraditionalCalendarType), formatDouble'
+    )
 import Data.Text.ICU.DateFormatter
-  ( formatCalendar, standardDateFormatter
-  , FormatStyle (ShortFormatStyle, NoFormatStyle)
-  )
+    ( formatCalendar, standardDateFormatter
+    , FormatStyle (ShortFormatStyle, NoFormatStyle)
+    )
   
 import Database.Esqueleto.Experimental
-  ( select, from, table, SqlQuery, SqlExpr, orderBy, desc
-  , (^.), (?.), (==.), (%), (++.), (||.), (&&.), (:&)((:&)), (=.)
-  , where_, valList, notIn, select, val
-  , innerJoin, on, withRecursive, unionAll_
-  , isNothing, just, like, limit, offset, asc, countRows
-  , Value (Value, unValue), selectOne, coalesceDefault, groupBy
-  , not_, exists, leftJoin, in_, justList, update, set, selectQuery
-  , upper_
-  )
+    ( select, from, table, SqlQuery, SqlExpr, orderBy, desc
+    , (^.), (?.), (==.), (%), (++.), (||.), (&&.), (:&)((:&)), (=.)
+    , where_, valList, notIn, select, val
+    , innerJoin, on, withRecursive, unionAll_
+    , isNothing, just, like, limit, offset, asc, countRows
+    , Value (Value, unValue), selectOne, coalesceDefault, groupBy
+    , not_, exists, leftJoin, in_, justList, update, set, selectQuery
+    , upper_
+    )
 import qualified Database.Persist as P ((=.), update)
 import Database.Persist as P
-  ( PersistStoreWrite(insert_, replace, delete)
-  , PersistStoreRead(get)
-  , Entity (Entity, entityKey, entityVal)
-  , selectList, SelectOpt (Asc)
-  )
+    ( PersistStoreWrite(insert_, replace, delete)
+    , PersistStoreRead(get)
+    , Entity (Entity, entityKey, entityVal)
+    , selectList, SelectOpt (Asc)
+    )
 import Database.Persist.Sql (SqlBackend, fromSqlKey, toSqlKey)
 
 import Handler.Candidates (fetchNumCandidates)
@@ -77,7 +77,7 @@ import Foundation
       , MsgNumberSign, MsgInvalidFormData, MsgClose, MsgPleaseConfirm
       , MsgReallyDelete, MsgSkills, MsgSelect, MsgReallyRemove
       , MsgCandidates, MsgActions, MsgEditPosition, MsgCreatePosition
-      , MsgHome, MsgDetails, MsgId, MsgBack, MsgDayStart, MsgDayEnd
+      , MsgHome, MsgDetails, MsgBack, MsgDayStart, MsgDayEnd
       , MsgRowsPerPage, MsgPaginationLabel, MsgPagination, MsgFirst
       , MsgPrevious, MsgNext, MsgLast, MsgNumberOfSkills, MsgEditSkills
       , MsgNumberOfCandidates, MsgDivisions, MsgDivision, MsgLabels
@@ -91,15 +91,15 @@ import Foundation
     )
 
 import Model
-  ( Job (Job, jobCode, jobName, jobDayStart, jobDayEnd, jobDescr, jobDept)
-  , JobId, JobSkillId, Skill (Skill), JobSkill (JobSkill)
-  , Params (Params), ultDestKey, Dept (Dept)
-  , EntityField
-    ( JobId, SkillId, JobSkillJob, JobSkillSkill , JobSkillParent
-    , JobSkillId, JobSkillWeight, JobCode , JobName, JobDescr
-    , JobDayStart, JobDayEnd, DeptName, DeptId, JobDept, JobSkillExpanded
+    ( Job (Job, jobCode, jobName, jobDayStart, jobDayEnd, jobDescr, jobDept)
+    , JobId, JobSkillId, Skill (Skill), JobSkill (JobSkill)
+    , Params (Params), ultDestKey, Dept (Dept)
+    , EntityField
+      ( JobId, SkillId, JobSkillJob, JobSkillSkill , JobSkillParent
+      , JobSkillId, JobSkillWeight, JobCode , JobName, JobDescr
+      , JobDayStart, JobDayEnd, DeptName, DeptId, JobDept, JobSkillExpanded
+      )
     )
-  )
   
 import Settings (widgetFile)
 
@@ -137,7 +137,7 @@ import Yesod.Form.Types
 
 
 putJobSkillR :: JobSkillId -> HandlerFor App ()
-putJobSkillR jsid = do
+putJobSkillR jsid = do    
     expanded <- runInputPost $ ireq boolField "expanded"
     runDB $ P.update jsid [JobSkillExpanded P.=. expanded]
 
@@ -150,8 +150,7 @@ deleteJobSkillR jsid = do
 
 postJobSkillsR :: JobId -> HandlerFor App TypedContent
 postJobSkillsR jid = do
-    (sid,w,p,l) <- runInputPost $ (,,,)
-        <$> (toSqlKey <$> ireq intField "skill")
+    (sid,w,p,l) <- runInputPost $ ((,,,) . toSqlKey <$> ireq intField "skill")
         <*> ireq doubleField "weight"
         <*> ((toSqlKey <$>) <$> iopt intField "parent")
         <*> ireq urlField "location"
@@ -219,22 +218,22 @@ postJobR jid = selectRep $ provideRep $ do
 getJobR :: JobId -> HandlerFor App TypedContent
 getJobR jid = do
 
-  tab <- runInputGet $ iopt intField "tab" :: HandlerFor App (Maybe Int)
+    tab <- runInputGet $ iopt intField "tab" :: HandlerFor App (Maybe Int)
 
-  mjob <- runDB $ selectOne $ do
-      (j :& d) <- from $ table @Job
-        `leftJoin` table @Dept `on` (\(j :& d) -> j ^. JobDept ==. d ?. DeptId)
-      where_ $ j ^. JobId ==. val jid
-      return (j,d)
+    mjob <- runDB $ selectOne $ do
+        (j :& d) <- from $ table @Job
+            `leftJoin` table @Dept `on` (\(j :& d) -> j ^. JobDept ==. d ?. DeptId)
+        where_ $ j ^. JobId ==. val jid
+        return (j,d)
 
-  nSkills <- runDB $ fetchJobSkillN jid
-  nCandidates <- fetchNumCandidates jid
-  trees <- bldTree <$> runDB (fetchJobSkills jid)
-  loc <- Locale . unpack . fromMaybe "en" . LS.head <$> languages
-  selectRep $ provideRep $ defaultLayout $ do
-    ult <- getUrlRender >>= \rndr -> fromMaybe (rndr JobsR) <$> lookupSession ultDestKey
-    setTitleI MsgPosition
-    $(widgetFile "jobs/job")
+    nSkills <- runDB $ fetchJobSkillN jid
+    nCandidates <- fetchNumCandidates jid
+    trees <- bldTree <$> runDB (fetchJobSkills jid)
+    loc <- Locale . unpack . fromMaybe "en" . LS.head <$> languages
+    selectRep $ provideRep $ defaultLayout $ do
+        ult <- getUrlRender >>= \rndr -> fromMaybe (rndr JobsR) <$> lookupSession ultDestKey
+        setTitleI MsgPosition
+        $(widgetFile "jobs/job")
 
 
 fmtDbl :: Text -> LocaleName -> Double -> Text
@@ -243,19 +242,20 @@ fmtDbl = formatDouble'
 
 postJobsR :: HandlerFor App TypedContent
 postJobsR = do
-  ((r,widget),enctype) <- runFormPost $ formJob Nothing True
-  selectRep $ provideRep $ do
-    case r of
-      FormSuccess x -> do
-        runDB $ insert_ x
-        addMessageI "alert-info toast" MsgRecordAdded
-        redirectUltDest JobsR
-      _ -> defaultLayout $ do
-        addMessageI "alert-danger" MsgInvalidFormData
-        msgs <- getMessages
-        setTitleI MsgCreatePosition
-        ult <- lookupSession ultDestKey
-        $(widgetFile "jobs/create")
+    ((r,widget),enctype) <- runFormPost $ formJob Nothing True
+    selectRep $ provideRep $ do
+        case r of
+          FormSuccess x -> do
+              runDB $ insert_ x
+              addMessageI "alert-info toast" MsgRecordAdded
+              redirectUltDest JobsR
+              
+          _otherwise -> defaultLayout $ do
+              addMessageI "alert-danger" MsgInvalidFormData
+              msgs <- getMessages
+              setTitleI MsgCreatePosition
+              ult <- lookupSession ultDestKey
+              $(widgetFile "jobs/create")
 
 
 getJobsR :: HandlerFor App TypedContent
@@ -298,28 +298,30 @@ getJobsR = do
 
 postJobSkillsEditR :: JobId -> HandlerFor App TypedContent
 postJobSkillsEditR jid = do
-  selected <- fromMaybe [] . mapM ((toSqlKey <$>) . readMaybe . unpack) <$> lookupGetParams "jsid"
-  location <- runInputPost $ ireq urlField "location"
-  skills <- runDB $ fetchJobSkills jid :: HandlerFor App [(Entity JobSkill, Entity Skill)]
-  let trees = bldTree skills
-  skillPool <- runDB $ fetchJoblessSkills (snd <$> skills)
-  ((fr,fw),fe) <- runFormPost $ formSkills trees (fmtDbl ".######" (Locale "en")) selected
-  msgs <- getMessages
-  job <- runDB $ get jid
-  case fr of
-    FormSuccess xs -> do
-      forM_ xs (\(jsid,weight) -> runDB $ update $ \x -> do
-                   set x [JobSkillWeight =. val weight]
-                   where_ $ x ^. JobSkillId ==. val jsid
-               )
-      addMessageI "alert-info toast" MsgRecordEdited
-      redirect location
-    _ -> selectRep $ provideRep $ defaultLayout $ do
-     setTitleI MsgEditSkills
-     let params = [("desc","id"),("offset","0"),("limit","5")]
-     rndr <- getUrlRenderParams
-     ult <- fromMaybe (rndr JobsR params) <$> lookupSession ultDestKey
-     $(widgetFile "jobs/skills")
+    selected <- fromMaybe [] . mapM ((toSqlKey <$>) . readMaybe . unpack) <$> lookupGetParams "jsid"
+    location <- runInputPost $ ireq urlField "location"
+    skills <- runDB $ fetchJobSkills jid :: HandlerFor App [(Entity JobSkill, Entity Skill)]
+    let trees = bldTree skills
+    skillPool <- runDB $ fetchJoblessSkills (snd <$> skills)
+    ((fr,fw),fe) <- runFormPost $ formSkills trees (fmtDbl ".######" (Locale "en")) selected
+    msgs <- getMessages
+    job <- runDB $ get jid
+    
+    case fr of
+      FormSuccess xs -> do
+          forM_ xs (\(jsid,weight) -> runDB $ update $ \x -> do
+                         set x [JobSkillWeight =. val weight]
+                         where_ $ x ^. JobSkillId ==. val jsid
+                   )
+          addMessageI "alert-info toast" MsgRecordEdited
+          redirect location
+        
+      _otherwise -> selectRep $ provideRep $ defaultLayout $ do
+          setTitleI MsgEditSkills
+          let params = [("desc","id"),("offset","0"),("limit","5")]
+          rndr <- getUrlRenderParams
+          ult <- fromMaybe (rndr JobsR params) <$> lookupSession ultDestKey
+          $(widgetFile "jobs/skills")
 
 
 getJobSkillsEditFormR :: JobId -> HandlerFor App Html
@@ -432,21 +434,20 @@ formJob job isPost extra = do
 
     let r = Job <$> codeR <*> nameR <*> dayStartR <*> dayEndR <*> descrR <*> deptR
     let w = [whamlet|
-#{extra}
-<div.d-flex.flex-column.gap-2>
-  $forall v <- [codeV,nameV,dayStartV,dayEndV,descrV,deptV]
-    <div :isJust (fvErrors v):.is-invalid
-         :not (isJust (fvErrors v)) && isPost:.is-valid>
-      <label.form-label.mb-0.ps-1 for=#{fvId v}>
-        #{fvLabel v}
-        $if fvRequired v
-          <sup>*
-      ^{fvInput v}
-      $maybe errs <- fvErrors v
-        <div.invalid-feedback>
-          #{errs}
-|]
-
+                    #{extra}
+                    <div.d-flex.flex-column.gap-2>
+                      $forall v <- [codeV,nameV,dayStartV,dayEndV,descrV,deptV]
+                        <div :isJust (fvErrors v):.is-invalid
+                             :not (isJust (fvErrors v)) && isPost:.is-valid>
+                          <label.form-label.mb-0.ps-1 for=#{fvId v}>
+                            #{fvLabel v}
+                            $if fvRequired v
+                              <sup>*
+                          ^{fvInput v}
+                          $maybe errs <- fvErrors v
+                            <div.invalid-feedback>
+                              #{errs}
+                    |]
     return (r,w)
   where
       
@@ -626,39 +627,44 @@ bldTree xs = go (sortBy compareJobSkillId (filter root xs)) xs
 
 rndrTree :: (Double -> Text) -> [Tree (Entity JobSkill, Entity Skill)] -> WidgetFor App ()
 rndrTree _ [] = return ()
-rndrTree fmt [Node (Entity _ (JobSkill _ _ weight _ _), Entity _ (Skill code name _ _)) []] = [whamlet|
-<li.mb-1 role=treeitem>
-  <div.d-flex.flex-row.justify-content-start.align-items-center>
-    <button.invisible.btn.btn-light.rounded-circle.me-1 disabled>
-      <i.bi.bi-dot>
-    <span.badge.bg-success.me-1>#{fmt weight}
-    <span.lh-1 title=#{name}>#{code}
-|]
-rndrTree fmt (Node (Entity _ (JobSkill _ _ weight _ _), Entity _ (Skill code name _ _)) []:ns) = [whamlet|
-<li.mb-1 role=treeitem>
-  <div.d-flex.flex-row.justify-content-start.align-items-center>
-    <button.invisible.btn.btn-light.rounded-circle.me-1 disabled>
-      <i.bi.bi-dot>
-    <span.badge.bg-success.me-1>#{fmt weight}
-    <span.lh-1 title=#{name}>#{code}
-^{rndrTree fmt ns}
-|]
-rndrTree fmt (Node (Entity jsid (JobSkill _ _ weight _ expanded), Entity _ (Skill code name _ _)) xs:ns) = [whamlet|
-<li.mb-1 role=treeitem>
-  <div.d-flex.flex-row.justify-content-start.align-items-center>
-    $if not (null xs)
-      <div>
-        <button.btn.btn-light.rounded-circle.me-1.chevron type=button
-          data-url=@{JobSkillR jsid}
-          data-bs-toggle=collapse data-bs-target=#ulCollapse#{fromSqlKey jsid}
-          :expanded:aria-expanded=true :not expanded:aria-expanded=false
-          aria-controls=ulCollapse#{fromSqlKey jsid} aria-label=_{MsgExpand}>
-    <span.badge.bg-success.me-1>#{fmt weight}
-    <span.lh-1 title=#{name}>#{code}
-  <ul.collapse :expanded:.show #ulCollapse#{fromSqlKey jsid} role=group>
-    ^{rndrTree fmt xs}
-^{rndrTree fmt ns}
-|]
+rndrTree fmt [Node (Entity _ (JobSkill _ _ weight _ _), Entity _ (Skill code name _ _)) []] =
+    [whamlet|
+            <li.mb-1 role=treeitem>
+              <div.d-flex.flex-row.justify-content-start.align-items-center>
+                <button.invisible.btn.btn-light.rounded-circle.me-1 disabled>
+                  <i.bi.bi-dot>
+                <span.badge.text-bg-secondary.me-1>#{fmt weight}
+                <span.lh-1 title=#{name}>#{code}
+            |]
+    
+rndrTree fmt (Node (Entity _ (JobSkill _ _ weight _ _), Entity _ (Skill code name _ _)) []:ns) =
+    [whamlet|
+            <li.mb-1 role=treeitem>
+              <div.d-flex.flex-row.justify-content-start.align-items-center>
+                <button.invisible.btn.btn-light.rounded-circle.me-1 disabled>
+                  <i.bi.bi-dot>
+                <span.badge.text-bg-secondary.me-1>#{fmt weight}
+                <span.lh-1 title=#{name}>#{code}
+            ^{rndrTree fmt ns}
+            |]
+    
+rndrTree fmt (Node (Entity jsid (JobSkill _ _ weight _ expanded), Entity _ (Skill code name _ _)) xs:ns) =
+    [whamlet|
+            <li.mb-1 role=treeitem>
+              <div.d-flex.flex-row.justify-content-start.align-items-center>
+                $if not (null xs)
+                  <div>
+                    <button.btn.btn-light.rounded-circle.me-1.chevron type=button
+                      data-url=@{JobSkillR jsid}
+                      data-bs-toggle=collapse data-bs-target=#ulCollapse#{fromSqlKey jsid}
+                      :expanded:aria-expanded=true :not expanded:aria-expanded=false
+                      aria-controls=ulCollapse#{fromSqlKey jsid} aria-label=_{MsgExpand}>
+                <span.badge.text-bg-secondary.me-1>#{fmt weight}
+                <span.lh-1 title=#{name}>#{code}
+              <ul.collapse :expanded:.show #ulCollapse#{fromSqlKey jsid} role=group>
+                ^{rndrTree fmt xs}
+            ^{rndrTree fmt ns}
+            |]
 
 
 formSkills :: [Tree (Entity JobSkill, Entity Skill)]
@@ -666,13 +672,13 @@ formSkills :: [Tree (Entity JobSkill, Entity Skill)]
            -> [JobSkillId]
            -> Html -> MForm (HandlerFor App) (FormResult [(JobSkillId, Double)], WidgetFor App ())
 formSkills tree fmt selected extra = do
-  (r,w') <- treeSkills tree fmt selected
-  let w = [whamlet|
-#{extra}
-<ul role=tree>
-  ^{w'}
-|]
-  return (r,w)
+    (r,w') <- treeSkills tree fmt selected
+    let w = [whamlet|
+                    #{extra}
+                    <ul role=tree>
+                      ^{w'}
+                    |]
+    return (r,w)
 
 
 treeSkills :: [Tree (Entity JobSkill, Entity Skill)]
@@ -681,68 +687,66 @@ treeSkills :: [Tree (Entity JobSkill, Entity Skill)]
            -> MForm (HandlerFor App) (FormResult [(JobSkillId, Double)], WidgetFor App ())
 treeSkills [] _ _ = return (FormSuccess [],[whamlet||])
 treeSkills [Node (Entity jsid (JobSkill _ _ w _ _), Entity _ (Skill _ name _ _)) []] _ selected = do
-  (r,v) <- first ((jsid,) <$>) <$> mreq doubleField FieldSettings
-           { fsLabel = SomeMessage name
-           , fsTooltip = Nothing
-           , fsId = Nothing
-           , fsName = Nothing
-           , fsAttrs = [("class","form-control")]
-           } (Just w)
+    (r,v) <- first ((jsid,) <$>) <$> mreq doubleField FieldSettings
+             { fsLabel = SomeMessage name
+             , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing
+             , fsAttrs = [("class","form-control")]
+             } (Just w)
 
-  return ((:) <$> r <*> FormSuccess [], [whamlet|
-<li.pb-1 role=treeitem>
-  <div.d-flex.flex-row.justify-content-start.align-items-end>
-    <button.invisible.btn.btn-light.rounded-circle.border-0.me-1 disabled>
-      <i.bi.bi-dot>
-    ^{itemSkill jsid (elem jsid selected) v}
-|])
+    return ( (:) <$> r <*> FormSuccess []
+           , [whamlet|
+                     <li.pb-1 role=treeitem>
+                       <div.d-flex.flex-row.justify-content-start.align-items-end>
+                         <button.invisible.btn.btn-light.rounded-circle.border-0.me-1 disabled>
+                           <i.bi.bi-dot>
+                         ^{itemSkill jsid (elem jsid selected) v}
+                     |]
+           )
+      
 treeSkills (Node (Entity jsid (JobSkill _ _ weight _ _), Entity _ (Skill _ name _ _)) []:ns) fmt selected = do
-  (r',w') <- treeSkills ns fmt selected :: MForm (HandlerFor App) (FormResult [(JobSkillId,Double)], WidgetFor App ())
+    (r',w') <- treeSkills ns fmt selected :: MForm (HandlerFor App) (FormResult [(JobSkillId,Double)], WidgetFor App ())
 
-  (r,v) <- first ((jsid,) <$>) <$> mreq doubleField FieldSettings
-           { fsLabel = SomeMessage name
-           , fsTooltip = Nothing
-           , fsId = Nothing
-           , fsName = Nothing
-           , fsAttrs = [("class","form-control")]
-           } (Just weight)
+    (r,v) <- first ((jsid,) <$>) <$> mreq doubleField FieldSettings
+             { fsLabel = SomeMessage name
+             , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing
+             , fsAttrs = [("class","form-control")]
+             } (Just weight)
 
-  let w = [whamlet|
-    <li.pb-1 role=treeitem>
-      <div.d-flex.flex-row.justify-content-start.align-items-end>
-        <button.invisible.btn.btn-light.rounded-circle.border-0.me-1 disabled>
-          <i.bi.bi-dot>
-        ^{itemSkill jsid (elem jsid selected) v}
-    ^{w'}
-    |]
-  return ((:) <$> r <*> r', w)
+    let w = [whamlet|
+                    <li.pb-1 role=treeitem>
+                      <div.d-flex.flex-row.justify-content-start.align-items-end>
+                        <button.invisible.btn.btn-light.rounded-circle.border-0.me-1 disabled>
+                          <i.bi.bi-dot>
+                        ^{itemSkill jsid (elem jsid selected) v}
+                    ^{w'}
+                    |]
+    return ((:) <$> r <*> r', w)
+    
 treeSkills (Node (Entity jsid (JobSkill _ _ weight _ expanded), Entity _ (Skill _ name _ _)) xs:ns) fmt selected = do
-  ident <- newIdent
-  (r',w') <- treeSkills ns fmt selected
-  (r'',w'') <- treeSkills xs fmt selected
+    ident <- newIdent
+    (r',w') <- treeSkills ns fmt selected
+    (r'',w'') <- treeSkills xs fmt selected
 
-  (r,v) <- first ((jsid,) <$>) <$> mreq doubleField FieldSettings
-           { fsLabel = SomeMessage name
-           , fsTooltip = Nothing
-           , fsId = Nothing
-           , fsName = Nothing
-           , fsAttrs = [("class","form-control")]
-           } (Just weight)
+    (r,v) <- first ((jsid,) <$>) <$> mreq doubleField FieldSettings
+             { fsLabel = SomeMessage name
+             , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing
+             , fsAttrs = [("class","form-control")]
+             } (Just weight)
 
-  let w = [whamlet|
-    <li.pb-1 role=treeitem>
-      <div.d-flex.flex-row.justify-content-start.align-items-end>
-        $if not (null xs)
-          <button.btn.btn-light.rounded-circle.me-1.chevron type=button
-            data-bs-toggle=collapse data-bs-target=#ulCollapse#{ident} data-url=@{JobSkillR jsid}
-            :not expanded:aria-expanded=false :expanded:aria-expanded=true aria-controls=ulCollapse#{ident}
-            :not expanded:aria-label=_{MsgExpand} :expanded:aria-label=_{MsgCollapse}>
-          ^{itemSkill jsid (elem jsid selected) v}
-      <ul.collapse.tree :expanded:.show role=group #ulCollapse#{ident}>
-        ^{w''}
-    ^{w'}
-    |]
-  return ((++) <$> ((:) <$> r <*> r') <*> r'',w)
+    let w = [whamlet|
+                    <li.pb-1 role=treeitem>
+                      <div.d-flex.flex-row.justify-content-start.align-items-end>
+                        $if not (null xs)
+                          <button.btn.btn-light.rounded-circle.me-1.chevron type=button
+                            data-bs-toggle=collapse data-bs-target=#ulCollapse#{ident} data-url=@{JobSkillR jsid}
+                            :not expanded:aria-expanded=false :expanded:aria-expanded=true aria-controls=ulCollapse#{ident}
+                            :not expanded:aria-label=_{MsgExpand} :expanded:aria-label=_{MsgCollapse}>
+                          ^{itemSkill jsid (elem jsid selected) v}
+                      <ul.collapse.tree :expanded:.show role=group #ulCollapse#{ident}>
+                        ^{w''}
+                    ^{w'}
+                    |]
+    return ((++) <$> ((:) <$> r <*> r') <*> r'',w)
 
 
 itemSkill :: JobSkillId -> Bool -> FieldView App -> WidgetFor App ()

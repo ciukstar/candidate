@@ -2,7 +2,7 @@
 [#{idInputSearch},#{idSelectLimit},#{idSelectLimit2}].map(
   x => document.getElementById(x)
 ).forEach(x => {
-  x.addEventListener('input',e => {
+  x.addEventListener('input', e => {
     document.getElementById('inputOffset').value = 0;
   });
 });

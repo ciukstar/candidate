@@ -16,17 +16,20 @@
 $maybe (Entity jid (Job _ name _ _ _ _), jobSkills) <- job
   <h2.flex-grow-1.fw-light #idJobName>
     #{name}
+    
   $with weights <- filter gtZero $ calcWeights appSkills jobSkills
     <ul.d-block.d-lg-none.list-group #listGroupCandidates>
       $forall (w,Entity aid (Applicant s n mp _ _), _) <- weights
         <li.list-group-item>
           <img.photo.rounded-circle src=@{AppPhotoR aid} height=48 width=48
             alt=_{MsgPhoto} onerror="this.src='@{PhotoPlaceholderR}'">
+            
           <a.candidate.lh-1.fs-4 href=@{JobCandidateR jid aid}?tab=1>
             $maybe p <- mp
               #{s} #{n} #{p}
             $nothing
               #{s} #{n}
+              
           <div.actions.dropdown>
             <button.btn.btn-light.rounded-circle.border-0 type=button
               title=_{MsgActions} aria-label=_{MsgActions}

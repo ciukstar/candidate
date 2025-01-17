@@ -44,7 +44,7 @@
           $nothing
             <input type=number name=offset value=0 hidden #inputOffset>
 
-        <a.btn.btn-primary role=button href=@{SkillCreateFormR} rel=create-form aria-label=_{MsgAdd}>
+        <a.btn.btn-primary role=button href=@?{(SkillCreateFormR,stati)} rel=create-form aria-label=_{MsgAdd}>
           <span.d-none.d-md-inline>
             _{MsgAdd}
           <span.d-inline.d-md-none>
@@ -89,10 +89,11 @@
                   <button.page-link.app-page-link-last type=submit form=qform rel=last
                     title=_{MsgLast} aria-label=_{MsgLast}>
                     <i.bi.bi-chevron-bar-right>
+                    
       <ul.list-group.list-group-flush ##{idListSkills}>
         $forall Entity sid (Skill code name _ _) <- skills
           <li.list-group-item>
-            <a.skill.fs-5.app-link href=@{SkillR sid} rel=item>
+            <a.skill.fs-5.app-link href=@?{(SkillR sid,stati)} rel=item>
               #{name}
             <div.code.fw-light>
               #{code}
@@ -103,7 +104,7 @@
 
               <ul.dropdown-menu>
                 <li>
-                  <a.dropdown-item href=@{SkillEditFormR sid} rel=edit-form>
+                  <a.dropdown-item href=@?{(SkillEditFormR sid,stati)} rel=edit-form>
                     <i.bi.bi-pencil.me-2>
                     _{MsgEdit}
                 <li>
@@ -112,7 +113,7 @@
                     <i.bi.bi-trash.me-2>
                     _{MsgDelete}
                 <li>
-                  <a.dropdown-item href=@{SkillR sid} rel=item>
+                  <a.dropdown-item href=@?{(SkillR sid,stati)} rel=item>
                     <i.bi.bi-card-text.me-2>
                     _{MsgDetails}
 
@@ -151,7 +152,7 @@
 
                     <ul.dropdown-menu>
                       <li>
-                        <a.dropdown-item href=@{SkillEditFormR sid} rel=edit-form>
+                        <a.dropdown-item href=@?{(SkillEditFormR sid,stati)} rel=edit-form>
                           <i.bi.bi-pencil.me-2>
                           _{MsgEdit}
                       <li>
@@ -160,7 +161,7 @@
                           <i.bi.bi-trash.me-2>
                           _{MsgDelete}
                       <li>
-                        <a.dropdown-item href=@{SkillR sid} rel=item>
+                        <a.dropdown-item href=@?{(SkillR sid,stati)} rel=item>
                           <i.bi.bi-card-text.me-2>
                           _{MsgDetails}
 
@@ -234,7 +235,7 @@
               <p.form-text>
                 _{MsgEditTheFormAndSavePlease}
   
-              <form #form-edit-lbl-#{ident} method=post action=@{SkillsLabelR} rel=edit>
+              <form #form-edit-lbl-#{ident} method=post action=@?{(SkillsLabelR,stati)} rel=edit>
                 <input type=hidden name=old value=#{lbl}>
                 <input.form-control type=text name=new value=#{lbl} #inputFormControlTag#{ident}>
                 <div.form-text>
@@ -263,7 +264,7 @@ $forall Entity sid (Skill code _ _ _) <- skills
         <div.modal-footer>
           <button.btn.btn-light type=button data-bs-dismiss=modal>
             _{MsgCancel}
-          <button.delete.btn.btn-danger type=button data-url=@{SkillR sid}>
+          <button.delete.btn.btn-danger type=button data-url=@?{(SkillR sid,stati)}>
             _{MsgDelete}
 
 $forall (status,msg) <- filter (isInfixOf "toast" . fst) msgs
