@@ -3,12 +3,12 @@
     <li.breadcrumb-item>
       <a href=@{HomeR} rel=linkset>_{MsgHome}
     <li.breadcrumb-item>
-      <a href=#{ult} rel=collection>_{MsgApplicants}
+      <a href=@?{(ApplicantsR,stati)} rel=collection>_{MsgApplicants}
     <li.breadcrumb-item.active aria-current=page>
       _{MsgSkills}
 
 <h1.title>
-  <a.btn.btn-light.border-0.rounded-circle href=#{ult} rel=collection role=button aria-label=_{MsgBack}>
+  <a.btn.btn-light.border-0.rounded-circle href=@?{(ApplicantsR,stati)} rel=collection role=button aria-label=_{MsgBack}>
     <i.bi.bi-chevron-left>
         
   $maybe Entity _ (Applicant s n mp _ _) <- applicant
@@ -31,16 +31,16 @@
       #{msg}
       <button.btn-close type=button data-bs-dismiss=alert aria-label=_{MsgClose}>
 
-  <form method=post action=@{AppSkillsEditR aid} #formPostSkills enctype=#{fe} novalidate>
-    <input type=url name=location value=@{AppSkillsEditFormR aid} hidden>
+  <form method=post action=@?{(AppSkillsEditR aid,stati)} ##{idFormPostSkills} enctype=#{fe} novalidate>
+    <input type=url name=location value=@?{(AppSkillsEditFormR aid,stati)} hidden>
     ^{fw}
 
     <div.text-end>
-      <a.btn.btn-light href=#{ult} role=button>
+      <a.btn.btn-light href=@?{(ApplicantsR,stati)} role=button>
         _{MsgCancel}
-      <button.btn.btn-success type=button data-bs-toggle=modal data-bs-target=#modalSkills>
+      <button.btn.btn-success type=button data-bs-toggle=modal data-bs-target=##{idModalSkills}>
         _{MsgAdd}
-      <button.btn.btn-primary type=submit form=formPostSkills>
+      <button.btn.btn-primary type=submit form=#{idFormPostSkills}>
         _{MsgSave}
 
 $forall (Entity asid (AppSkill aid _ _), Entity sid (Skill _ name _ _)) <- appSkills
@@ -53,14 +53,16 @@ $forall (Entity asid (AppSkill aid _ _), Entity sid (Skill _ name _ _)) <- appSk
         <div.modal-body>
           <code>_{MsgInQuotes name}
           <h4>_{MsgReallyRemove}
+          
         <div.modal-footer>
           <button.btn.btn-light type=button data-bs-dismiss=modal>
             _{MsgCancel}
-          <button.btn.btn-warning.delete type=button data-url=@{AppSkillR aid sid}>
+            
+          <button.btn.btn-warning.delete type=button data-url=@?{(AppSkillR aid sid,stati)}>
             _{MsgRemove}
 
 
-<div.modal #modalSkills tabindex=-1 aria-hidden=true>
+<div.modal ##{idModalSkills} tabindex=-1 aria-hidden=true>
   <div.modal-dialog.modal-dialog-scrollable>
     <div.modal-content>
       <div.modal-header.border-bottom-0>
@@ -71,12 +73,12 @@ $forall (Entity asid (AppSkill aid _ _), Entity sid (Skill _ name _ _)) <- appSk
           <i.bi.bi-search.input-group-text>
           <input.form-control type=search placeholder=_{MsgSearch} #modalInputSearchSkills>
       <div.modal-body>
-        <form method=post action=@{AppSkillsR aid} #formSkills>
-          <input type=url name=location value=@{AppSkillsEditFormR aid} required hidden>
+        <form method=post action=@?{(AppSkillsR aid,stati)} ##{idFormSkills}>
+          <input type=url name=location value=@?{(AppSkillsEditFormR aid,stati)} required hidden>
           <input type=number name=weight value=1 required hidden>
           <ul.list-group.list-group-flush>
             $forall Entity sid (Skill code name _ _) <- skills
-              <li.list-group-item.list-group-item-action.text-nowrap data-url=@{AppSkillR aid sid}>
+              <li.list-group-item.list-group-item-action.text-nowrap data-url=@?{(AppSkillR aid sid,stati)}>
                 <input.form-check-input.me-2 type=radio name=skill value=#{fromSqlKey sid}
                   #inputSkill#{fromSqlKey sid} required>
                 <label.form-check-label.text-wrap.lh-1 for=inputSkill#{fromSqlKey sid} title=_{code}>
@@ -84,7 +86,7 @@ $forall (Entity asid (AppSkill aid _ _), Entity sid (Skill _ name _ _)) <- appSk
       <div.modal-footer>
         <button.btn.btn-light type=button data-bs-dismiss=modal>
           _{MsgCancel}
-        <button.btn.btn-primary type=submit form=formSkills>
+        <button.btn.btn-primary type=submit form=#{idFormSkills}>
           _{MsgSelect}
 
 $forall (status,msg) <- filter (isInfixOf "toast" . fst) msgs

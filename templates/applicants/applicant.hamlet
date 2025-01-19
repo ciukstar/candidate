@@ -3,12 +3,12 @@
     <li.breadcrumb-item>
       <a href=@{HomeR} rel=linkset>_{MsgHome}
     <li.breadcrumb-item>
-      <a href=#{ult} rel=collection>_{MsgApplicants}
+      <a href=@?{(ApplicantsR,stati)} rel=collection>_{MsgApplicants}
     <li.breadcrumb-item.active aria-current=page>
       _{MsgApplicant}
 
 <h1.title>
-  <a.btn.btn-light.border-0.rounded-circle href=#{ult} role=button aria-label=_{MsgBack}>
+  <a.btn.btn-light.border-0.rounded-circle href=@?{(ApplicantsR,stati)} role=button aria-label=_{MsgBack}>
     <i.bi.bi-chevron-left>
     
   _{MsgApplicant}
@@ -19,7 +19,7 @@
       <div.accordion-item>
         <div.accordion-header>
           <button.accordion-button.py-2 :Just 0 /= tab:.collapsed type=button :Just 0 == tab:autofocus
-            data-bs-toggle=collapse data-bs-target=#collapseAttributes
+            data-bs-toggle=collapse data-bs-target=#collapseAttributes data-tab-index=0
             :Just 0 == tab:aria-expanded=true :Just 0 /= tab:aria-expanded=false 
             aria-controls=collapseAttributes>
             <span.display-6>_{MsgPersonalData}
@@ -58,7 +58,7 @@
       <div.accordion-item>
         <div.accordion-header>
           <button.accordion-button.py-2 :Just 1 /= tab:.collapsed type=button :Just 1 == tab:autofocus 
-            data-bs-toggle=collapse data-bs-target=#collapseSkills
+            data-bs-toggle=collapse data-bs-target=#collapseSkills data-tab-index=1
             :Just 1 == tab:aria-expanded=true :Just 1 /= tab:aria-expanded=false 
             aria-controls=collapseSkills>
             <span.display-6>_{MsgSkills}
@@ -94,8 +94,8 @@
           <nav>
             <ul.list-unstyled>
               <li.ms-3.mb-3>
-                <a.app-link href=@{ApplicantR aid}?tab=0 rel=section>
+                <a.app-link href=@?{(ApplicantR aid,(:) ("tab","0") stati)} rel=section>
                   _{MsgPersonalData}
               <li.ms-3>
-                <a.app-link href=@{ApplicantR aid}?tab=1 rel=section>
+                <a.app-link href=@?{(ApplicantR aid,(:) ("tab","1") stati)} rel=section>
                   _{MsgSkills}

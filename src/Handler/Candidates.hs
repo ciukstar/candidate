@@ -20,20 +20,20 @@ import qualified Data.List.Safe as LS (head)
 import Data.Maybe (fromMaybe, isJust)
 import Data.Text (pack, unpack, Text)
 import Data.Text.ICU
-  ( LocaleName (Locale), FormatStyle (NoFormatStyle, ShortFormatStyle)
-  , CalendarType (TraditionalCalendarType)
-  , standardDateFormatter, calendar, formatCalendar
-  )
+    ( LocaleName (Locale), FormatStyle (NoFormatStyle, ShortFormatStyle)
+    , CalendarType (TraditionalCalendarType)
+    , standardDateFormatter, calendar, formatCalendar
+    )
 import Data.Text.ICU.Calendar (setDay)
 import Data.Text.ICU.NumberFormatter (formatDouble')
 import Data.Time.Clock (getCurrentTime, utctDay)
 import Data.Time.Calendar (toGregorian)
 
 import Database.Esqueleto.Experimental
-  ( SqlQuery, SqlExpr, select, from, table, orderBy, desc
-  , innerJoin, on, where_, val, in_, valList
-  , (^.), (?.), (:&)((:&)), (==.), exists, selectOne, leftJoin
-  )
+    ( SqlQuery, SqlExpr, select, from, table, orderBy, desc
+    , innerJoin, on, where_, val, in_, valList
+    , (^.), (?.), (:&)((:&)), (==.), exists, selectOne, leftJoin
+    )
 import Database.Persist (Entity (Entity), entityVal, entityKey)
 import Database.Persist.Sql (SqlBackend, fromSqlKey, toSqlKey)
 
@@ -127,6 +127,8 @@ getCandidatesR = do
         idInputSearchJobs <- newIdent
         idModalApplicants <- newIdent
         idInputSearchApplicants <- newIdent
+        idFormGetCandidates <- newIdent
+        idSelectTopCandidates <- newIdent
         idSelectLimit <- newIdent
         idSelectTop <- newIdent
         idJobName <- newIdent
@@ -134,12 +136,16 @@ getCandidatesR = do
         idListCandidate <- newIdent
         when (isJust job) $ toWidget
             [julius|
-                   [[#{idSelectLimit},#{idSelectTop}],[#{idSelectTop},#{idSelectLimit}]].map(
-                     ([x,y]) => [document.getElementById(x),document.getElementById(y)]
-                   ).forEach(([x,y]) => {
+                   [ [#{idSelectLimit},#{idSelectTop},#{idSelectTopCandidates}],
+                     [#{idSelectTop},#{idSelectTopCandidates},#{idSelectLimit}],
+                     [#{idSelectTopCandidates},#{idSelectLimit},#{idSelectTop}]
+                   ].map(
+                     ([x,y,z]) => [document.getElementById(x),document.getElementById(y),document.getElementById(z)]
+                   ).forEach(([x,y,z]) => {
                      x.addEventListener('change', e => {
                        y.value = e.target.value;
-                       document.getElementById('formGetCandidates').submit();
+                       z.value = e.target.value;
+                       document.getElementById(#{idFormGetCandidates}).submit();
                      });
                    });
                    |]

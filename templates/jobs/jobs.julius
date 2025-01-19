@@ -1,16 +1,16 @@
 
-[#{idInputSearch},'selectLimit',#{idSelectLimit2}].map(x => document.getElementById(x)).forEach(x => {
+[#{idInputSearch},#{idSelectLimit},#{idSelectLimit2}].map(x => document.getElementById(x)).forEach(x => {
   x.addEventListener('input', e => {
     document.getElementById('inputOffset').value = 0;
   });
 });
 
-[['selectLimit',#{idSelectLimit2}],[#{idSelectLimit2},'selectLimit']].map(
+[[#{idSelectLimit},#{idSelectLimit2}],[#{idSelectLimit2},#{idSelectLimit}]].map(
   ([x,y]) => [document.getElementById(x),document.getElementById(y)]
 ).forEach(([x,y]) => {
   x.addEventListener('change', e => {
     y.value = e.target.value;
-    document.getElementById('qform').submit();
+    document.getElementById(#{idFormSearch}).submit();
   });
 });
 

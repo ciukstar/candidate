@@ -6,10 +6,8 @@
 {-# LANGUAGE TupleSections #-}
 
 module Handler.Jobs
-  ( getJobsR
-  , postJobsR
-  , postJobR
-  , getJobR
+  ( getJobsR, postJobsR
+  , getJobR, postJobR  
   , getJobCreateFormR
   , getJobEditFormR
   , deleteJobR
@@ -64,7 +62,7 @@ import Handler.Candidates (fetchNumCandidates)
 import Handler.Depts (deptTreeWidget)
 
 import Foundation
-    ( App, Form
+    ( App, Handler, Form
     , Route
       ( JobsR, JobR, JobSkillsR, JobSkillR, JobCreateFormR, JobEditFormR
       , JobCandidatesR, HomeR, JobSkillsEditFormR, DeptsR, JobSkillsEditR
@@ -215,9 +213,9 @@ postJobR jid = selectRep $ provideRep $ do
               $(widgetFile "jobs/edit")
 
 
-getJobR :: JobId -> HandlerFor App TypedContent
+getJobR :: JobId -> Handler TypedContent
 getJobR jid = do
-
+    stati <- filter ((/= "tab") . fst) . reqGetParams <$> getRequest
     tab <- runInputGet $ iopt intField "tab" :: HandlerFor App (Maybe Int)
 
     mjob <- runDB $ selectOne $ do
@@ -231,7 +229,6 @@ getJobR jid = do
     trees <- bldTree <$> runDB (fetchJobSkills jid)
     loc <- Locale . unpack . fromMaybe "en" . LS.head <$> languages
     selectRep $ provideRep $ defaultLayout $ do
-        ult <- getUrlRender >>= \rndr -> fromMaybe (rndr JobsR) <$> lookupSession ultDestKey
         setTitleI MsgPosition
         $(widgetFile "jobs/job")
 
@@ -242,24 +239,25 @@ fmtDbl = formatDouble'
 
 postJobsR :: HandlerFor App TypedContent
 postJobsR = do
+    stati <- reqGetParams <$> getRequest
     ((r,widget),enctype) <- runFormPost $ formJob Nothing True
     selectRep $ provideRep $ do
         case r of
           FormSuccess x -> do
               runDB $ insert_ x
               addMessageI "alert-info toast" MsgRecordAdded
-              redirectUltDest JobsR
+              redirect (JobsR,stati)
               
           _otherwise -> defaultLayout $ do
               addMessageI "alert-danger" MsgInvalidFormData
               msgs <- getMessages
               setTitleI MsgCreatePosition
-              ult <- lookupSession ultDestKey
               $(widgetFile "jobs/create")
 
 
-getJobsR :: HandlerFor App TypedContent
+getJobsR :: Handler TypedContent
 getJobsR = do
+    stati <- reqGetParams <$> getRequest
     params@(Params mq moffset mlimit msort labels) <- do
         params <- reqGetParams <$> getRequest
         return $ Params
@@ -275,7 +273,7 @@ getJobsR = do
         forM jobs (\(j@(Entity jid _), n) -> fetchNumCandidates jid >>= \m -> return (j,n,m))
 
     let maxo = fromMaybe 0 $ (*)
-            <$> ((+) <$> (div rcnt <$> mlimit) <*> ((\x -> if x > 0 then 0 else -1) . mod rcnt <$> mlimit))
+            <$> (((+) . div rcnt <$> mlimit) <*> ((\x -> if x > 0 then 0 else -1) . mod rcnt <$> mlimit))
             <*> mlimit
     let prev = fromMaybe 0 $ max <$> ((-) <$> moffset <*> mlimit) <*> pure 0
     let next = fromMaybe 0 $ min <$> ((+) <$> moffset <*> mlimit) <*> pure maxo
@@ -291,7 +289,9 @@ getJobsR = do
         fmt <- liftIO $ standardDateFormatter NoFormatStyle ShortFormatStyle loc "GMT+0300"
         cal <- liftIO $ calendar "GMT+0300" loc TraditionalCalendarType
         ult <- lookupSession ultDestKey
+        idFormSearch <- newIdent
         idInputSearch <- newIdent
+        idSelectLimit <- newIdent
         idSelectLimit2 <- newIdent
         $(widgetFile "jobs/jobs")
 
@@ -410,11 +410,11 @@ getJobEditFormR jid = do
 
 getJobCreateFormR :: HandlerFor App Html
 getJobCreateFormR = do
+    stati <- reqGetParams <$> getRequest
     (widget,enctype) <- generateFormPost $ formJob Nothing False
     msgs <- getMessages
     defaultLayout $ do
         setTitleI MsgCreatePosition
-        ult <- lookupSession ultDestKey
         $(widgetFile "jobs/create")
 
 
@@ -480,12 +480,12 @@ fetchJobSkillN jid =  maybe 0 unValue <$> selectOne (queryJobSkillN jid)
 
 queryJobSkillN :: JobId -> SqlQuery (SqlExpr (Value Int))
 queryJobSkillN jid = do
-  j <- from $ table @JobSkill
-  where_ $ j ^. JobSkillJob ==. val jid
-  where_ $ not_ $ exists $ do
-    j' <- from $ table @JobSkill
-    where_ $ just (j ^. JobSkillId) ==. j' ^. JobSkillParent
-  return countRows
+    j <- from $ table @JobSkill
+    where_ $ j ^. JobSkillJob ==. val jid
+    where_ $ not_ $ exists $ do
+      j' <- from $ table @JobSkill
+      where_ $ just (j ^. JobSkillId) ==. j' ^. JobSkillParent
+    return countRows
 
 
 fetchJobSkills :: MonadIO m => JobId -> ReaderT SqlBackend m [(Entity JobSkill, Entity Skill)]
@@ -494,21 +494,21 @@ fetchJobSkills ident = select $ queryJobSkills ident
 
 queryJobSkills :: JobId -> SqlQuery (SqlExpr (Entity JobSkill), SqlExpr (Entity Skill))
 queryJobSkills ident = do
-  cte <- withRecursive
-    (do
-        s <- from $ table @JobSkill
-        where_ $ s ^. JobSkillJob ==. val ident
-        where_ $ isNothing $ s ^. JobSkillParent
-        return s
-    )
-    unionAll_
-    (\parent -> do
-        (c :& _) <- from $  table @JobSkill `innerJoin` parent
-          `on` (\(c :& p) -> c ^. JobSkillParent ==. just (p ^. JobSkillId))
-        return c
-    )
-  (h :& s) <- from $ table @Skill `innerJoin` cte `on` (\(s :& h) -> s ^. SkillId ==. h ^. JobSkillSkill)
-  return (s,h)
+    cte <- withRecursive
+      (do
+          s <- from $ table @JobSkill
+          where_ $ s ^. JobSkillJob ==. val ident
+          where_ $ isNothing $ s ^. JobSkillParent
+          return s
+      )
+      unionAll_
+      (\parent -> do
+          (c :& _) <- from $  table @JobSkill `innerJoin` parent
+            `on` (\(c :& p) -> c ^. JobSkillParent ==. just (p ^. JobSkillId))
+          return c
+      )
+    (h :& s) <- from $ table @Skill `innerJoin` cte `on` (\(s :& h) -> s ^. SkillId ==. h ^. JobSkillSkill)
+    return (s,h)
 
 
 fetchJoblessSkills :: MonadIO m => [Entity Skill] -> ReaderT SqlBackend m [Entity Skill]
@@ -528,56 +528,56 @@ fetchJobs params = select $ queryJobs params
 
 queryJobs :: Params -> SqlQuery (SqlExpr (Entity Job), SqlExpr (Value Int))
 queryJobs (Params mq moffset mlimit msort lbls) = do
-  (x :& (_,cnt) :& d) <- from $ table @Job
-    `leftJoin` ( selectQuery $ do
-                   s <- from $ table @JobSkill
-                   where_ $ not_ $ exists $ do
-                     s' <- from $ table @JobSkill
-                     where_ $ just (s ^. JobSkillId) ==. s' ^. JobSkillParent
-                   groupBy (s ^. JobSkillJob)
-                   return (s ^. JobSkillJob, countRows :: SqlExpr (Value Int))
-               ) `on` (\(x :& (sjid,_)) -> sjid ==. just (x ^. JobId))
-    `leftJoin` table @Dept `on` (\(x :& _ :& d) -> x ^. JobDept ==. d ?. DeptId)
+    (x :& (_,cnt) :& d) <- from $ table @Job
+        `leftJoin` ( selectQuery $ do
+                       s <- from $ table @JobSkill
+                       where_ $ not_ $ exists $ do
+                         s' <- from $ table @JobSkill
+                         where_ $ just (s ^. JobSkillId) ==. s' ^. JobSkillParent
+                       groupBy (s ^. JobSkillJob)
+                       return (s ^. JobSkillJob, countRows :: SqlExpr (Value Int))
+                   ) `on` (\(x :& (sjid,_)) -> sjid ==. just (x ^. JobId))
+        `leftJoin` table @Dept `on` (\(x :& _ :& d) -> x ^. JobDept ==. d ?. DeptId)
 
-  case mq of
-    Just q -> where_ $ (upper_ (x ^. JobCode) `like` (%) ++. upper_ (val q) ++. (%))
-      ||. (upper_ (x ^. JobName) `like` (%) ++. upper_ (val q) ++. (%))
-      ||. (upper_ (x ^. JobDescr) `like` (%) ++. just (upper_ (val (Textarea q))) ++. (%))
-    Nothing -> return ()
+    case mq of
+      Just q -> where_ $ (upper_ (x ^. JobCode) `like` (%) ++. upper_ (val q) ++. (%))
+          ||. (upper_ (x ^. JobName) `like` (%) ++. upper_ (val q) ++. (%))
+          ||. (upper_ (x ^. JobDescr) `like` (%) ++. just (upper_ (val (Textarea q))) ++. (%))
+      Nothing -> return ()
 
-  case lbls of
-    [] -> return ()
-    xs -> where_ $ d ?. DeptName `in_` justList (valList xs)
+    case lbls of
+      [] -> return ()
+      xs -> where_ $ d ?. DeptName `in_` justList (valList xs)
 
-  case moffset of
-    Just n -> offset $ fromIntegral n
-    Nothing -> return ()
+    case moffset of
+      Just n -> offset $ fromIntegral n
+      Nothing -> return ()
 
-  case mlimit of
-    Just n -> limit $ fromIntegral n
-    Nothing -> return ()
+    case mlimit of
+      Just n -> limit $ fromIntegral n
+      Nothing -> return ()
 
-  let rcnt = coalesceDefault [cnt] (val 0)
+    let rcnt = coalesceDefault [cnt] (val 0)
 
-  case msort of
-    Just ("asc","id") -> orderBy [asc (x ^. JobId)]
-    Just ("desc","id") -> orderBy [desc (x ^. JobId)]
-    Just ("asc","code") -> orderBy [asc (x ^. JobCode)]
-    Just ("desc","code") -> orderBy [desc (x ^. JobCode)]
-    Just ("asc","name") -> orderBy [asc (x ^. JobName)]
-    Just ("desc","name") -> orderBy [desc (x ^. JobName)]
-    Just ("asc","dayStart") -> orderBy [asc (x ^. JobDayStart)]
-    Just ("desc","dayStart") -> orderBy [desc (x ^. JobDayStart)]
-    Just ("asc","dayEnd") -> orderBy [asc (x ^. JobDayEnd)]
-    Just ("desc","dayEnd") -> orderBy [desc (x ^. JobDayEnd)]
-    Just ("asc","descr") -> orderBy [asc (x ^. JobDescr)]
-    Just ("desc","descr") -> orderBy [desc (x ^. JobDescr)]
-    Just ("asc","skills") -> orderBy [asc rcnt]
-    Just ("desc","skills") -> orderBy [desc rcnt]
-    _ -> return ()
+    case msort of
+      Just ("asc","id") -> orderBy [asc (x ^. JobId)]
+      Just ("desc","id") -> orderBy [desc (x ^. JobId)]
+      Just ("asc","code") -> orderBy [asc (x ^. JobCode)]
+      Just ("desc","code") -> orderBy [desc (x ^. JobCode)]
+      Just ("asc","name") -> orderBy [asc (x ^. JobName)]
+      Just ("desc","name") -> orderBy [desc (x ^. JobName)]
+      Just ("asc","dayStart") -> orderBy [asc (x ^. JobDayStart)]
+      Just ("desc","dayStart") -> orderBy [desc (x ^. JobDayStart)]
+      Just ("asc","dayEnd") -> orderBy [asc (x ^. JobDayEnd)]
+      Just ("desc","dayEnd") -> orderBy [desc (x ^. JobDayEnd)]
+      Just ("asc","descr") -> orderBy [asc (x ^. JobDescr)]
+      Just ("desc","descr") -> orderBy [desc (x ^. JobDescr)]
+      Just ("asc","skills") -> orderBy [asc rcnt]
+      Just ("desc","skills") -> orderBy [desc rcnt]
+      _otherwise -> return ()
 
-  orderBy [desc (x ^. JobId)]
-  return (x, rcnt)
+    orderBy [desc (x ^. JobId)]
+    return (x, rcnt)
 
 
 fetchJobCount :: MonadIO m => Params -> ReaderT SqlBackend m Int
@@ -586,19 +586,19 @@ fetchJobCount params = maybe 0 unValue <$> selectOne (queryJobCount params)
 
 queryJobCount :: Params -> SqlQuery (SqlExpr (Value Int))
 queryJobCount (Params mq _ _ _ lbls) = do
-  (x :& d) <- from $ table @Job
-    `leftJoin` table @Dept `on` (\(x :& d) -> x ^. JobDept ==. d ?. DeptId)
-  case mq of
-    Just q -> where_ $ (upper_ (x ^. JobCode) `like` (%) ++. upper_ (val q) ++. (%))
-      ||. (upper_ (x ^. JobName) `like` (%) ++. upper_ (val q) ++. (%))
-      ||. (upper_ (x ^. JobDescr) `like` (%) ++. just (upper_ (val (Textarea q))) ++. (%))
-    Nothing -> return ()
+    (x :& d) <- from $ table @Job
+        `leftJoin` table @Dept `on` (\(x :& d) -> x ^. JobDept ==. d ?. DeptId)
+    case mq of
+      Just q -> where_ $ (upper_ (x ^. JobCode) `like` (%) ++. upper_ (val q) ++. (%))
+        ||. (upper_ (x ^. JobName) `like` (%) ++. upper_ (val q) ++. (%))
+        ||. (upper_ (x ^. JobDescr) `like` (%) ++. just (upper_ (val (Textarea q))) ++. (%))
+      Nothing -> return ()
 
-  case lbls of
-    [] -> return ()
-    xs -> where_ $ d ?. DeptName `in_` justList (valList xs)
+    case lbls of
+      [] -> return ()
+      xs -> where_ $ d ?. DeptName `in_` justList (valList xs)
 
-  return countRows
+    return countRows
 
 
 fmtDay :: Day -> Text
@@ -751,67 +751,28 @@ treeSkills (Node (Entity jsid (JobSkill _ _ weight _ expanded), Entity _ (Skill 
 
 itemSkill :: JobSkillId -> Bool -> FieldView App -> WidgetFor App ()
 itemSkill jsid checked v = [whamlet|
-<div>
-  <label.col-form-label.lh-1.m-0.p-0 for=#{fvId v}>
-    <ps-1>#{fvLabel v}
-  <div.d-flex.flex-row.flex-nowrap.justify-content-start.align-items-center.gap-1>
-    <div.input-group>
-      <div.input-group-text>
-        <input.form-check-input.mt-0 type=checkbox name=jsid value=#{fromSqlKey jsid}
-          :checked:checked form=formGetJobSkillWeights aria-label=_{MsgSelect}
-          oninput=this.form.submit()>
-      ^{fvInput v}
-    <button.btn.btn-light.rounded-circle type=button
-      data-bs-toggle=dropdown aria-expanded=false title=_{MsgActions}>
-      <i.bi.bi-three-dots-vertical>
-    <ul.dropdown-menu>
-      <li>
-        <button.dropdown-item type=button
-          data-bs-toggle=modal data-bs-target=#modalChildSkills#{fromSqlKey jsid}>
-          <i.bi.bi-plus-lg.me-2>
-          _{MsgAdd}
-      <li>
-        <button.dropdown-item type=button
-          data-bs-toggle=modal data-bs-target=#modalChildSkillsRemove#{fromSqlKey jsid}>
-          <i.bi.bi-trash.me-2>
-          _{MsgRemove}
-|]
-
-
-jobActionsWidget :: JobId -> WidgetFor App ()
-jobActionsWidget jid = [whamlet|
-<div.dropdown>
-  <button.btn.btn-light.border-0.rounded-circle type=button
-    data-bs-toggle=dropdown aria-expanded=false title=_{MsgActions}>
-    <i.bi.bi-three-dots-vertical>
-
-  <ul.dropdown-menu>
-    <li>
-      <a.dropdown-item href="@{JobEditFormR jid}?tab=0" rel=edit-form>
-        <div.d-flex.align-items-center>
-          <i.bi.bi-pencil.me-2>
-          _{MsgEdit}
-    <li>
-      <button.dropdown-item.btn.btn-outline-danger type=button
-        data-bs-toggle=modal data-bs-target=#modalDeleteJob#{fromSqlKey jid}>
-        <div.d-flex.align-items-center>
-          <i.bi.bi-trash.me-2>
-          _{MsgDelete}
-    <li>
-      <a.dropdown-item href=@{JobR jid}?tab=0 rel=item>
-        <div.d-flex.align-items-center>
-          <i.bi.bi-card-text.me-2>
-          _{MsgDetails}
-    <li>
-      <hr.dropdown-divider>
-    <li>
-      <a.dropdown-item href=@{JobSkillsEditFormR jid} rel=item>
-        <div.d-flex.align-items-center>
-          <i.bi.bi-pencil.me-2>
-          _{MsgSkills}
-    <li>
-      <a.dropdown-item href=@{JobCandidatesR jid} rel=item>
-        <div.d-flex.align-items-center>
-          <i.bi.bi-mortarboard.me-2>
-          _{MsgCandidates}
-|]
+    <div>
+      <label.col-form-label.lh-1.m-0.p-0 for=#{fvId v}>
+        <ps-1>#{fvLabel v}
+      <div.d-flex.flex-row.flex-nowrap.justify-content-start.align-items-center.gap-1>
+        <div.input-group>
+          <div.input-group-text>
+            <input.form-check-input.mt-0 type=checkbox name=jsid value=#{fromSqlKey jsid}
+              :checked:checked form=formGetJobSkillWeights aria-label=_{MsgSelect}
+              oninput=this.form.submit()>
+          ^{fvInput v}
+        <button.btn.btn-light.rounded-circle type=button
+          data-bs-toggle=dropdown aria-expanded=false title=_{MsgActions}>
+          <i.bi.bi-three-dots-vertical>
+        <ul.dropdown-menu>
+          <li>
+            <button.dropdown-item type=button
+              data-bs-toggle=modal data-bs-target=#modalChildSkills#{fromSqlKey jsid}>
+              <i.bi.bi-plus-lg.me-2>
+              _{MsgAdd}
+          <li>
+            <button.dropdown-item type=button
+              data-bs-toggle=modal data-bs-target=#modalChildSkillsRemove#{fromSqlKey jsid}>
+              <i.bi.bi-trash.me-2>
+              _{MsgRemove}
+    |]

@@ -22,7 +22,7 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
   <div.flex-grow-1>
     <nav.navbar>
       <div.container-fluid.flex-nowrap.gap-3.px-0>
-        <form method=get action=@{ApplicantsR} rel=search #qform>
+        <form method=get action=@{ApplicantsR} rel=search ##{idFormSearch}>
           <div.input-group>
             <button.btn type=submit title=_{MsgSearch}
               :Just True == ((<$>) T.null mq):.btn-outline-success
@@ -44,7 +44,7 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
           $nothing
             <input type=number name=offset value=5 hidden #inputOffset>
 
-        <a.btn.btn-primary href=@{ApplicantCreateFormR} rel=create-form role=button aria-label=_{MsgAdd}>
+        <a.btn.btn-primary href=@?{(ApplicantCreateFormR,stati)} rel=create-form role=button aria-label=_{MsgAdd}>
           <span.d-none.d-lg-inline-block>
             _{MsgAdd}
           <i.bi.bi-plus-lg.d-block.d-lg-none>
@@ -64,36 +64,59 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
               <option value=20 :Just 20 == mlimit:selected>20
               <option value=50 :Just 50 == mlimit:selected>50
           <div>
-            <label.form-text.fw-light for=idNavPagination2>_{MsgPaginationLabel start end rc}
+            <span.label.form-text.fw-light for=idNavPagination2>_{MsgPaginationLabel start end rc}
             <nav aria-label=_{MsgPagination} #idNavPagination2>
               <ul.pagination.m-0.p-0>
                 <li.page-item :moffset == Just 0:.disabled>
-                  <button.page-link type=submit form=qform rel=first title=_{MsgFirst}>
+                  <button.page-link type=submit form=#{idFormSearch} rel=first title=_{MsgFirst}>
                     <i.bi.bi-chevron-bar-left>
                 <li.page-item :moffset == Just 0:.disabled>
-                  <button.page-link type=submit form=qform rel=prev title=_{MsgPrevious}>
+                  <button.page-link type=submit form=#{idFormSearch} rel=prev title=_{MsgPrevious}>
                     <i.bi.bi-chevron-left>
                 <li.page-item :moffset == Just maxo:.disabled>
-                  <button.page-link type=submit form=qform rel=next title=_{MsgNext}>
+                  <button.page-link type=submit form=#{idFormSearch} rel=next title=_{MsgNext}>
                     <i.bi.bi-chevron-right>
                 <li.page-item :moffset == Just maxo:.disabled>
-                  <button.page-link type=submit form=qform rel=last title=_{MsgLast}>
+                  <button.page-link type=submit form=#{idFormSearch} rel=last title=_{MsgLast}>
                     <i.bi.bi-chevron-bar-right>
       <ul.list-group.list-group-flush #applicantList>
         $forall (Entity aid (Applicant s n mp _ _), Value ns, _) <- applicants
           <li.list-group-item>
             <img.photo.rounded-circle src=@{AppPhotoR aid} height=48 width=48
               alt=_{MsgPhoto} onerror="this.src='@{PhotoPlaceholderR}'">
-            <a.applicant.app-link href=@?{(ApplicantR aid,[("tab","0")])} rel=item>
+            <a.applicant.app-link href=@?{(ApplicantR aid,(:) ("tab","0") stati)} rel=item>
               <span.fs-5>
                 $maybe p <- mp
                   #{s} #{n} #{p}
                 $nothing
                   #{s} #{n}
             <div.actions>
-              ^{menuActions aid}
+              <div.dropdown>
+                <button.btn.btn-light.rounded-circle type=button
+                  data-bs-toggle=dropdown aria-expanded=false title=_{MsgActions}>
+                  <i.bi.bi-three-dots-vertical>
+                <ul.dropdown-menu>
+                  <li>
+                    <a.dropdown-item href=@?{(ApplicantEditFormR aid,(:) ("tab","0") stati)} rel=edit-form>
+                      <i.bi.bi-pencil.me-2>
+                      _{MsgEdit}
+                  <li>
+                    <button.dropdown-item type=button
+                      data-bs-toggle=modal data-bs-target=#modalDelete#{fromSqlKey aid}>
+                      <i.bi.bi-trash.me-2>
+                      _{MsgDelete}
+                  <li>
+                    <a.dropdown-item href=@?{(ApplicantR aid,(:) ("tab","0") stati)} rel=item>
+                      <i.bi.bi-card-text.me-2>
+                      _{MsgDetails}
+                  <li>
+                    <hr.dropdown-divider>
+                  <li>
+                    <a.dropdown-item href=@?{(AppSkillsEditFormR aid,stati)} rel=edit-form>
+                      <i.bi.bi-pencil.me-2>
+                      _{MsgSkills}
 
-            <a.skills.app-link href=@{ApplicantR aid}?tab=1>
+            <a.skills.app-link href=@?{(ApplicantR aid,(:) ("tab","1") stati)}>
               <span>_{MsgSkills}
               <sup.badge.rounded-pill.bg-secondary.ms-1>
                 #{ns}
@@ -104,13 +127,13 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
           <tr>
             <th scope=col>_{MsgPhoto}
             <th scope=col>
-              ^{thSort msort "surname" MsgFamilyName "qform"}
+              ^{thSort msort "surname" MsgFamilyName idFormSearch}
             <th scope=col>
-              ^{thSort msort "name" MsgGivenName "qform"}
+              ^{thSort msort "name" MsgGivenName idFormSearch}
             <th scope=col>
-              ^{thSort msort "patronymic" MsgAdditionalName "qform"}
+              ^{thSort msort "patronymic" MsgAdditionalName idFormSearch}
             <th scope=col>
-              ^{thSort msort "skills" MsgSkills "qform"}
+              ^{thSort msort "skills" MsgSkills idFormSearch}
             <th scope=col>_{MsgAge}
             <th scope=col>
         <tbody>
@@ -131,20 +154,43 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
                 $maybe p <- mp
                   #{p}
               <td>
-                <a.app-link href=@{ApplicantR aid}?tab=1 title=_{MsgNumberOfSkills}>
+                <a.app-link href=@?{(ApplicantR aid,(:) ("tab","1") stati)} title=_{MsgNumberOfSkills}>
                   &nbsp;#{ns}&nbsp;
               <td>
                 $maybe age <- mage
                   #{age}
               <td>
                 <div.d-flex.flex-row.justify-content-end.align-items-center.gap-1>
-                  ^{menuActions aid}
+                  <div.dropdown>
+                    <button.btn.btn-light.rounded-circle type=button
+                      data-bs-toggle=dropdown aria-expanded=false title=_{MsgActions}>
+                      <i.bi.bi-three-dots-vertical>
+                    <ul.dropdown-menu>
+                      <li>
+                        <a.dropdown-item href=@?{(ApplicantEditFormR aid,(:) ("tab","0") stati)} rel=edit-form>
+                          <i.bi.bi-pencil.me-2>
+                          _{MsgEdit}
+                      <li>
+                        <button.dropdown-item type=button
+                          data-bs-toggle=modal data-bs-target=#modalDelete#{fromSqlKey aid}>
+                          <i.bi.bi-trash.me-2>
+                          _{MsgDelete}
+                      <li>
+                        <a.dropdown-item href=@?{(ApplicantR aid,(:) ("tab","0") stati)} rel=item>
+                          <i.bi.bi-card-text.me-2>
+                          _{MsgDetails}
+                      <li>
+                        <hr.dropdown-divider>
+                      <li>
+                        <a.dropdown-item href=@?{(AppSkillsEditFormR aid,stati)} rel=edit-form>
+                          <i.bi.bi-pencil.me-2>
+                          _{MsgSkills}
 
       <div.d-flex.flex-row.justify-content-between>
         <div>
           <label.fw-light for=#{idSelectLimit}>
             <small>_{MsgRowsPerPage}
-          <select.form-select name=limit form=qform ##{idSelectLimit}>
+          <select.form-select name=limit form=#{idFormSearch} ##{idSelectLimit}>
             <option value=3 :Just 3 == mlimit:selected>3
             <option value=4 :Just 4 == mlimit:selected>4
             <option value=5 :Just 5 == mlimit:selected>5
@@ -156,16 +202,16 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
           <nav aria-label=_{MsgPagination}>
             <ul.pagination>
               <li.page-item :moffset == Just 0:.disabled>
-                <button.page-link type=submit form=qform rel=first title=_{MsgFirst}>
+                <button.page-link type=submit form=#{idFormSearch} rel=first title=_{MsgFirst}>
                   <i.bi.bi-chevron-bar-left>
               <li.page-item :moffset == Just 0:.disabled>
-                <button.page-link type=submit form=qform rel=prev title=_{MsgPrevious}>
+                <button.page-link type=submit form=#{idFormSearch} rel=prev title=_{MsgPrevious}>
                   <i.bi.bi-chevron-left>
               <li.page-item :moffset == Just maxo:.disabled>
-                <button.page-link type=submit form=qform rel=next title=_{MsgNext}>
+                <button.page-link type=submit form=#{idFormSearch} rel=next title=_{MsgNext}>
                   <i.bi.bi-chevron-right>
               <li.page-item :moffset == Just maxo:.disabled>
-                <button.page-link type=submit form=qform rel=last title=_{MsgLast}>
+                <button.page-link type=submit form=#{idFormSearch} rel=last title=_{MsgLast}>
                   <i.bi.bi-chevron-bar-right>
 
     $forall (Entity aid (Applicant s n mp _ _), _, _) <- applicants
@@ -178,10 +224,11 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
             <div.modal-body>
               <code>_{MsgInQuotes ((<>) ((<>) ((<>) ((<>) s " ") n) " ") (fromMaybe "" mp))}
               <h4>_{MsgReallyDelete}
+              
             <div.modal-footer>
-              <button.btn.btn-light type=button data-bs-dismiss=modal>
+              <button.btn.btn-light type=button data-bs-dismiss=modal onclick="this.blur()">
                 _{MsgCancel}
-              <button.btn.btn-warning.delete type=button data-url=@{ApplicantR aid}>
+              <button.btn.btn-danger.delete type=button data-url=@?{(ApplicantR aid,stati)}>
                 _{MsgDelete}
 
   <aside>
@@ -201,7 +248,7 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
                 <li.list-group-item.list-group-item-action.text-nowrap>
                   <div.d-flex.flex-row.flex-nowrap.justify-content-between.align-items-center.gap-1>
                     <div.flex-grow-1.d-flex.flex-row.flex-nowrap.justify-content-start.align-items-center.gap-2>
-                      <input.flex-shrink-0.form-check-input name=tag value=#{tag} form=qform
+                      <input.flex-shrink-0.form-check-input name=tag value=#{tag} form=#{idFormSearch}
                         :elem tag tags:checked
                         type=checkbox ##{ident} onchange=this.form.submit()>
                       <label.flex-shrink-1.form-check-label.text-wrap.lh-1 for=#{ident} style="max-width:20rem">
@@ -223,7 +270,7 @@ $forall (status,msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
                 <p.form-text>
                   _{MsgEditTheFormAndSavePlease}
                   
-                <form method=post action=@{ApplicantTagR} #formTagEdit#{ident}>
+                <form method=post action=@?{(ApplicantTagR,stati)} #formTagEdit#{ident}>
                   <input type=hidden name=old value=#{tag}>
                   <input.form-control type=text name=new value=_{tag} #inputNewTag#{ident}>
                   <div.form-text>

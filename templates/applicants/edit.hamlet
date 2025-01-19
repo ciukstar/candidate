@@ -4,12 +4,12 @@
     <li.breadcrumb-item>
       <a href=@{HomeR} rel=linkset>_{MsgHome}
     <li.breadcrumb-item>
-      <a href=#{ult} rel=collection>_{MsgApplicants}
+      <a href=@?{(ApplicantsR,stati)} rel=collection>_{MsgApplicants}
     <li.breadcrumb-item.active aria-current=page>
       _{MsgApplicant}
 
 <h1>
-  <a.btn.btn-ligt.border-0.rounded-circle href=#{ult} role=button rel=collection aria-label=_{MsgBack}>
+  <a.btn.btn-ligt.border-0.rounded-circle href=@?{(ApplicantsR,stati)} role=button rel=collection aria-label=_{MsgBack}>
     <i.bi.bi-chevron-left>
     
   _{MsgEditApplicant}
@@ -20,7 +20,7 @@
       <div.accordion-item>
         <h2.accordion-header #accordionHeaderAttributes>
           <button.accordion-button.py-2.px-3 :tab /= 0:.collapsed type=button :tab == 0:autofocus
-            data-bs-toggle=collapse data-bs-target=#collapseAttributes
+            data-bs-toggle=collapse data-bs-target=#collapseAttributes data-tab-index=0
             :tab == 0:aria-expanded=true :tab /= 0:aria-expanded=false aria-controls=collapseAttributes>
             <span.display-6>_{MsgAttributes}
         <div.collapse.accordion-collapse :tab == 0:.show #collapseAttributes
@@ -35,11 +35,11 @@
                 #{msg}
                 <button.btn-close type=button data-bs-dismiss=alert aria-label=_{MsgClose}>
 
-            <form method=post action=@{ApplicantR aid} enctype=#{fe} novalidate>
+            <form method=post action=@?{(ApplicantR aid,stati)} enctype=#{fe} novalidate>
               <div.flex-column>
                 ^{fw}
               <div.mt-3.text-end>
-                <a.btn.btn-light role=button href=#{ult} rel=collection>
+                <a.btn.btn-light role=button href=@?{(ApplicantsR,stati)} rel=collection>
                   _{MsgCancel}
                 <button.btn.btn-primary type=submit>
                   _{MsgSave}
@@ -47,7 +47,7 @@
       <div.accordion-item>
         <h2.accordion-header #accordionHeaderSkills>
           <button.accordion-button.py-2.px-3 :tab /= 1:.collapsed type=button :tab == 1:autofocus
-            data-bs-toggle=collapse data-bs-target=#collapseSkills
+            data-bs-toggle=collapse data-bs-target=#collapseSkills data-tab-index=1
             :tab == 1:aria-expanded=true :tab /= 1:aria-expanded=false aria-controls=collapseSkills>
             <span.display-6>_{MsgSkills}
 
@@ -63,12 +63,12 @@
                 #{msg}
                 <button.btn-close type=button data-bs-dismiss=alert aria-label=_{MsgClose}>
 
-            <form method=post action=@{ApplicantSkillsR aid} #formPostSkills enctype=#{sfe} novalidate>
+            <form method=post action=@?{(ApplicantSkillsR aid,stati)} #formPostSkills enctype=#{sfe} novalidate>
               <input type=url name=location value=@?{(ApplicantEditFormR aid,[("tab","1")])} hidden>
               ^{sfw}
 
               <div.text-end>
-                <a.btn.btn-light href=#{ult} role=button>
+                <a.btn.btn-light href=@?{(ApplicantsR,stati)} role=button>
                   _{MsgCancel}
                 <button.btn.btn-success type=button data-bs-toggle=modal data-bs-target=#modalSkills>
                   _{MsgAdd}
@@ -89,10 +89,10 @@
           <nav>
             <ul.list-unstyled>
               <li.ms-3.mb-3>
-                <a href=@{ApplicantEditFormR aid}?tab=0 rel=section>
+                <a href=@?{(ApplicantEditFormR aid,(:) ("tab","0") stati)} rel=section>
                   _{MsgAttributes}
               <li.ms-3>
-                <a href=@{ApplicantEditFormR aid}?tab=1 rel=section>
+                <a href=@?{(ApplicantEditFormR aid,(:) ("tab","1") stati)} rel=section>
                   _{MsgSkills}
 
 $forall (Entity asid (AppSkill aid _ _), Entity sid (Skill _ name _ _)) <- appSkills
@@ -122,12 +122,12 @@ $forall (Entity asid (AppSkill aid _ _), Entity sid (Skill _ name _ _)) <- appSk
           <i.bi.bi-search.input-group-text>
           <input.form-control type=search placeholder=_{MsgSearch} #modalInputSearchSkills>
       <div.modal-body>
-        <form method=post action=@{AppSkillsR aid} #formSkills>
+        <form method=post action=@?{(AppSkillsR aid,stati)} #formSkills>
           <input type=url name=location value="@{ApplicantEditFormR aid}?tab=1" hidden required>
           <input type=number name=weight value=1 hidden required>
           <ul.list-group.list-group-flush>
             $forall Entity sid (Skill code name _ _) <- skills
-              <li.list-group-item.list-group-item-action.text-nowrap data-url=@{AppSkillR aid sid}>
+              <li.list-group-item.list-group-item-action.text-nowrap data-url=@?{(AppSkillR aid sid,stati)}>
                 <input.form-check-input.me-2 type=radio name=skill value=#{fromSqlKey sid}
                   required #inputSkill#{fromSqlKey sid}>
                 <label.form-check-label.text-wrap.lh-1 for=inputSkill#{fromSqlKey sid} title=_{code}>

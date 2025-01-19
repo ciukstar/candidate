@@ -14,12 +14,35 @@
 <div.mb-1>
   $maybe ((Entity _ (Job _ name _ _ _ _), _), _) <- job
     <div.d-flex.flex-row.flex-nowrap.justify-content-between.align-items-center>
-      <h2.flex-grow-1.fw-light.lh-1 ##{idJobName}>
+      <h2.flex-grow-1.fw-light ##{idJobName}>
         #{name}
-      <div>
+      <div.d-flex.flex-row.flex-nowrap.justify-content-end.align-items-center.gap-1>
         <button.d-block.d-lg-none.btn.btn-light.rounded-circle type=button
           title=_{MsgSelect} data-bs-toggle=modal data-bs-target=##{idModalPositions}>
           <i.bi.bi-list-ul>
+          
+        $maybe _ <- job
+          <div.d-none.d-lg-flex.flex-row.flex-nowrap.justify-content-end.align-items-center.gap-1>
+            <div.input-group.w-auto>
+              <span.input-group-text>_{MsgTop}
+              <select.form-select ##{idSelectTopCandidates}>
+                <option :limit == 3:selected value=3>3
+                <option :limit == 5:selected value=5>5
+                <option :limit == 10:selected value=10>10
+                <option :limit == 15:selected value=15>15
+                <option :limit == 20:selected value=20>20
+                <option :limit == 50:selected value=50>50
+
+            <button.btn.btn-primary type=button data-bs-toggle=modal data-bs-target=##{idModalPositions}>
+              _{MsgSelectAPosition}
+
+            <button.btn.btn-primary.position-relative type=button
+              data-bs-toggle=modal data-bs-target=##{idModalApplicants}>
+              _{MsgSelectApplicants}
+
+              $if length aids > 0
+                <span.badge.rounded-pill.position-absolute.top-0.start-100.translate-middle.bg-success>
+                  #{length aids}
           
   $nothing
     
@@ -126,7 +149,7 @@
                       #{fmtDbl ".##" loc weight}
 
 
-  <aside>
+  <aside.d-lg-none>
     <div.offcanvas-lg.offcanvas-end #offcanvasMainRight tabindex=-1 aria-labelledby=offcanvasMainRightLabel>
       <div.offcanvas-header.border-bottom>
         <h5.offcanvas-title #offcanvasMainRightLabel>_{MsgActions}
@@ -145,7 +168,7 @@
                   #{length aids}
 
             <div.form-floating>
-              <select.form-select name=limit required form=formGetCandidates ##{idSelectLimit}>
+              <select.form-select name=limit required form=#{idFormGetCandidates} ##{idSelectLimit}>
                 <option :limit == 3:selected value=3>3
                 <option :limit == 5:selected value=5>5
                 <option :limit == 10:selected value=10>10
@@ -153,6 +176,7 @@
                 <option :limit == 20:selected value=20>20
                 <option :limit == 50:selected value=50>50
               <label for=#{idSelectLimit}>_{MsgShowTop}
+              
           $nothing
             <button.d-lg-none.btn.btn-primary type=button
               data-bs-toggle=modal data-bs-target=##{idModalPositions}>
@@ -170,7 +194,7 @@
           <i.bi.bi-search.input-group-text>
           <input.form-control type=search placeholder=_{MsgSearch} ##{idInputSearchJobs}>
       <div.modal-body>
-        <form method=get action=@{CandidatesR} #formGetCandidates>
+        <form method=get action=@{CandidatesR} ##{idFormGetCandidates}>
           <ul.list-group.list-group-flush>
             $forall Entity jid (Job code name _ _ _ _) <- jobs
               <li.list-group-item.text-nowrap>
@@ -179,10 +203,11 @@
                   #inputJob#{fromSqlKey jid}>
                 <label.form-check-label.text-wrap.lh-1 for=inputJob#{fromSqlKey jid} title=#{code}>
                   <span.text-wrap>#{name}
+                  
       <div.modal-footer>
         <button.btn.btn-ligt type=button data-bs-dismiss=modal aria-lable=_{MsgClose}>
           _{MsgCancel}
-        <button.btn.btn-primary type=submit form=formGetCandidates>
+        <button.btn.btn-primary type=submit form=#{idFormGetCandidates}>
           _{MsgSelect}
 
 <div.modal.fade ##{idModalApplicants} tabindex=-1 aria-hidden=true aria-label=_{MsgApplicants}>
@@ -200,7 +225,7 @@
           $forall Entity aid (Applicant s n mp _ _) <- applicants
             <li.list-group-item.text-nowrap>
               <input.form-check-input.me-2 type=checkbox name=app value=#{fromSqlKey aid}
-                form=formGetCandidates
+                form=#{idFormGetCandidates}
                 :elem aid aids:checked #inputAid#{fromSqlKey aid}>
               $maybe p <- mp
                 <label.from-check-label.text-wrap.lh-1 for=inputAid#{fromSqlKey aid}>
@@ -211,5 +236,5 @@
       <div.modal-footer>
         <button.btn.btn-ligt type=button data-bs-dismiss=modal>
           _{MsgCancel}
-        <button.btn.btn-primary type=submit form=formGetCandidates>
+        <button.btn.btn-primary type=submit form=#{idFormGetCandidates}>
           _{MsgSelect}

@@ -1,4 +1,14 @@
 
+Array.from(
+  document.querySelectorAll('button.accordion-button[data-tab-index]')
+).forEach(x => {
+  x.addEventListener('click', function (e) {
+    const params = new URL(window.location).searchParams;
+    params.set('tab', x.dataset.tabIndex);
+    history.replaceState(null,"",`${window.location.pathname}?${params}`);
+  });
+});
+
 document.querySelectorAll(
   'div.is-invalid > input'
 ).forEach(function (x) { x.classList.add('is-invalid'); });

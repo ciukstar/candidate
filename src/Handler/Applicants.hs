@@ -23,7 +23,7 @@ module Handler.Applicants
 
 
 import ClassyPrelude.Yesod
-    ( ReaderT, MonadIO, YesodPersist (runDB)
+    ( ReaderT, MonadIO, YesodPersist (runDB), FileInfo (fileContentType)
     )
   
 import Control.Monad (when, forM, forM_)
@@ -33,37 +33,37 @@ import qualified Data.List.Safe as LS (head)
 import Data.Maybe (fromMaybe, isJust)
 import qualified Data.Text as T (null)
 import Data.Text (Text, unpack, isInfixOf)
+import Data.Text.Encoding (encodeUtf8)
 import Data.Text.ICU (LocaleName (Locale))
 import Data.Text.ICU.Calendar
     ( setDay, calendar, CalendarType (TraditionalCalendarType) )
 import Data.Text.ICU.DateFormatter
-  ( formatCalendar, standardDateFormatter
-  , FormatStyle (NoFormatStyle, ShortFormatStyle)
-  )
+    ( formatCalendar, standardDateFormatter
+    , FormatStyle (NoFormatStyle, ShortFormatStyle)
+    )
 import Data.Text.ICU.NumberFormatter (formatDouble')
 import Data.Time.Clock (getCurrentTime, UTCTime (utctDay))
 import Data.Time.Calendar (toGregorian)
 
 import qualified Database.Persist as P ((=.))
 import Database.Persist
-  ( Entity (Entity)
-  , get, insert, insert_, delete, deleteBy, replace
-  , entityKey
-  , Entity (entityVal)
-  )
+    ( Entity (Entity)
+    , get, insert, insert_, delete, deleteBy, replace, entityKey
+    , Entity (entityVal)
+    )
 
 import Database.Persist.Sql (SqlBackend, fromSqlKey, toSqlKey)
 import Database.Esqueleto.Experimental
-  ( SqlQuery, SqlExpr
-  , from, table
-  , Value (Value, unValue), val
-  , countRows, selectOne, select
-  , (^.), (==.), (:&)((:&)), (%), (++.), (||.), (&&.), (=.)
-  , where_, innerJoin, on, valList, notIn, orderBy, desc, asc
-  , like, just, offset, limit, in_, justList, leftJoin, selectQuery
-  , groupBy, coalesceDefault, distinct, not_, isNothing, update
-  , set, upsert, upper_
-  )
+    ( SqlQuery, SqlExpr
+    , from, table
+    , Value (Value, unValue), val
+    , countRows, selectOne, select
+    , (^.), (==.), (:&)((:&)), (%), (++.), (||.), (&&.), (=.)
+    , where_, innerJoin, on, valList, notIn, orderBy, desc, asc
+    , like, just, offset, limit, in_, justList, leftJoin, selectQuery
+    , groupBy, coalesceDefault, distinct, not_, isNothing, update
+    , set, upsert, upper_
+    )
 
 import Settings (widgetFile)
 
@@ -71,7 +71,7 @@ import Text.Julius (rawJS)
 import Text.Read (readMaybe)
 
 import Foundation
-    ( App, Form
+    ( App, Handler, Form
     , Route
       ( ApplicantsR, ApplicantR, AppSkillsR, AppSkillR
       , ApplicantCreateFormR, ApplicantEditFormR, HomeR
@@ -95,31 +95,6 @@ import Foundation
       , MsgEditTheFormAndSavePlease, MsgBlankValueResetsCategory
       )
     )
-  
-import Text.Shakespeare.I18N (SomeMessage (SomeMessage))
-
-import Widgets (thSort, thSortDir)
-
-import Yesod.Core
-  ( Yesod(defaultLayout), Html, whamlet, toContent, emptyContent
-  , setTitleI, typeJpeg
-  )
-import Yesod.Core.Handler
-    ( HandlerFor, lookupSession, reqGetParams
-    , getRequest, selectRep, provideRep, redirect
-    , getMessages, redirectUltDest, newIdent, fileSourceByteString
-    , getUrlRenderParams, getUrlRender, languages, addMessageI
-    )
-import Yesod.Core.Types (TypedContent (TypedContent), WidgetFor, FileInfo)
-import Yesod.Form.Input (runInputPost, runInputGet, ireq, iopt)
-import Yesod.Form.Fields
-    (textField, fileField, urlField, doubleField, intField, dayField)
-import Yesod.Form.Functions (mreq, mopt, generateFormPost,runFormPost)
-import Yesod.Form.Types
-    ( MForm, FormResult (FormSuccess)
-    , FieldSettings (FieldSettings, fsAttrs, fsLabel, fsId, fsTooltip, fsName)
-    , FieldView (fvId, fvLabel, fvInput, fvErrors, fvRequired)
-    )
 
 import Model
     ( Applicant
@@ -130,23 +105,47 @@ import Model
     , Skill (Skill, skillName), SkillId, AppSkillId
     , AppSkill (AppSkill, appSkillWeight)
     , Unique (UniqueAppSkill)
-    , ultDestKey, Params (Params), AppPhoto (AppPhoto)
+    , Params (Params), AppPhoto (AppPhoto)
     , EntityField
       ( AppSkillApplicant, AppSkillSkill, SkillId, ApplicantId, SkillName
       , AppSkillWeight, AppSkillId, ApplicantFamilyName, ApplicantGivenName
-      , ApplicantAdditionalName, ApplicantTag, AppPhotoApplicant, AppPhotoPhoto
+      , ApplicantAdditionalName, ApplicantTag, AppPhotoPhoto, AppPhotoMime
+      , AppPhotoApplicant
       )
+    )
+  
+import Text.Shakespeare.I18N (SomeMessage (SomeMessage))
+
+import Widgets (thSort, thSortDir)
+
+import Yesod.Core
+    ( Yesod(defaultLayout), Html, whamlet, toContent, emptyContent
+    , setTitleI, typeJpeg
+    )
+import Yesod.Core.Handler
+    ( HandlerFor, reqGetParams, getRequest, selectRep, provideRep, redirect
+    , getMessages, newIdent, fileSourceByteString, languages, addMessageI
+    )
+import Yesod.Core.Types (TypedContent (TypedContent))
+import Yesod.Form.Input (runInputPost, runInputGet, ireq, iopt)
+import Yesod.Form.Fields
+    (textField, fileField, urlField, doubleField, intField, dayField)
+import Yesod.Form.Functions (mreq, mopt, generateFormPost,runFormPost)
+import Yesod.Form.Types
+    ( MForm, FormResult (FormSuccess)
+    , FieldSettings (FieldSettings, fsAttrs, fsLabel, fsId, fsTooltip, fsName)
+    , FieldView (fvId, fvLabel, fvInput, fvErrors, fvRequired)
     )
 
 
-getAppPhotoR :: ApplicantId -> HandlerFor App TypedContent
+getAppPhotoR :: ApplicantId -> Handler TypedContent
 getAppPhotoR aid = do
-    appPhoto <- runDB $ selectOne $ do
+    photo <- runDB $ selectOne $ do
         x <- from $ table @AppPhoto
         where_ $ x ^. AppPhotoApplicant ==. val aid
         return x
-    return $ case appPhoto of
-      Just (Entity _ (AppPhoto _ bs _)) -> TypedContent typeJpeg $ toContent bs
+    return $ case photo of
+      Just (Entity _ (AppPhoto _ bs mime)) -> TypedContent (encodeUtf8 mime) $ toContent bs
       Nothing -> TypedContent typeJpeg emptyContent
 
 
@@ -171,6 +170,7 @@ postAppSkillR aid sid = do
 
 postApplicantSkillsR :: ApplicantId -> HandlerFor App TypedContent
 postApplicantSkillsR aid = do
+    stati <- reqGetParams <$> getRequest
     let tab = 1 :: Int
     location <- runInputPost $ ireq urlField "location"
     
@@ -204,55 +204,60 @@ postApplicantSkillsR aid = do
           addMessageI "alert-info toast" MsgRecordEdited
           let notNormal = any (\x -> x < 0 || x > 1) xs
           when notNormal $ addMessageI "alert-warning tab-1" MsgWeightNotNormal
-          if notNormal then redirect location else redirectUltDest ApplicantsR
+          if notNormal then redirect location else redirect (ApplicantsR,stati)
         
-      _ -> selectRep $ provideRep $ defaultLayout $ do
+      _otherwise -> selectRep $ provideRep $ defaultLayout $ do
           setTitleI MsgApplicant
           addMessageI "alert-danger tab-1" MsgInvalidFormData
           msgs <- getMessages
-          ult <- getUrlRender >>= \rndr -> fromMaybe (rndr ApplicantsR) <$> lookupSession ultDestKey
           $(widgetFile "applicants/edit")
 
 
 postAppSkillsEditR :: ApplicantId -> HandlerFor App TypedContent
 postAppSkillsEditR aid = do
-  location <- runInputPost $ ireq urlField "location"
-  applicant <- runDB $ selectOne $ do
-    x <- from $ table @Applicant
-    where_ $ x ^. ApplicantId ==. val aid
-    return x
-  skills <- runDB $ select $ do
-    x <- from $ table @Skill
-    orderBy [asc (x ^. SkillName)]
-    return x
-  appSkills <- runDB (select $ do
-    (as :& s) <- from $ table @AppSkill
-      `innerJoin` table @Skill `on` (\(as :& s) -> as ^. AppSkillSkill ==. s ^. SkillId)
-    where_ $ as ^. AppSkillApplicant ==. val aid
-    orderBy [asc (as ^. AppSkillId)]
-    return (as,s) ) :: HandlerFor App [(Entity AppSkill, Entity Skill)]
 
-  ((fr,fw),fe) <- runFormPost $ formSkills appSkills True (fmtDbl ".######" (Locale "en"))
-  case fr of
-    FormSuccess xs -> do
-      forM_ (zip xs appSkills) (\(weight,(Entity asid _, _)) -> runDB $ update $ \as -> do
-                                    set as [AppSkillWeight =. val weight]
-                                    where_ $ as ^. AppSkillId ==. val asid
-                                )
-      addMessageI "alert-info toast" MsgRecordEdited
-      let notNormal = any (\x -> x < 0 || x > 1) xs
-      if notNormal then redirect location else redirectUltDest ApplicantsR
-    _ -> selectRep $ provideRep $ defaultLayout $ do
-      setTitleI MsgSkills
-      addMessageI "alert-danger" MsgInvalidFormData
-      msgs <- getMessages
-      ult <- getUrlRender >>= \rndr -> fromMaybe (rndr ApplicantsR) <$> lookupSession ultDestKey
-      $(widgetFile "applicants/skills")
+    stati <- filter ((/= "tab") . fst) . reqGetParams <$> getRequest
+    
+    location <- runInputPost $ ireq urlField "location"
+    applicant <- runDB $ selectOne $ do
+        x <- from $ table @Applicant
+        where_ $ x ^. ApplicantId ==. val aid
+        return x
+        
+    skills <- runDB $ select $ do
+        x <- from $ table @Skill
+        orderBy [asc (x ^. SkillName)]
+        return x
+        
+    appSkills <- runDB (select $ do
+        (as :& s) <- from $ table @AppSkill
+          `innerJoin` table @Skill `on` (\(as :& s) -> as ^. AppSkillSkill ==. s ^. SkillId)
+        where_ $ as ^. AppSkillApplicant ==. val aid
+        orderBy [asc (as ^. AppSkillId)]
+        return (as,s) ) :: HandlerFor App [(Entity AppSkill, Entity Skill)]
+
+    ((fr,fw),fe) <- runFormPost $ formSkills appSkills True (fmtDbl ".######" (Locale "en"))
+    case fr of
+      FormSuccess xs -> do
+          forM_ (zip xs appSkills) (\(weight,(Entity asid _, _)) -> runDB $ update $ \as -> do
+                                        set as [AppSkillWeight =. val weight]
+                                        where_ $ as ^. AppSkillId ==. val asid
+                                    )
+          addMessageI "alert-info toast" MsgRecordEdited
+          let notNormal = any (\x -> x < 0 || x > 1) xs
+          if notNormal then redirect location else redirect (ApplicantsR,stati)
+
+      _otherwise -> selectRep $ provideRep $ defaultLayout $ do
+          setTitleI MsgSkills
+          addMessageI "alert-danger" MsgInvalidFormData
+          msgs <- getMessages
+          idFormPostSkills <- newIdent
+          idModalSkills <- newIdent
+          idFormSkills <- newIdent
+          $(widgetFile "applicants/skills")
 
 
-formSkills :: [(Entity AppSkill, Entity Skill)]
-           -> Bool -> (Double -> Text)
-           -> Html -> MForm (HandlerFor App) (FormResult [Double], WidgetFor App ())
+formSkills :: [(Entity AppSkill, Entity Skill)] -> Bool -> (Double -> Text) -> Form [Double]
 formSkills skills isPost _ extra = do
   res <- forM skills (
     \(Entity asid as,Entity _ s) -> mreq doubleField FieldSettings
@@ -303,122 +308,130 @@ formSkills skills isPost _ extra = do
 
 postAppSkillsR :: ApplicantId -> HandlerFor App TypedContent
 postAppSkillsR aid = do
-  (location,sid,weight) <- runInputPost $ (,,)
-    <$> ireq urlField "location"
-    <*> (toSqlKey <$> ireq intField "skill")
-    <*> ireq doubleField "weight"
+    (location,sid,weight) <- runInputPost $ (,,)
+        <$> ireq urlField "location"
+        <*> (toSqlKey <$> ireq intField "skill")
+        <*> ireq doubleField "weight"
 
-  mAppSkill <- runDB $ selectOne $ do
-    x <- from $ table @AppSkill
-    where_ $ x ^. AppSkillApplicant ==. val aid &&. x ^. AppSkillSkill ==. val sid
-    return x
+    mAppSkill <- runDB $ selectOne $ do
+        x <- from $ table @AppSkill
+        where_ $ x ^. AppSkillApplicant ==. val aid &&. x ^. AppSkillSkill ==. val sid
+        return x
 
-  case mAppSkill of
-    Nothing -> do
-      runDB $ insert_ $ AppSkill aid sid weight
-      addMessageI "alert-info toast" MsgRecordAdded
-    _ -> addMessageI "alert-danger" MsgAppSkillAlreadyExists
-  redirect location
+    case mAppSkill of
+      Nothing -> do
+          runDB $ insert_ $ AppSkill aid sid weight
+          addMessageI "alert-info toast" MsgRecordAdded
+      _otherwise -> addMessageI "alert-danger" MsgAppSkillAlreadyExists
+      
+    redirect location
 
 
 getAppSkillsEditFormR :: ApplicantId -> HandlerFor App Html
 getAppSkillsEditFormR aid = do
-  applicant <- runDB $ selectOne $ do
-    x <- from $ table @Applicant
-    where_ $ x ^. ApplicantId ==. val aid
-    return x
-  appSkills <- runDB $ select $ do
-    (a :& s) <- from $ table @AppSkill
-      `innerJoin` table @Skill `on` (\(a :& s) -> a ^. AppSkillSkill ==. s ^. SkillId)
-    where_ $ a ^. AppSkillApplicant ==. val aid
-    orderBy [asc (a ^. AppSkillId)]
-    return (a,s)
+    stati <- filter ((/= "tab") . fst) . reqGetParams <$> getRequest
+    
+    applicant <- runDB $ selectOne $ do
+        x <- from $ table @Applicant
+        where_ $ x ^. ApplicantId ==. val aid
+        return x
+        
+    appSkills <- runDB $ select $ do
+        (a :& s) <- from $ table @AppSkill
+              `innerJoin` table @Skill `on` (\(a :& s) -> a ^. AppSkillSkill ==. s ^. SkillId)
+        where_ $ a ^. AppSkillApplicant ==. val aid
+        orderBy [asc (a ^. AppSkillId)]
+        return (a,s)
 
-  skills <- runDB $ select $ do
-    s <- from $ table @Skill
-    where_ $ (s ^. SkillId) `notIn` valList (entityKey . snd <$> appSkills)
-    return s
-
-  (fw,fe) <- generateFormPost $ formSkills appSkills False (fmtDbl ".######" (Locale "en"))
-
-  defaultLayout $ do
-    setTitleI MsgSkills
-    when (any (\(Entity _ (AppSkill _ _ w), _) -> w < 0 || w > 1) appSkills) $
-      addMessageI "alert-warning" MsgWeightNotNormal
-    msgs <- getMessages
-    let ultParams  = [("desc","id"),("offset","0"),("limit","5")]
-    ult <- getUrlRenderParams >>= \rndr -> fromMaybe (rndr ApplicantsR ultParams) <$> lookupSession ultDestKey
-    $(widgetFile "applicants/skills")
-
-
-postApplicantR :: ApplicantId -> HandlerFor App TypedContent
-postApplicantR aid = selectRep $ provideRep $ do
-
-  tab <- fromMaybe 0 <$> runInputGet (iopt intField "tab") :: HandlerFor App Int
-  appSkills <- runDB $ select $ do
-    (a :& s) <- from $ table @AppSkill
-      `innerJoin` table @Skill `on` (\(a :& s) -> a ^. AppSkillSkill ==. s ^. SkillId)
-    where_ $ a ^. AppSkillApplicant ==. val aid
-    orderBy [asc (a ^. AppSkillId)]
-    return (a,s)
-
-  categs <- runDB fetchCategs
-  applicant <- runDB $ selectOne $ do
-    x <- from $ table @Applicant
-    where_ $ x ^. ApplicantId ==. val aid
-    return x
-  ((fr,fw),fe) <- runFormPost $ formApplicant categs True applicant
-  (sfw,sfe) <- generateFormPost $ formSkills appSkills True (fmtDbl ".######" (Locale "en"))
-  case fr of
-    FormSuccess (x,mph) -> do
-      runDB $ replace aid x
-      case mph of
-        Just photo -> do
-          bs <- fileSourceByteString photo
-          _ <- runDB $ upsert (AppPhoto aid bs "image/jpeg") [AppPhotoPhoto P.=. bs]
-          return ()
-        Nothing -> return ()
-      addMessageI "alert-info toast" MsgRecordEdited
-      redirectUltDest ApplicantsR
-    _ -> do
-      skills <- runDB $ select $ do
+    skills <- runDB $ select $ do
         s <- from $ table @Skill
         where_ $ (s ^. SkillId) `notIn` valList (entityKey . snd <$> appSkills)
         return s
 
-      defaultLayout $ do
-        setTitleI MsgApplicant
-        let ultParams  = [("desc","id"),("offset","0"),("limit","5")]
-        ult <- getUrlRenderParams >>= \rndr -> fromMaybe (rndr ApplicantsR ultParams) <$> lookupSession ultDestKey
-        addMessageI "alert-danger tab-0" MsgInvalidFormData
+    (fw,fe) <- generateFormPost $ formSkills appSkills False (fmtDbl ".######" (Locale "en"))
+
+    defaultLayout $ do
+        setTitleI MsgSkills
+        when (any (\(Entity _ (AppSkill _ _ w), _) -> w < 0 || w > 1) appSkills) $
+            addMessageI "alert-warning" MsgWeightNotNormal
         msgs <- getMessages
-        $(widgetFile "applicants/edit")
+        idFormPostSkills <- newIdent
+        idModalSkills <- newIdent
+        idFormSkills <- newIdent
+        $(widgetFile "applicants/skills")
 
 
-getApplicantR :: ApplicantId -> HandlerFor App TypedContent
+postApplicantR :: ApplicantId -> HandlerFor App TypedContent
+postApplicantR aid = selectRep $ provideRep $ do
+    stati <- reqGetParams <$> getRequest
+    tab <- fromMaybe 0 <$> runInputGet (iopt intField "tab") :: HandlerFor App Int
+    appSkills <- runDB $ select $ do
+        (a :& s) <- from $ table @AppSkill
+            `innerJoin` table @Skill `on` (\(a :& s) -> a ^. AppSkillSkill ==. s ^. SkillId)
+        where_ $ a ^. AppSkillApplicant ==. val aid
+        orderBy [asc (a ^. AppSkillId)]
+        return (a,s)
+
+    categs <- runDB fetchCategs
+    applicant <- runDB $ selectOne $ do
+        x <- from $ table @Applicant
+        where_ $ x ^. ApplicantId ==. val aid
+        return x
+        
+    ((fr,fw),fe) <- runFormPost $ formApplicant categs True applicant
+    (sfw,sfe) <- generateFormPost $ formSkills appSkills True (fmtDbl ".######" (Locale "en"))
+    case fr of
+      FormSuccess (x,Nothing) -> do
+          runDB $ replace aid x
+          addMessageI "alert-info toast" MsgRecordEdited
+          redirect (ApplicantsR,stati)
+          
+      FormSuccess (x,Just fi) -> do
+          runDB $ replace aid x
+          bs <- fileSourceByteString fi
+          _ <- runDB $ upsert (AppPhoto aid bs (fileContentType fi))
+              [ AppPhotoPhoto P.=. bs
+              , AppPhotoMime P.=. fileContentType fi
+              ]
+          addMessageI "alert-info toast" MsgRecordEdited
+          redirect (ApplicantsR,stati)
+          
+      _otherwise -> do
+          skills <- runDB $ select $ do
+            s <- from $ table @Skill
+            where_ $ (s ^. SkillId) `notIn` valList (entityKey . snd <$> appSkills)
+            return s
+
+          defaultLayout $ do
+              setTitleI MsgApplicant
+              addMessageI "alert-danger tab-0" MsgInvalidFormData
+              msgs <- getMessages
+              $(widgetFile "applicants/edit")
+
+
+getApplicantR :: ApplicantId -> Handler TypedContent
 getApplicantR aid = do
-  tab <- runInputGet $ iopt intField "tab" :: HandlerFor App (Maybe Int)
-  applicant <- do
-    ma <- runDB $ get aid
-    y <- liftIO $ (\(y,_,_) -> y) . toGregorian . utctDay <$> getCurrentTime
-    return $ ma >>= \a -> return (a, (y -) . (\(y',_,_) -> y') . toGregorian <$> applicantBday a)
+    stati <- filter ((/= "tab") . fst) . reqGetParams <$> getRequest
+    tab <- runInputGet $ iopt intField "tab" :: Handler (Maybe Int)
+    applicant <- do
+      ma <- runDB $ get aid
+      y <- liftIO $ (\(y,_,_) -> y) . toGregorian . utctDay <$> getCurrentTime
+      return $ ma >>= \a -> return (a, (y -) . (\(y',_,_) -> y') . toGregorian <$> applicantBday a)
 
-  appSkills <- runDB $ select $ do
-    (a :& s) <- from $ table @AppSkill
-      `innerJoin` table @Skill `on` (\(a :& s) -> a ^. AppSkillSkill ==. s ^. SkillId)
-    where_ $ a ^. AppSkillApplicant ==. val aid
-    orderBy [asc (a ^. AppSkillId)]
-    return (a,s)
+    appSkills <- runDB $ select $ do
+        (a :& s) <- from $ table @AppSkill
+            `innerJoin` table @Skill `on` (\(a :& s) -> a ^. AppSkillSkill ==. s ^. SkillId)
+        where_ $ a ^. AppSkillApplicant ==. val aid
+        orderBy [asc (a ^. AppSkillId)]
+        return (a,s)
 
-  loc <- Locale . unpack . fromMaybe "en" . LS.head <$> languages
-  cal <- liftIO $ calendar "GMT+0300" loc TraditionalCalendarType
-  fmtDay <- liftIO $ standardDateFormatter NoFormatStyle ShortFormatStyle loc "GMT+0300"
+    loc <- Locale . unpack . fromMaybe "en" . LS.head <$> languages
+    cal <- liftIO $ calendar "GMT+0300" loc TraditionalCalendarType
+    fmtDay <- liftIO $ standardDateFormatter NoFormatStyle ShortFormatStyle loc "GMT+0300"
 
-  selectRep $ provideRep $ defaultLayout $ do
-    let ultParams  = [("desc","id"),("offset","0"),("limit","5")]
-    ult <- getUrlRenderParams >>= \rndr -> fromMaybe (rndr ApplicantsR ultParams) <$> lookupSession ultDestKey
-    setTitleI MsgApplicant
-    $(widgetFile "applicants/applicant")
+    selectRep $ provideRep $ defaultLayout $ do
+        setTitleI MsgApplicant
+        $(widgetFile "applicants/applicant")
 
 
 deleteApplicantR :: ApplicantId -> HandlerFor App ()
@@ -429,47 +442,51 @@ deleteApplicantR aid = do
 
 postApplicantsR :: HandlerFor App TypedContent
 postApplicantsR = selectRep $ provideRep $ do
-  categs <- runDB fetchCategs
-  ((r,widget),enctype) <- runFormPost $ formApplicant categs True Nothing
-  case r of
-    FormSuccess (a,Just ph) -> do
-      aid <- runDB $ insert a
-      bs <- fileSourceByteString ph
-      let photo = AppPhoto aid bs "image/jpeg"
-      runDB $ insert_ photo
-      addMessageI "alert-info toast" MsgRecordAdded
-      redirectUltDest ApplicantsR
-    FormSuccess (x,Nothing) -> do
-      runDB $ insert_ x
-      addMessageI "alert-info toast" MsgRecordAdded
-      redirectUltDest ApplicantsR
-    _ -> defaultLayout $ do
-      setTitleI MsgApplicant
-      addMessageI "alert-danger" MsgInvalidFormData
-      msgs <- getMessages
-      let ultParams  = [("desc","id"),("offset","0"),("limit","5")]
-      ult <- getUrlRenderParams >>= \rndr -> fromMaybe (rndr ApplicantsR ultParams) <$> lookupSession ultDestKey
-      $(widgetFile "applicants/create")
+    stati <- reqGetParams <$> getRequest
+    categs <- runDB fetchCategs
+    ((r,widget),enctype) <- runFormPost $ formApplicant categs True Nothing
+    case r of
+      FormSuccess (a, Just fi) -> do
+          aid <- runDB $ insert a
+          bs <- fileSourceByteString fi
+          let photo = AppPhoto aid bs (fileContentType fi)
+          runDB $ insert_ photo
+          addMessageI "alert-info toast" MsgRecordAdded
+          redirect (ApplicantsR,stati)
+      
+      FormSuccess (x,Nothing) -> do
+          runDB $ insert_ x
+          addMessageI "alert-info toast" MsgRecordAdded
+          redirect (ApplicantsR,stati)
+      
+      _otherwise -> defaultLayout $ do
+          setTitleI MsgApplicant
+          addMessageI "alert-danger" MsgInvalidFormData
+          msgs <- getMessages
+          $(widgetFile "applicants/create")
 
 
 postApplicantTagR :: HandlerFor App TypedContent
 postApplicantTagR = do
+    stati <- reqGetParams <$> getRequest
     (old,mnew) <- runInputPost $ (,) <$> ireq textField "old" <*> iopt textField "new"
     
     case mnew of
       Just new -> runDB $ update $ \a -> do
           set a [ApplicantTag =. just (val new)]
           where_ $ a ^. ApplicantTag ==. just (val old)
+          
       _otherwise -> runDB $ update $ \a -> do
           set a [ApplicantTag =. val Nothing]
           where_ $ a ^. ApplicantTag ==. just (val old)
           
     addMessageI "alert-info toast" MsgRecordEdited
-    redirectUltDest ApplicantsR
+    redirect (ApplicantsR,stati)
 
 
 getApplicantsR :: HandlerFor App TypedContent
 getApplicantsR = do
+    stati <- reqGetParams <$> getRequest
     params@(Params mq moffset mlimit msort tags) <- do
         params <- reqGetParams <$> getRequest
         return $ Params
@@ -497,69 +514,63 @@ getApplicantsR = do
         forM xs (\x -> newIdent >>= \i -> return (i,x))
 
     let maxo = fromMaybe 0 $ (*)
-            <$> ((+) <$> (div rc <$> mlimit) <*> ((\x -> if mod rc x > 0 then 0 else -1) <$> mlimit))
+            <$> (((+) . div rc <$> mlimit) <*> ((\x -> if mod rc x > 0 then 0 else -1) <$> mlimit))
             <*> mlimit
     let next = maybe 0 (min maxo) $ (+) <$> moffset <*> mlimit
     let prev = maybe 0 (max 0) $ (-) <$> moffset <*> mlimit
     let start = maybe 0 (\x -> if maxo < 0 then 0 else x + 1) moffset
     let end = fromMaybe 0 $ min <$> ((+) <$> moffset <*> mlimit) <*> pure rc
-
-    let ultParams  = [("desc","id"),("offset","0"),("limit","5")]
-    ult <- getUrlRenderParams >>= \r -> fromMaybe (r ApplicantsR ultParams) <$> lookupSession ultDestKey
         
     msgs <- getMessages
     selectRep $ provideRep $ defaultLayout $ do
         setTitleI MsgApplicants
+        idFormSearch <- newIdent
         idInputSearch <- newIdent
         idSelectLimit <- newIdent
         idSelectLimit2 <- newIdent
         $(widgetFile "applicants/applicants")
 
 
-getApplicantEditFormR :: ApplicantId -> HandlerFor App Html
+getApplicantEditFormR :: ApplicantId -> Handler Html
 getApplicantEditFormR aid = do
+    stati <- filter ((/= "tab") . fst) . reqGetParams <$> getRequest
 
-  tab <- fromMaybe 0 <$> runInputGet (iopt intField "tab") :: HandlerFor App Int
+    tab <- fromMaybe 0 <$> runInputGet (iopt intField "tab") :: Handler Int
 
-  applicant <- runDB $ selectOne $ do
-      x <- from $ table @Applicant
-      where_ $ x ^. ApplicantId ==. val aid
-      return x
-    
-  appSkills <- runDB $ select $ do
-      (a :& s) <- from $ table @AppSkill
-          `innerJoin` table @Skill `on` (\(a :& s) -> a ^. AppSkillSkill ==. s ^. SkillId)
-      where_ $ a ^. AppSkillApplicant ==. val aid
-      orderBy [asc (a ^. AppSkillId)]
-      return (a,s)
+    applicant <- runDB $ selectOne $ do
+        x <- from $ table @Applicant
+        where_ $ x ^. ApplicantId ==. val aid
+        return x
 
-  skills <- runDB $ select $ do
-      s <- from $ table @Skill
-      where_ $ (s ^. SkillId) `notIn` valList (entityKey . snd <$> appSkills)
-      return s
+    appSkills <- runDB $ select $ do
+        (a :& s) <- from $ table @AppSkill
+            `innerJoin` table @Skill `on` (\(a :& s) -> a ^. AppSkillSkill ==. s ^. SkillId)
+        where_ $ a ^. AppSkillApplicant ==. val aid
+        orderBy [asc (a ^. AppSkillId)]
+        return (a,s)
 
-  categs <- runDB fetchCategs
+    skills <- runDB $ select $ do
+        s <- from $ table @Skill
+        where_ $ (s ^. SkillId) `notIn` valList (entityKey . snd <$> appSkills)
+        return s
 
-  (fw,fe) <- generateFormPost $ formApplicant categs False applicant
-  (sfw,sfe) <- generateFormPost $ formSkills appSkills False (fmtDbl ".######" (Locale "en"))
-  
-  defaultLayout $ do
-      setTitleI MsgApplicant
-      let ultParams  = [("desc","id"),("offset","0"),("limit","5")]
-      ult <- getUrlRenderParams >>= \rndr -> fromMaybe (rndr ApplicantsR ultParams) <$> lookupSession ultDestKey
-      msgs <- getMessages
-      $(widgetFile "applicants/edit")
+    categs <- runDB fetchCategs
+
+    (fw,fe) <- generateFormPost $ formApplicant categs False applicant
+    (sfw,sfe) <- generateFormPost $ formSkills appSkills False (fmtDbl ".######" (Locale "en"))
+
+    defaultLayout $ do
+        setTitleI MsgApplicant
+        msgs <- getMessages
+        $(widgetFile "applicants/edit")
 
 
 getApplicantCreateFormR :: HandlerFor App Html
 getApplicantCreateFormR = do
-    
+    stati <- reqGetParams <$> getRequest
     categs <- runDB fetchCategs
     
     (widget,enctype) <- generateFormPost $ formApplicant categs False Nothing
-    
-    let ultParams  = [("desc","id"),("offset","0"),("limit","5")]
-    ult <- getUrlRenderParams >>= \rndr -> fromMaybe (rndr ApplicantsR ultParams) <$> lookupSession ultDestKey
     
     msgs <- getMessages
     defaultLayout $ do
@@ -617,80 +628,52 @@ formApplicant categs isPost applicant extra = do
           [("class","form-control")]
 
 
-menuActions :: ApplicantId -> WidgetFor App ()
-menuActions aid = [whamlet|
-<div.dropdown>
-  <button.btn.btn-light.rounded-circle type=button
-    data-bs-toggle=dropdown aria-expanded=false title=_{MsgActions}>
-    <i.bi.bi-three-dots-vertical>
-  <ul.dropdown-menu>
-    <li>
-      <a.dropdown-item href=@{ApplicantEditFormR aid}?tab=0 rel=edit-form>
-        <i.bi.bi-pencil.me-2>
-        _{MsgEdit}
-    <li>
-      <button.dropdown-item type=button
-        data-bs-toggle=modal data-bs-target=#modalDelete#{fromSqlKey aid}>
-        <i.bi.bi-trash.me-2>
-        _{MsgDelete}
-    <li>
-      <a.dropdown-item href=@{ApplicantR aid}?tab=0 rel=item>
-        <i.bi.bi-card-text.me-2>
-        _{MsgDetails}
-    <li>
-      <hr.dropdown-divider>
-    <li>
-      <a.dropdown-item href=@{AppSkillsEditFormR aid} rel=edit-form>
-        <i.bi.bi-pencil.me-2>
-        _{MsgSkills}
-|]
-
-
 fetchApplicants :: MonadIO m => Params -> ReaderT SqlBackend m [(Entity Applicant, Value Int)]
 fetchApplicants params = select $ queryApplicants params
 
 
 queryApplicants :: Params -> SqlQuery (SqlExpr (Entity Applicant), SqlExpr (Value Int))
 queryApplicants (Params mq moffset mlimit msort tags) = do
-  (x :& (_, ns)) <- from $ table @Applicant
-    `leftJoin` ( selectQuery $ do
-                   s <- from $ table @AppSkill
-                   groupBy (s ^. AppSkillApplicant)
-                   return (s ^. AppSkillApplicant, countRows :: SqlExpr (Value Int))
-               ) `on` (\(a :& (asid, _)) -> asid ==. just (a ^. ApplicantId))
+    (x :& (_, ns)) <- from $ table @Applicant
+        `leftJoin` ( selectQuery $ do
+                         s <- from $ table @AppSkill
+                         groupBy (s ^. AppSkillApplicant)
+                         return (s ^. AppSkillApplicant, countRows :: SqlExpr (Value Int))
+                   ) `on` (\(a :& (asid, _)) -> asid ==. just (a ^. ApplicantId))
 
-  case mq of
-    Just q -> where_ $ (upper_ (x ^. ApplicantFamilyName) `like` (%) ++. upper_ (val q) ++. (%))
-      ||. (upper_ (x ^. ApplicantGivenName) `like` (%) ++. upper_ (val q) ++. (%))
-      ||. (upper_ (x ^. ApplicantAdditionalName) `like` (%) ++. just (upper_ (val q)) ++. (%))
-    Nothing -> return ()
+    case mq of
+      Just q -> where_ $ (upper_ (x ^. ApplicantFamilyName) `like` (%) ++. upper_ (val q) ++. (%))
+          ||. (upper_ (x ^. ApplicantGivenName) `like` (%) ++. upper_ (val q) ++. (%))
+          ||. (upper_ (x ^. ApplicantAdditionalName) `like` (%) ++. just (upper_ (val q)) ++. (%))
+      Nothing -> return ()
 
-  case tags of
-    [] -> return ()
-    xs -> where_ $ x ^. ApplicantTag `in_` justList (valList xs)
+    case tags of
+      [] -> return ()
+      xs -> where_ $ x ^. ApplicantTag `in_` justList (valList xs)
 
-  let nskills = coalesceDefault [ns] (val 0)
+    let nskills = coalesceDefault [ns] (val 0)
 
-  case msort of
-    Just ("asc","surname") -> orderBy [asc (x ^. ApplicantFamilyName)]
-    Just ("desc","surname") -> orderBy [desc (x ^. ApplicantFamilyName)]
-    Just ("asc","name") -> orderBy [asc (x ^. ApplicantGivenName)]
-    Just ("desc","name") -> orderBy [desc (x ^. ApplicantGivenName)]
-    Just ("asc","patronymic") -> orderBy [asc (x ^. ApplicantAdditionalName)]
-    Just ("desc","patronymic") -> orderBy [desc (x ^. ApplicantAdditionalName)]
-    Just ("asc","skills") -> orderBy [asc nskills]
-    Just ("desc","skills") -> orderBy [desc nskills]
-    _ -> orderBy [desc (x ^. ApplicantId)]
+    case msort of
+      Just ("asc","surname") -> orderBy [asc (x ^. ApplicantFamilyName)]
+      Just ("desc","surname") -> orderBy [desc (x ^. ApplicantFamilyName)]
+      Just ("asc","name") -> orderBy [asc (x ^. ApplicantGivenName)]
+      Just ("desc","name") -> orderBy [desc (x ^. ApplicantGivenName)]
+      Just ("asc","patronymic") -> orderBy [asc (x ^. ApplicantAdditionalName)]
+      Just ("desc","patronymic") -> orderBy [desc (x ^. ApplicantAdditionalName)]
+      Just ("asc","skills") -> orderBy [asc nskills]
+      Just ("desc","skills") -> orderBy [desc nskills]
+      _otherwise -> orderBy [desc (x ^. ApplicantId)]
 
-  case moffset of
-    Just n -> offset $ fromIntegral n
-    Nothing -> return ()
+    case moffset of
+      Just n -> offset $ fromIntegral n
+      Nothing -> return ()
 
-  case mlimit of
-    Just n -> limit $ fromIntegral n
-    Nothing -> return ()
+    case mlimit of
+      Just n -> limit $ fromIntegral n
+      Nothing -> return ()
 
-  return (x, nskills)
+    return (x, nskills)
+
 
 fetchCount :: MonadIO m => Params -> ReaderT SqlBackend m Int
 fetchCount params = unValue . fromMaybe (Value 0) <$> selectOne (queryCount params)
@@ -698,19 +681,19 @@ fetchCount params = unValue . fromMaybe (Value 0) <$> selectOne (queryCount para
 
 queryCount :: Params -> SqlQuery (SqlExpr (Value Int))
 queryCount (Params mq _ _ _ tags) = do
-  x <- from $ table @Applicant
+    x <- from $ table @Applicant
 
-  case mq of
-    Just q -> where_ $ (upper_ (x ^. ApplicantFamilyName) `like` (%) ++. upper_ (val q) ++. (%))
-      ||. (upper_ (x ^. ApplicantGivenName) `like` (%) ++. upper_ (val q) ++. (%))
-      ||. (upper_ (x ^. ApplicantAdditionalName) `like` (%) ++. just (upper_ (val q)) ++. (%))
-    Nothing -> return ()
+    case mq of
+      Just q -> where_ $ (upper_ (x ^. ApplicantFamilyName) `like` (%) ++. upper_ (val q) ++. (%))
+          ||. (upper_ (x ^. ApplicantGivenName) `like` (%) ++. upper_ (val q) ++. (%))
+          ||. (upper_ (x ^. ApplicantAdditionalName) `like` (%) ++. just (upper_ (val q)) ++. (%))
+      Nothing -> return ()
 
-  case tags of
-    [] -> return ()
-    xs -> where_ $ x ^. ApplicantTag `in_` justList (valList xs)
+    case tags of
+      [] -> return ()
+      xs -> where_ $ x ^. ApplicantTag `in_` justList (valList xs)
 
-  return countRows
+    return countRows
 
 fmtDbl :: Text -> LocaleName -> Double -> Text
 fmtDbl = formatDouble'

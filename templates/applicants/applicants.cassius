@@ -10,7 +10,7 @@ h1.title
     overflow: hidden
     text-overflow: ellipsis
 
-label.form-text
+label.form-text, span.label.form-text
     font-size: 0.7rem
 
 ul.list-group#applicantList

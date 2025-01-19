@@ -20,7 +20,7 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
   <div.flex-grow-1.d-flex.flex-column>
     <nav.navbar>
       <div.container-fluid.flex-nowrap.gap-3.px-0>
-        <form #qform method=get action=@{JobsR} rel=self>
+        <form ##{idFormSearch} method=get action=@{JobsR} rel=self>
           <div.input-group>
             <button.btn type=submit title=_{MsgSearch}
               :Just True == ((<$>) T.null mq):.btn-outline-success
@@ -44,8 +44,7 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
           $nothing
             <input type=number name=offset value=0 hidden #inputOffset>
 
-        <a.btn.btn-primary role=button href=@{JobCreateFormR} rel=create-form
-          title=_{MsgAdd} aria-label=_{MsgAdd}>
+        <a.btn.btn-primary role=button href=@?{(JobCreateFormR,stati)} title=_{MsgAdd} aria-label=_{MsgAdd}>
           <span.d-none.d-lg-inline-block>
             _{MsgAdd}
           <i.bi.bi-plus-lg.d-block.d-lg-none>
@@ -71,16 +70,16 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
             <nav aria-label=_{MsgPagination}>
               <ul.pagination.m-0.p-0>
                 <li.page-item>
-                  <button.page-link type=submit form=qform rel=first title=_{MsgFirst} aria-label=_{MsgFirst}>
+                  <button.page-link type=submit form=#{idFormSearch} rel=first title=_{MsgFirst} aria-label=_{MsgFirst}>
                     <i.bi.bi-chevron-bar-left>
                 <li.page-item>
-                  <button.page-link type=sumit form=qform rel=prev title=_{MsgPrevious} aria-label=_{MsgPrevious}>
+                  <button.page-link type=sumit form=#{idFormSearch} rel=prev title=_{MsgPrevious} aria-label=_{MsgPrevious}>
                     <i.bi.bi-chevron-left>
                 <li.page-item :next < 0:.disabled>
-                  <button.page-link type=submit form=qform rel=next title=_{MsgNext} aria-label=_{MsgNext}>
+                  <button.page-link type=submit form=#{idFormSearch} rel=next title=_{MsgNext} aria-label=_{MsgNext}>
                     <i.bi.bi-chevron-right>
                 <li.page-item :maxo < 0:.disabled>
-                  <button.page-link type=submit form=qform rel=last title=_{MsgLast} aria-label=_{MsgLast}>
+                  <button.page-link type=submit form=#{idFormSearch} rel=last title=_{MsgLast} aria-label=_{MsgLast}>
                     <i.bi.bi-chevron-bar-right>
 
       <div.list-group.list-group-flush>
@@ -90,7 +89,40 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
               #{name}
               
             <div.actions>
-              ^{jobActionsWidget jid}
+              <div.dropdown>
+                <button.btn.btn-light.border-0.rounded-circle type=button
+                  data-bs-toggle=dropdown aria-expanded=false title=_{MsgActions}>
+                  <i.bi.bi-three-dots-vertical>
+
+                <ul.dropdown-menu>
+                  <li>
+                    <a.dropdown-item href="@{JobEditFormR jid}?tab=0" rel=edit-form>
+                      <div.d-flex.align-items-center>
+                        <i.bi.bi-pencil.me-2>
+                        _{MsgEdit}
+                  <li>
+                    <button.dropdown-item.btn.btn-outline-danger type=button
+                      data-bs-toggle=modal data-bs-target=#modalDeleteJob#{fromSqlKey jid}>
+                      <div.d-flex.align-items-center>
+                        <i.bi.bi-trash.me-2>
+                        _{MsgDelete}
+                  <li>
+                    <a.dropdown-item href=@{JobR jid}?tab=0 rel=item>
+                      <div.d-flex.align-items-center>
+                        <i.bi.bi-card-text.me-2>
+                        _{MsgDetails}
+                  <li>
+                    <hr.dropdown-divider>
+                  <li>
+                    <a.dropdown-item href=@{JobSkillsEditFormR jid} rel=item>
+                      <div.d-flex.align-items-center>
+                        <i.bi.bi-pencil.me-2>
+                        _{MsgSkills}
+                  <li>
+                    <a.dropdown-item href=@{JobCandidatesR jid} rel=item>
+                      <div.d-flex.align-items-center>
+                        <i.bi.bi-mortarboard.me-2>
+                        _{MsgCandidates}
             <div.details.d-flex.gap-3>
               <a.skills.app-link href=@?{(JobR jid,[("tab","1")])}>
                 <div.d-flex.align-items-center.gap-1>
@@ -108,15 +140,15 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
         <thead>
           <tr>
             <th scope=col>
-              ^{thSort msort "code" MsgCode "qform"}
+              ^{thSort msort "code" MsgCode idFormSearch}
             <th scope=col>
-              ^{thSort msort "name" MsgName "qform"}
+              ^{thSort msort "name" MsgName idFormSearch}
             <th scope=col>
-              ^{thSort msort "dayStart" MsgDayStart "qform"}
+              ^{thSort msort "dayStart" MsgDayStart idFormSearch}
             <th scope=col>
-              ^{thSort msort "dayEnd" MsgDayEnd "qform"}
+              ^{thSort msort "dayEnd" MsgDayEnd idFormSearch}
             <th scope=col>
-              ^{thSort msort "skills" MsgSkills "qform"}
+              ^{thSort msort "skills" MsgSkills idFormSearch}
             <th scope=col>
               _{MsgCandidates}
             <th scope=col>
@@ -133,19 +165,52 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
                 <td>#{formatCalendar fmt (setDay cal start)}
                 <td>#{formatCalendar fmt (setDay cal end)}
                 <td>
-                  <a.app-link.d-inline-block.w-100 href=@{JobR jid}?tab=1 rel=edit-form title=_{MsgNumberOfSkills}>
+                  <a.app-link.d-inline-block.w-100 href=@?{(JobR jid,(:) ("tab","1") stati)} title=_{MsgNumberOfSkills}>
                     &nbsp;#{nSkills}&nbsp;
                 <td>
                   <a.app-link.d-inline-block.w-100 href=@{JobCandidatesR jid} title=_{MsgNumberOfCandidates}>
                     &nbsp;#{nCandidates}&nbsp;
                 <td>
                   <div.d-flex.justify-content-end.gap-2>
-                    ^{jobActionsWidget jid}
+                    <div.dropdown>
+                      <button.btn.btn-light.border-0.rounded-circle type=button
+                        data-bs-toggle=dropdown aria-expanded=false title=_{MsgActions}>
+                        <i.bi.bi-three-dots-vertical>
+
+                      <ul.dropdown-menu>
+                        <li>
+                          <a.dropdown-item href="@{JobEditFormR jid}?tab=0" rel=edit-form>
+                            <div.d-flex.align-items-center>
+                              <i.bi.bi-pencil.me-2>
+                              _{MsgEdit}
+                        <li>
+                          <button.dropdown-item.btn.btn-outline-danger type=button
+                            data-bs-toggle=modal data-bs-target=#modalDeleteJob#{fromSqlKey jid}>
+                            <div.d-flex.align-items-center>
+                              <i.bi.bi-trash.me-2>
+                              _{MsgDelete}
+                        <li>
+                          <a.dropdown-item href=@{JobR jid}?tab=0 rel=item>
+                            <div.d-flex.align-items-center>
+                              <i.bi.bi-card-text.me-2>
+                              _{MsgDetails}
+                        <li>
+                          <hr.dropdown-divider>
+                        <li>
+                          <a.dropdown-item href=@{JobSkillsEditFormR jid} rel=item>
+                            <div.d-flex.align-items-center>
+                              <i.bi.bi-pencil.me-2>
+                              _{MsgSkills}
+                        <li>
+                          <a.dropdown-item href=@{JobCandidatesR jid} rel=item>
+                            <div.d-flex.align-items-center>
+                              <i.bi.bi-mortarboard.me-2>
+                              _{MsgCandidates}
 
       <div.d-flex.flex-row.justify-content-between>
         <div>
           <small.fw-light>_{MsgRowsPerPage}
-          <select.form-select form=qform name=limit #selectLimit>
+          <select.form-select form=#{idFormSearch} name=limit ##{idSelectLimit}>
             <option value=3 :Just 3 == mlimit:selected>3
             <option value=4 :Just 4 == mlimit:selected>4
             <option value=5 :Just 5 == mlimit:selected>5
@@ -157,16 +222,16 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
           <nav aria-label=_{MsgPagination}>
             <ul.pagination>
               <li.page-item>
-                <button.page-link type=submit form=qform rel=first title=_{MsgFirst} aria-label=_{MsgFirst}>
+                <button.page-link type=submit form=#{idFormSearch} rel=first title=_{MsgFirst} aria-label=_{MsgFirst}>
                   <i.bi.bi-chevron-bar-left>
               <li.page-item>
-                <button.page-link type=sumit form=qform rel=prev title=_{MsgPrevious} aria-label=_{MsgPrevious}>
+                <button.page-link type=sumit form=#{idFormSearch} rel=prev title=_{MsgPrevious} aria-label=_{MsgPrevious}>
                   <i.bi.bi-chevron-left>
               <li.page-item :next < 0:.disabled>
-                <button.page-link type=submit form=qform rel=next title=_{MsgNext} aria-label=_{MsgNext}>
+                <button.page-link type=submit form=#{idFormSearch} rel=next title=_{MsgNext} aria-label=_{MsgNext}>
                   <i.bi.bi-chevron-right>
               <li.page-item :maxo < 0:.disabled>
-                <button.page-link type=submit form=qform rel=last title=_{MsgLast} aria-label=_{MsgLast}>
+                <button.page-link type=submit form=#{idFormSearch} rel=last title=_{MsgLast} aria-label=_{MsgLast}>
                   <i.bi.bi-chevron-bar-right>
   <aside>
     <div.offcanvas-lg.offcanvas-end tabindex=-1 #offcanvasMainRight>

@@ -5,13 +5,13 @@
       <a href=@{HomeR} rel=linkset>
         _{MsgHome}
     <li.breadcrumb-item>
-        <a href=#{ult} rel=collection>
+        <a href=@?{(ApplicantsR,stati)} rel=collection>
           _{MsgApplicants}
     <li.breadcrumb-item.active aria-current=page>
       _{MsgApplicant}
 
 <h1>
-  <a.btn.btn-light.border-0.rounded-circle href=#{ult} role=button aria-label=_{MsgBack}>
+  <a.btn.btn-light.border-0.rounded-circle href=@?{(ApplicantsR,stati)} role=button aria-label=_{MsgBack}>
     <i.bi.bi-chevron-left>
   _{MsgNewApplicant}
 
@@ -25,10 +25,10 @@
       #{msg}
       <button.btn-close type=button data-bs-dismiss=alert>
 
-  <form method=post action=@{ApplicantsR} enctype=#{enctype} novalidate>
+  <form method=post action=@?{(ApplicantsR,stati)} enctype=#{enctype} novalidate>
     ^{widget}
     <div.mt-3.text-end>
-      <a.btn.btn-light href=#{ult} rel=collection role=button>
+      <a.btn.btn-light href=@?{(ApplicantsR,stati)} rel=collection role=button>
         _{MsgCancel}
       <button.btn.btn-primary type=submit>
         _{MsgSave}
