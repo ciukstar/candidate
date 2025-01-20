@@ -17,6 +17,7 @@ module Foundation
   , AppMessage(..)
   , resourcesApp
   , unsafeHandler
+  , getServiceWorkerR
   ) where
 
 
@@ -95,6 +96,7 @@ import Settings.StaticFiles (js_cookie_3_0_1_dist_js_cookie_js)
 
 import Text.Hamlet (hamletFile, Html)
 import Text.Jasmine (minifym)
+import Text.Julius (juliusFile)
 import Text.Shakespeare.I18N (mkMessage)
 
 import Yesod.Auth
@@ -109,9 +111,12 @@ import Yesod.Auth
 import Yesod.Auth.Dummy
 import Yesod.Auth.OpenId (authOpenId, IdentifierType (Claimed))
 import Yesod.Core (hamlet)
+import Yesod.Core.Content
+    ( TypedContent (TypedContent), toContent, typeJavascript
+    )
 import Yesod.Core.Handler
   ( HandlerFor, defaultCsrfCookieName, defaultCsrfHeaderName, getCurrentRoute
-  , getYesod, languages, withUrlRenderer, setUltDestCurrent
+  , getYesod, languages, withUrlRenderer, setUltDestCurrent, getUrlRenderParams
   )
 import Yesod.Default.Util (addStaticContentExternal)
 import Yesod.Core.Types (Logger)
@@ -208,6 +213,11 @@ instance Yesod App where
     isAuthorized (AuthR _) _ = return Authorized
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
+    isAuthorized SitemapR _ = return Authorized
+    isAuthorized WebAppManifestR _ = return Authorized
+
+    isAuthorized ServiceWorkerR _ = return Authorized    
+    
     isAuthorized PhotoPlaceholderR _ = return Authorized
 
     isAuthorized HomeR _ = setUltDestCurrent >> return Authorized
@@ -293,7 +303,13 @@ isInvisibleButtonNavbarTogglerMainRigt route = case route of
   Just (SkillEditFormR _) -> True
   Just (SkillR _) -> True
   Just (JobCandidatesR _) -> True
-  _ -> False
+  _otherwise -> False
+
+
+getServiceWorkerR :: Handler TypedContent
+getServiceWorkerR = do
+    rndr <- getUrlRenderParams
+    return $ TypedContent typeJavascript $ toContent $ $(juliusFile "static/js/sw.julius") rndr
 
 
 -- How to run database actions.

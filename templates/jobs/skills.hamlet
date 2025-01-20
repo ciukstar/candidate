@@ -28,7 +28,7 @@ $maybe Job _ name _ _ _ _ <- job
         <a.btn-close href=@?{(JobSkillsEditFormR jid,stati)} aria-label=_{MsgClose}>
 
   <form method=get action=@{JobSkillsEditFormR jid} enctype=#{fe} #formGetJobSkillWeights>
-    $forall (x,v) <- stati
+    $forall (x,v) <- filter ((.) ((/=) "jsid") fst) stati
       <input type=hidden name=#{x} value=#{v}>
 
   <form method=post action=@?{(JobSkillsEditR jid,stati)} enctype=#{fe} #formPostJobSkillWeights>

@@ -29,7 +29,8 @@ import Data.Maybe (Maybe (Just))
 import Database.Persist.Sql (runSqlPool)
 
 import Foundation
-    ( Route
+    ( Handler, App(..), resourcesApp, unsafeHandler, getServiceWorkerR
+    , Route
       ( RobotsR, DeptR, DeptsR, JobCandidateR, JobCandidatesR
       , CandidateR, CandidatesR, JobSkillsEditFormR, JobEditFormR
       , JobCreateFormR, JobSkillR, JobSkillsEditR, JobSkillsR, JobR, JobsR
@@ -38,8 +39,8 @@ import Foundation
       , ApplicantR, ApplicantsR, SkillEditFormR, SkillCreateFormR
       , SkillsLabelR, SkillR, SkillsR, StaticR, AuthR, HomeR
       , PhotoPlaceholderR, FaviconR, ApplicantSkillsR, DocsR
+      , SitemapR, ServiceWorkerR, WebAppManifestR
       )
-    , resourcesApp, unsafeHandler, App(..), Handler
     )
     
 import Import.NoFoundation
@@ -49,6 +50,7 @@ import Import.NoFoundation
     , static, staticDevel, (.), Default(def), LogLevel(LevelError)
     , ReaderT, Application, Yesod(messageLoggerSource)
     , YesodPersist(runDB), loggerSet, configSettingsYmlValue
+    , Header
     , AppSettings
       ( appHost, appMutableStatic, appStaticDir, appDatabaseConf
       , appConnectionPoolConfig, appDetailedRequestLogging, appIpFromHeader
@@ -61,7 +63,8 @@ import Import.NoFoundation
 
 import Language.Haskell.TH.Syntax (qLocation)
 import Network.HTTP.Client.TLS (getGlobalManager)
-import Network.Wai (Middleware)
+import Network.Wai (Middleware, mapResponseHeaders)
+import qualified Network.Wai as W (Response)
 import Network.Wai.Handler.Warp
   ( Settings, defaultSettings, defaultShouldDisplayException
   , runSettings, setHost, setOnException, setPort, getPort
@@ -73,7 +76,11 @@ import Network.Wai.Middleware.RequestLogger
 import System.Log.FastLogger
   ( defaultBufSize, newStdoutLoggerSet, toLogStr)
 
-import Handler.Common (getPhotoPlaceholderR, getFaviconR, getRobotsR )
+import Handler.Common
+    ( getPhotoPlaceholderR, getFaviconR, getRobotsR, getSitemapR
+    , getWebAppManifestR
+    )
+    
 import Handler.Home ( getHomeR )
 
 import Handler.Docs (getDocsR)
@@ -198,7 +205,18 @@ makeApplication foundation = do
     logWare <- makeLogWare foundation
     -- Create the WAI application and apply middlewares
     appPlain <- toWaiAppPlain foundation
-    return $ logWare $ defaultMiddlewaresNoLogging $ gzip def { gzipFiles = GzipCompress } appPlain
+    return $ logWare $ defaultMiddlewaresNoLogging $
+        ( withHeader ("Service-Worker-Allowed","/")
+          . gzip def { gzipFiles = GzipCompress }
+        ) appPlain
+
+withHeader :: Header -> Middleware
+withHeader h app req res = app req $ res . addH h
+
+
+addH :: Header -> W.Response -> W.Response
+addH h = mapResponseHeaders (h :)
+
 
 makeLogWare :: App -> IO Middleware
 makeLogWare foundation =

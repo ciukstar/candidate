@@ -10,7 +10,7 @@
       _{MsgCandidate}
 
 <div.d-flex.flex-row.gap-lg-5>
-  <div.flex-grow-1.d-column>
+  <div.flex-grow-1.d-column style="min-width:0">
     ^{candidateInfo (rndr (JobCandidatesR jid) stati) jid aid}
 
   <aside>

@@ -354,10 +354,10 @@ getJobsR = do
 
 postJobSkillsEditR :: JobId -> HandlerFor App TypedContent
 postJobSkillsEditR jid = do
-    stati <- filter ((/= "tab") . fst) . reqGetParams <$> getRequest
+    stati <- filter ((/= "jsid") . fst) . reqGetParams <$> getRequest
     selected <- fromMaybe [] . mapM ((toSqlKey <$>) . readMaybe . unpack) <$> lookupGetParams "jsid"
     location <- runInputPost $ ireq urlField "location"
-    skills <- runDB $ fetchJobSkills jid :: HandlerFor App [(Entity JobSkill, Entity Skill)]
+    skills <- runDB $ fetchJobSkills jid :: Handler [(Entity JobSkill, Entity Skill)]
     let trees = bldTree skills
     skillPool <- runDB $ fetchJoblessSkills (snd <$> skills)
     ((fr,fw),fe) <- runFormPost $ formSkills stati trees (fmtDbl ".######" (Locale "en")) selected
@@ -380,10 +380,10 @@ postJobSkillsEditR jid = do
 
 getJobSkillsEditFormR :: JobId -> HandlerFor App Html
 getJobSkillsEditFormR jid = do
-    stati <- filter ((/= "tab") . fst) . reqGetParams <$> getRequest
+    stati <- filter ((/= "jsid") . fst) . reqGetParams <$> getRequest
     selected <- fromMaybe [] . mapM ((toSqlKey <$>) . readMaybe . unpack) <$> lookupGetParams "jsid"
     job <- runDB $ get jid
-    skills <- runDB $ fetchJobSkills jid :: HandlerFor App [(Entity JobSkill, Entity Skill)]
+    skills <- runDB $ fetchJobSkills jid :: Handler [(Entity JobSkill, Entity Skill)]
     let trees = bldTree skills
     skillPool <- runDB $ fetchJoblessSkills (snd <$> skills)
     location <- getUrlRenderParams >>= \rndr -> return $ rndr (JobSkillsEditFormR jid) stati
@@ -724,7 +724,7 @@ rndrTree stati fmt (Node (Entity jsid (JobSkill jid _ weight _ expanded), Entity
 formSkills :: [(Text,Text)] -> [Tree (Entity JobSkill, Entity Skill)]
            -> (Double -> Text)
            -> [JobSkillId]
-           -> Html -> MForm (HandlerFor App) (FormResult [(JobSkillId, Double)], WidgetFor App ())
+           -> Form [(JobSkillId, Double)]
 formSkills stati tree fmt selected extra = do
     (r,w') <- treeSkills stati tree fmt selected
     let w = [whamlet|

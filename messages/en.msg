@@ -1,3 +1,4 @@
+CandidateRanking: Candidate Ranking
 PersonalData: Personal data
 Links: Links
 EditApplicant: Edit applicant
