@@ -3,19 +3,15 @@
     <li.breadcrumb-item>
       <a href=@{HomeR}>_{MsgHome}
     <li.breadcrumb-item>
-      <a href=#{ult} rell=collection>_{MsgPositions}
+      <a href=@?{(JobsR,stati)} rell=collection>_{MsgPositions}
     <li.breadcrumb-item>
-      <a href=@{JobCandidatesR jid} rell=collection>_{MsgCandidates}
+      <a href=@?{(JobCandidatesR jid,stati)} rell=collection>_{MsgCandidates}
     <li.breadcrumb-item.active aria-current=page>
       _{MsgCandidate}
 
 <div.d-flex.flex-row.gap-lg-5>
   <div.flex-grow-1.d-column>
-    ^{candidateInfo ult jid aid}
-
-    <a.btn.btn-sm.btn-outline-secondary.mt-3 href=@{JobCandidatesR jid} role=button>
-      <i.bi.bi-arrow-left>
-      _{MsgBack}
+    ^{candidateInfo (rndr (JobCandidatesR jid) stati) jid aid}
 
   <aside>
     <div.offcanvas-lg.offcanvas-end tabindex=-1 #offcanvasMainRight aria-labelledby=offcanvasMainRightTitle>
@@ -26,9 +22,9 @@
       <div.offcanvas-body>
         <div>
           <p>
-            <a.text-nowrap href=@?{(JobCandidateR jid aid,[("tab","0")])}>
+            <a.text-nowrap href=@?{(JobCandidateR jid aid,(:) ("tab","0") stati)}>
               _{MsgCalculationAnalysis}
           <p>
-            <a href=@{JobCandidateR jid aid}?tab=1>_{MsgApplicant}
+            <a href=@?{(JobCandidateR jid aid,(:) ("tab","1") stati)}>_{MsgApplicant}
           <p>
-            <a href=@{JobCandidateR jid aid}?tab=2>_{MsgPosition}
+            <a href=@?{(JobCandidateR jid aid,(:) ("tab","2") stati)}>_{MsgPosition}

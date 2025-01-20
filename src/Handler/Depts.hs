@@ -79,53 +79,54 @@ postDeptsR = do
   redirectUltDest JobsR
 
 
-deptTreeWidget :: [Text] -> [Entity Dept] -> WidgetFor App ()
-deptTreeWidget labels = bldTreeWidget labels . bldTree
+deptTreeWidget :: Text -> [Text] -> [Entity Dept] -> WidgetFor App ()
+deptTreeWidget idFormSearch labels = bldTreeWidget idFormSearch labels . bldTree
 
 
-bldTreeWidget :: [Text] -> [Tree (Entity Dept)] -> WidgetFor App ()
-bldTreeWidget _ [] = [whamlet||]
-bldTreeWidget labels ns = do
-  toWidget [cassius|
-ul.labels
-  li.label:hover
-    background-color: rgba(0,0,0,0.075)
-|]
-  [whamlet|
-<ul.labels>
-  $forall Node (Entity did (Dept name _)) cs <- ns
-    <li.label.rounded-4.mb-1>
-      <div.text-nowrap.d-flex.flex-row.align-items-center.justify-content-between>
-        <span>
-          $if not (null cs)
-            <button.chevron.btn.btn-light.border-0.rounded-circle data-bs-toggle=collapse
-              data-bs-target=#target#{fromSqlKey did} aria-expanded=true>
-          <input.btn-check type=checkbox name=label value=#{name} form=qform :elem name labels:checked
-            #dept#{fromSqlKey did} onchange="this.form.submit()">
-          <label.btn.btn-outline-secondary.text-nowrap.border-0 for=dept#{fromSqlKey did}>
-            #{name}
-        <div.dropdown>
-          <button.btn.btn-light.border-0.rounded-circle title=_{MsgActions}
-            data-bs-toggle=dropdown aria-expanded=false>
-            <i.bi.bi-three-dots-vertical>
-          <ul.dropdown-menu>
-            <li>
-              <button.dropdown-item type=button
-                data-bs-toggle=modal data-bs-target=#modalSubdept#{fromSqlKey did}>
-                <i.bi.bi-plus-lg.me-2>
-                _{MsgAdd}
-              <button.dropdown-item type=button
-                data-bs-toggle=modal data-bs-target=#modalEditDept#{fromSqlKey did}>
-                <i.bi.bi-pencil.me-2>
-                _{MsgEdit}
-              <button.dropdown-item.delete type=button
-                data-bs-toggle=modal data-bs-target=#modalDeleteDept#{fromSqlKey did}>
-                <i.bi.bi-trash.me-2>
-                _{MsgRemove}
-    $if not (null cs)
-      <div.collapse.show.ms-3 #target#{fromSqlKey did}>
-        ^{bldTreeWidget labels cs}
-|]
+bldTreeWidget :: Text -> [Text] -> [Tree (Entity Dept)] -> WidgetFor App ()
+bldTreeWidget _ _ [] = [whamlet||]
+    
+bldTreeWidget idFormSearch labels ns = do
+    toWidget [cassius|
+                     ul.labels
+                       li.label:hover
+                         background-color: rgba(0,0,0,0.075)
+                     |]
+    [whamlet|
+            <ul.labels>
+              $forall Node (Entity did (Dept name _)) cs <- ns
+                <li.label.rounded-4.mb-1>
+                  <div.text-nowrap.d-flex.flex-row.align-items-center.justify-content-between>
+                    <span>
+                      $if not (null cs)
+                        <button.chevron.btn.btn-light.border-0.rounded-circle data-bs-toggle=collapse
+                          data-bs-target=#target#{fromSqlKey did} aria-expanded=true>
+                      <input.btn-check type=checkbox name=label value=#{name} form=#{idFormSearch} :elem name labels:checked
+                        #dept#{fromSqlKey did} onchange="this.form.submit()">
+                      <label.btn.btn-outline-secondary.text-nowrap.border-0 for=dept#{fromSqlKey did}>
+                        #{name}
+                    <div.dropdown>
+                      <button.btn.btn-light.border-0.rounded-circle title=_{MsgActions}
+                        data-bs-toggle=dropdown aria-expanded=false>
+                        <i.bi.bi-three-dots-vertical>
+                      <ul.dropdown-menu>
+                        <li>
+                          <button.dropdown-item type=button
+                            data-bs-toggle=modal data-bs-target=#modalSubdept#{fromSqlKey did}>
+                            <i.bi.bi-plus-lg.me-2>
+                            _{MsgAdd}
+                          <button.dropdown-item type=button
+                            data-bs-toggle=modal data-bs-target=#modalEditDept#{fromSqlKey did}>
+                            <i.bi.bi-pencil.me-2>
+                            _{MsgEdit}
+                          <button.dropdown-item.delete type=button
+                            data-bs-toggle=modal data-bs-target=#modalDeleteDept#{fromSqlKey did}>
+                            <i.bi.bi-trash.me-2>
+                            _{MsgRemove}
+                $if not (null cs)
+                  <div.collapse.show.ms-3 #target#{fromSqlKey did}>
+                    ^{bldTreeWidget idFormSearch labels cs}
+            |]
 
 
 bldTree :: [Entity Dept] -> [Tree (Entity Dept)]

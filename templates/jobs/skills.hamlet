@@ -4,12 +4,12 @@
     <li.breadcrumb-item>
       <a href=@{HomeR} rel=linkset>_{MsgHome}
     <li.breadcrumb-item>
-      <a href=#{ult} rel=collection>_{MsgPositions}
+      <a href=@?{(JobsR,stati)} rel=collection>_{MsgPositions}
     <li.breadcrumb-item.active aria-current=page>_{MsgSkills}
 
 $maybe Job _ name _ _ _ _ <- job
   <h1>
-    <a.btn.btn-light.border-0.rounded-circle href=#{ult} rel=collection role=button aria-label=_{MsgBack}>
+    <a.btn.btn-light.border-0.rounded-circle href=@?{(JobsR,stati)} rel=collection role=button aria-label=_{MsgBack}>
       <i.bi.bi-chevron-left>
     #{name}
 
@@ -25,17 +25,19 @@ $maybe Job _ name _ _ _ _ <- job
       $else
         <i.bi.bi-info-circle.me-2>
         #{msg}
-        <a.btn-close href=@{JobSkillsEditFormR jid} aria-label=_{MsgClose}>
+        <a.btn-close href=@?{(JobSkillsEditFormR jid,stati)} aria-label=_{MsgClose}>
 
   <form method=get action=@{JobSkillsEditFormR jid} enctype=#{fe} #formGetJobSkillWeights>
+    $forall (x,v) <- stati
+      <input type=hidden name=#{x} value=#{v}>
 
-  <form method=post action=@{JobSkillsEditR jid} enctype=#{fe} #formPostJobSkillWeights>
+  <form method=post action=@?{(JobSkillsEditR jid,stati)} enctype=#{fe} #formPostJobSkillWeights>
     <input type=submit hidden>
-    <input type=url name=location value=@{JobSkillsEditFormR jid} hidden>
+    <input type=url name=location value=@?{(JobSkillsEditFormR jid,stati)} hidden>
     ^{fw}
 
   <div.text-end.mt-3>
-    <a.btn.btn-light.mt-3 href=#{ult} role=button>
+    <a.btn.btn-light.mt-3 href=@?{(JobsR,stati)} role=button>
       _{MsgCancel}
     <button.btn.btn-success.mt-3 type=button data-bs-toggle=modal data-bs-target=#modalSkills>
       _{MsgAdd}
@@ -54,8 +56,8 @@ $maybe Job _ name _ _ _ _ <- job
           <i.bi.bi-search.input-group-text>
           <input.form-control type=search placeholder=_{MsgSearch} #inputSearchSkills>
       <div.modal-body>
-        <form #formSkills method=post action=@{JobSkillsR jid}>
-          <input type=url name=location value=@{JobSkillsEditFormR jid} required hidden>
+        <form #formSkills method=post action=@?{(JobSkillsR jid,stati)}>
+          <input type=url name=location value=@?{(JobSkillsEditFormR jid,stati)} required hidden>
           <input type=number name=weight value=0 required hidden>
           <ul.list-group.list-group-flush>
             $forall Entity id (Skill code name _ _) <- skillPool
@@ -114,7 +116,7 @@ $forall (Entity jsid (JobSkill _ _ _ _ _), Entity _ (Skill code _ _ _)) <- skill
         <div.modal-footer>
           <button.btn.btn-light type=button data-bs-dismiss=modal>
             _{MsgCancel}
-          <button.btn.btn-primary.remove type=button data-url=@{JobSkillR jsid}>
+          <button.btn.btn-warning.remove type=button data-url=@?{(JobSkillR jid jsid,stati)}>
             _{MsgRemove}
 
 $forall (status,msg) <- filter (isInfixOf "toast" . fst) msgs

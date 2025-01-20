@@ -6,11 +6,10 @@
 {-# LANGUAGE TupleSections #-}
 
 module Handler.Candidates
-  ( getJobCandidatesR
-  , getCandidateR
+  ( getCandidateR
   , getCandidatesR
   , fetchNumCandidates
-  , getJobCandidateR
+  , calcWeights, gtZero, allLeafs, filterAppSkills, maxHeight, bldThead, candidateInfo
   ) where
 
 import ClassyPrelude.Yesod (ReaderT, when)
@@ -40,8 +39,7 @@ import Database.Persist.Sql (SqlBackend, fromSqlKey, toSqlKey)
 import Foundation
     ( App
     , Route
-      ( AppPhotoR, PhotoPlaceholderR, JobCandidatesR, JobCandidateR
-      , CandidatesR, CandidateR, JobsR, HomeR
+      ( AppPhotoR, PhotoPlaceholderR, CandidatesR, CandidateR, HomeR
       )
     , AppMessage
       ( MsgCandidates, MsgSelectAPosition, MsgClose, MsgActions
@@ -159,13 +157,6 @@ getCandidateR jid aid = selectRep $ provideRep $ defaultLayout $ do
     $(widgetFile "candidates/candidate")
 
 
-getJobCandidateR :: JobId -> ApplicantId -> HandlerFor App TypedContent
-getJobCandidateR jid aid = selectRep $ provideRep $ defaultLayout $ do
-    setTitleI MsgCandidate
-    ult <- getUrlRender >>= \rndr -> fromMaybe (rndr CandidatesR) <$> lookupSession ultDestKey
-    $(widgetFile "candidates/job-candidate")
-
-
 candidateInfo :: Text -> JobId -> ApplicantId -> WidgetFor App ()
 candidateInfo ult jid aid = do
     mtab <- runInputGet $ iopt YF.intField "tab" :: WidgetFor App (Maybe Int)
@@ -211,69 +202,47 @@ rndrExpr fmt (Node (_,w,_,_) cs:ns)
 
 rndrTree :: (Double -> Text) -> [Tree (Text,Double,Text,Text)] -> WidgetFor App ()
 rndrTree _ [] = return ()
+
 rndrTree fmt [Node (_,weight,code,name) []] = [whamlet|
-<li.mb-1 role=treeitem>
-  <div.d-flex.flex-row.justify-content-start.align-items-center>
-    <div>
-      <button.invisible.btn.btn-light.rounded-circle.me-1 disabled>
-        <i.bi.bi-dot>
-    <span.badge.text-bg-secondary.me-1>#{fmt weight}
-    <span.lh-1 title=#{code}>#{name}
-|]
+    <li.mb-1 role=treeitem>
+      <div.d-flex.flex-row.justify-content-start.align-items-center>
+        <div>
+          <button.invisible.btn.btn-light.rounded-circle.me-1 disabled>
+            <i.bi.bi-dot>
+        <span.badge.text-bg-secondary.me-1>#{fmt weight}
+        <span.lh-1 title=#{code}>#{name}
+    |]
+
 rndrTree fmt (Node (_,weight,code,name) []:ns) = [whamlet|
-<li.mb-2 role=treeitem>
-  <div.d-flex.flex-row.justify-content-start.align-items-center>
-    <div>
-      <button.invisible.btn.btn-light.rounded-circle.me-1 disabled>
-        <i.bi.bi-dot>
-    <span.badge.text-bg-secondary.me-1>#{fmt weight}
-    <span.lh-1 title=#{code}>#{name}
-^{rndrTree fmt ns}
-|]
+    <li.mb-2 role=treeitem>
+      <div.d-flex.flex-row.justify-content-start.align-items-center>
+        <div>
+          <button.invisible.btn.btn-light.rounded-circle.me-1 disabled>
+            <i.bi.bi-dot>
+        <span.badge.text-bg-secondary.me-1>#{fmt weight}
+        <span.lh-1 title=#{code}>#{name}
+    ^{rndrTree fmt ns}
+    |]
+
 rndrTree fmt (Node (eid,weight,code,name) xs:ns) = [whamlet|
-<li.mb-2 role=treeitem
-  data-bs-toggle=collapse data-bs-target=#ulCollapse#{eid}
-  aria-expanded=false aria-controls=ulCollapse#{eid}>
-  
-  <div.d-flex.flex-row.justify-content-start.align-items-center>
-    $if not (null xs)
-      <div>
-        <button.btn.btn-light.rounded-circle.me-1.chevron
-          type=button title=_{MsgToggle}
-          data-bs-toggle=collapse data-bs-target=#ulCollapse#{eid}
-          aria-expanded=false aria-controls=ulCollapse#{eid}>
-    <div.d-flex.flex-row.gap-1.align-items-center>
-      <span.badge.text-bg-secondary>#{fmt weight}
-      <span.lh-1 title=#{code}>#{name}
-  <ul.collapse #ulCollapse#{eid} role=group>
-    ^{rndrTree fmt xs}
-^{rndrTree fmt ns}
-|]
+    <li.mb-2 role=treeitem
+      data-bs-toggle=collapse data-bs-target=#ulCollapse#{eid}
+      aria-expanded=false aria-controls=ulCollapse#{eid}>
 
-
-getJobCandidatesR :: JobId -> HandlerFor App TypedContent
-getJobCandidatesR jid = do
-    job <- do
-        mjob <- runDB $ selectOne $ do
-            j <- from $ table @Job
-            where_ $ j ^. JobId ==. val jid
-            return j
-        case mjob of
-          Just job -> do
-              skillTree <- bldTree <$> runDB (fetchJobSkills jid)
-              return $ Just (job, skillTree)
-          Nothing -> return Nothing
-
-    applicants <- runDB $ fetchSkilledApplicants jid []
-
-    -- appSkills :: [(Entity Applicant, [Entity AppSkill])]
-    appSkills <- mapM (\e@(Entity aid _) -> (e,) <$> runDB (fetchAppSkillsForJob aid jid)) applicants
-
-    loc <- Locale . unpack . fromMaybe "en" . LS.head <$> languages
-    ult <- getUrlRender >>= \rndr -> fromMaybe (rndr JobsR) <$> lookupSession ultDestKey
-    selectRep $ provideRep $ defaultLayout $ do
-        setTitleI MsgCandidates
-        $(widgetFile "candidates/job-candidates")
+      <div.d-flex.flex-row.justify-content-start.align-items-center>
+        $if not (null xs)
+          <div>
+            <button.btn.btn-light.rounded-circle.me-1.chevron
+              type=button title=_{MsgToggle}
+              data-bs-toggle=collapse data-bs-target=#ulCollapse#{eid}
+              aria-expanded=false aria-controls=ulCollapse#{eid}>
+        <div.d-flex.flex-row.gap-1.align-items-center>
+          <span.badge.text-bg-secondary>#{fmt weight}
+          <span.lh-1 title=#{code}>#{name}
+      <ul.collapse #ulCollapse#{eid} role=group>
+        ^{rndrTree fmt xs}
+    ^{rndrTree fmt ns}
+    |]
 
 
 fetchAppSkillsForJob :: MonadIO m => ApplicantId -> JobId -> ReaderT SqlBackend m [Entity AppSkill]
@@ -282,13 +251,13 @@ fetchAppSkillsForJob aid jid = select $ queryAppSkills aid jid
 
 queryAppSkills :: ApplicantId -> JobId -> SqlQuery (SqlExpr (Entity AppSkill))
 queryAppSkills aid jid = do
-  x <- from $ table @AppSkill
-  where_ $ x ^. AppSkillApplicant ==. val aid
-  where_ $ exists $ do
-    js <- from $ table @JobSkill
-    where_ $ js ^. JobSkillSkill ==. x ^. AppSkillSkill
-    where_ $ js ^. JobSkillJob ==. val jid
-  return x
+    x <- from $ table @AppSkill
+    where_ $ x ^. AppSkillApplicant ==. val aid
+    where_ $ exists $ do
+        js <- from $ table @JobSkill
+        where_ $ js ^. JobSkillSkill ==. x ^. AppSkillSkill
+        where_ $ js ^. JobSkillJob ==. val jid
+    return x
 
 
 fetchSkilledApplicants :: MonadIO m => JobId -> [ApplicantId] -> ReaderT SqlBackend m [Entity Applicant]
@@ -297,18 +266,18 @@ fetchSkilledApplicants jid aids = select $ querySkilledApplicants jid aids
 
 querySkilledApplicants :: JobId -> [ApplicantId] -> SqlQuery (SqlExpr (Entity Applicant))
 querySkilledApplicants jid aids = do
-  a <- from $ table @Applicant
-  where_ $ exists $ do
-    (as :& js) <- from $ table @AppSkill
-      `innerJoin` table @JobSkill `on` (\(as :& js) -> as ^. AppSkillSkill ==. js ^. JobSkillSkill)
-    where_ $ js ^. JobSkillJob ==. val jid
-    where_ $ as ^. AppSkillApplicant ==. a ^. ApplicantId
+    a <- from $ table @Applicant
+    where_ $ exists $ do
+        (as :& js) <- from $ table @AppSkill
+            `innerJoin` table @JobSkill `on` (\(as :& js) -> as ^. AppSkillSkill ==. js ^. JobSkillSkill)
+        where_ $ js ^. JobSkillJob ==. val jid
+        where_ $ as ^. AppSkillApplicant ==. a ^. ApplicantId
 
-  case aids of
-    [] -> return ()
-    xs -> where_ $ a ^. ApplicantId `in_` valList xs
+    case aids of
+      [] -> return ()
+      xs -> where_ $ a ^. ApplicantId `in_` valList xs
 
-  return a
+    return a
 
 
 fetchApplicants :: MonadIO m => [ApplicantId] -> ReaderT SqlBackend m [Entity Applicant]

@@ -2,19 +2,21 @@
 /depts/#DeptId DeptR   POST DELETE
 /depts         DeptsR  POST
 
-/job-candidates/#JobId/#ApplicantId JobCandidateR  GET
-/job-candidates/#JobId              JobCandidatesR GET
 /candidates/#JobId/#ApplicantId     CandidateR     GET
 /candidates                         CandidatesR    GET
 
-/form/jobs/#JobId/skills     JobSkillsEditFormR GET
-/form/jobs/#JobId            JobEditFormR       GET
-/form/job                    JobCreateFormR     GET
-/job-skills/#JobSkillId      JobSkillR          PUT DELETE
-/jobs/#JobId/edit/skills     JobSkillsEditR     POST
-/jobs/#JobId/skills          JobSkillsR         POST
-/jobs/#JobId                 JobR               GET  POST DELETE
-/jobs                        JobsR              GET  POST
+
+/form/jobs/#JobId/skills             JobSkillsEditFormR GET
+/form/jobs/#JobId                    JobEditFormR       GET
+/form/job                            JobCreateFormR     GET
+/jobs/#JobId/candidates/#ApplicantId JobCandidateR      GET
+/jobs/#JobId/candidates              JobCandidatesR     GET
+/jobs/#JobId/edit/skills             JobSkillsEditR     POST
+/jobs/#JobId/skills/#JobSkillId      JobSkillR          PUT  DELETE
+/jobs/#JobId/skills                  JobSkillsR         POST
+/jobs/#JobId                         JobR               GET  POST DELETE
+/jobs                                JobsR              GET  POST
+
 
 /form/applicants/#ApplicantId/skills       AppSkillsEditFormR   GET
 /form/applicants/#ApplicantId              ApplicantEditFormR   GET

@@ -226,7 +226,7 @@ instance Yesod App where
     isAuthorized JobCreateFormR _ = return Authorized
     isAuthorized (JobEditFormR _) _ = return Authorized
     isAuthorized (JobSkillsR _) _ = return Authorized
-    isAuthorized (JobSkillR _) _ = return Authorized
+    isAuthorized (JobSkillR _ _) _ = return Authorized
     isAuthorized (JobCandidatesR _) _ = setUltDestCurrent >> return Authorized
     isAuthorized (CandidateR _ _) _ = return Authorized
     isAuthorized CandidatesR _ = setUltDestCurrent >> return Authorized

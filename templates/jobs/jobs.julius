@@ -77,7 +77,7 @@ Array.from(
     fetch(e.target.dataset.url, {
       method: 'DELETE'
     }).then(res => {
-      window.location = '#{rawJS $ fromMaybe "/jobs" ult}';
+      window.location = '@?{(JobsR,stati)}';
     });
   })
 });

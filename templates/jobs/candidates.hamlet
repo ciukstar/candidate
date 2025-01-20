@@ -4,11 +4,11 @@
     <li.breadcrumb-item>
       <a href=@{HomeR} rel=linkset>_{MsgHome}
     <li.breadcrumb-item>
-      <a href=#{ult} rel=collection>_{MsgPositions}
+      <a href=@?{(JobsR,stati)} rel=collection>_{MsgPositions}
     <li.breadcrumb-item.active aria-current=page>_{MsgCandidates}
 
 <h1>
-  <a.btn.btn-light.border-0.rounded-circle href=#{ult} role=button aria-label=_{MsgBack}>
+  <a.btn.btn-light.border-0.rounded-circle href=@?{(JobsR,stati)} role=button aria-label=_{MsgBack}>
     <i.bi.bi-chevron-left>
     
   _{MsgCandidates}
@@ -24,7 +24,7 @@ $maybe (Entity jid (Job _ name _ _ _ _), jobSkills) <- job
           <img.photo.rounded-circle src=@{AppPhotoR aid} height=48 width=48
             alt=_{MsgPhoto} onerror="this.src='@{PhotoPlaceholderR}'">
             
-          <a.candidate.lh-1.fs-4 href=@{JobCandidateR jid aid}?tab=1>
+          <a.candidate.lh-1.fs-4 href=@?{(JobCandidateR jid aid,(:) ("tab","1") stati)}>
             $maybe p <- mp
               #{s} #{n} #{p}
             $nothing
@@ -37,15 +37,15 @@ $maybe (Entity jid (Job _ name _ _ _ _), jobSkills) <- job
               <i.bi.bi-three-dots-vertical>
             <ul.dropdown-menu>
               <li>
-                <a.dropdown-item href=@?{(JobCandidateR jid aid,[("tab","0")])}>
+                <a.dropdown-item href=@?{(JobCandidateR jid aid,(:) ("tab","0") stati)}>
                   _{MsgCalculationAnalysis}
               <li>
-                <a.dropdown-item href=@?{(JobCandidateR jid aid,[("tab","1")])}>
+                <a.dropdown-item href=@?{(JobCandidateR jid aid,(:) ("tab","1") stati)}>
                   _{MsgApplicant}
               <li>
-                <a.dropdown-item href=@?{(JobCandidateR jid aid,[("tab","2")])}>
+                <a.dropdown-item href=@?{(JobCandidateR jid aid,(:) ("tab","2") stati)}>
                   _{MsgPosition}
-          <a.weight href=@?{(JobCandidateR jid aid,[("tab","0")])}>
+          <a.weight href=@?{(JobCandidateR jid aid,(:) ("tab","0") stati)}>
             <span.fw-light>_{MsgWeight}
             <span.fs-6.badge.rounded-pill.bg-success>
               #{fmtDbl ".##" loc w}
@@ -60,13 +60,13 @@ $maybe (Entity jid (Job _ name _ _ _ _), jobSkills) <- job
             <tr>
               <td>
                 $maybe p <- mp
-                  <a href=@{JobCandidateR jid aid}?tab=1 rel=item>
+                  <a href=@?{(JobCandidateR jid aid,(:) ("tab","1") stati)} rel=item>
                     #{s} #{n} #{p}
                 $nothing
-                  <a href=@{JobCandidateR jid aid} rel=item>
+                  <a href=@?{(JobCandidateR jid aid,stati)} rel=item>
                     #{s} #{n}
               <th scope=row>
-                <a.app-link href=@{JobCandidateR jid aid}?tab=0>
+                <a.app-link href=@?{(JobCandidateR jid aid,(:) ("tab","0") stati)}>
                   #{fmtDbl ".##" loc w}
               $forall Node (Entity _ (JobSkill _ sid _ _ _), _) _ <- (allLeafs jobSkills)
                 <td.fw-light title=_{MsgExpertAssessment}>

@@ -54,12 +54,12 @@
                   <tr>
                     <th scope=row>_{MsgNumberOfSkills}
                     <td>
-                      <a.d-inline-block.w-100 href=@{JobR jid}?tab=1 rel=edit-form>
+                      <a.d-inline-block.w-100 href=@?{(JobR jid,(:) ("tab","1") stati)} rel=edit-form>
                         &nbsp;#{nSkills}&nbsp;
                   <tr>
                     <th scope=row>_{MsgNumberOfCandidates}
                     <td>
-                      <a.d-inline-block.w-100 href=@{JobCandidatesR jid}>
+                      <a.d-inline-block.w-100 href=@?{(JobCandidatesR jid,stati)}>
                         &nbsp;#{nCandidates}&nbsp;
                         
       <div.accordion-item>
@@ -71,7 +71,7 @@
         <div.collapse.accordion-collapse :Just 1 == tab:.show #collapseSkills data-bs-parent=#accordionJob>
           <div.accordion-body>
             <ul role=tree>
-              ^{rndrTree (fmtDbl ".######" loc) trees}
+              ^{rndrTree stati (fmtDbl ".######" loc) trees}
 
 
   <aside>
@@ -88,8 +88,8 @@
           <nav>
             <ul.list-unstyled>
               <li.ms-3.mb-3>
-                <a href=@{JobR jid}?tab=0 rel=section>
+                <a href=@?{(JobR jid,(:) ("tab","0") stati)} rel=section>
                   _{MsgAttributes}
               <li.ms-3>
-                <a href=@{JobR jid}?tab=1 rel=section>
+                <a href=@?{(JobR jid,(:) ("tab","1") stati)} rel=section>
                   _{MsgSkills}

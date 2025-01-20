@@ -5,6 +5,7 @@ Array.from(
   x.addEventListener('click', function (e) {
     fetch(e.target.dataset.url, {
       method: 'PUT',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: `expanded=${this.getAttribute('aria-expanded')}`
     });
   });
@@ -18,7 +19,7 @@ Array.from(
     fetch(e.target.dataset.url, {
       method: 'DELETE'
     }).then(res => {
-      window.location = '@{JobSkillsEditFormR jid}';
+      window.location = '@?{(JobSkillsEditFormR jid,stati)}';
     });
   });
 });

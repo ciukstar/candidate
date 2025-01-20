@@ -16,6 +16,8 @@ module Handler.Jobs
   , putJobSkillR
   , getJobSkillsEditFormR
   , postJobSkillsEditR
+  , getJobCandidatesR
+  , getJobCandidateR
   ) where
 
 import ClassyPrelude.Yesod (ReaderT)
@@ -58,7 +60,10 @@ import Database.Persist as P
     )
 import Database.Persist.Sql (SqlBackend, fromSqlKey, toSqlKey)
 
-import Handler.Candidates (fetchNumCandidates)
+import Handler.Candidates
+    ( fetchNumCandidates, calcWeights, gtZero, allLeafs, filterAppSkills
+    , maxHeight, bldThead, candidateInfo
+    )
 import Handler.Depts (deptTreeWidget)
 
 import Foundation
@@ -66,7 +71,7 @@ import Foundation
     , Route
       ( JobsR, JobR, JobSkillsR, JobSkillR, JobCreateFormR, JobEditFormR
       , JobCandidatesR, HomeR, JobSkillsEditFormR, DeptsR, JobSkillsEditR
-      , DeptR
+      , DeptR, JobCandidateR, PhotoPlaceholderR, AppPhotoR
       )
     , AppMessage
       ( MsgPositions, MsgSearch, MsgAdd, MsgSave, MsgCancel
@@ -75,7 +80,7 @@ import Foundation
       , MsgNumberSign, MsgInvalidFormData, MsgClose, MsgPleaseConfirm
       , MsgReallyDelete, MsgSkills, MsgSelect, MsgReallyRemove
       , MsgCandidates, MsgActions, MsgEditPosition, MsgCreatePosition
-      , MsgHome, MsgDetails, MsgBack, MsgDayStart, MsgDayEnd
+      , MsgHome, MsgDetails, MsgBack, MsgDayStart, MsgDayEnd, MsgTags
       , MsgRowsPerPage, MsgPaginationLabel, MsgPagination, MsgFirst
       , MsgPrevious, MsgNext, MsgLast, MsgNumberOfSkills, MsgEditSkills
       , MsgNumberOfCandidates, MsgDivisions, MsgDivision, MsgLabels
@@ -84,18 +89,22 @@ import Foundation
       , MsgJobSkillAlreadyExists, MsgInQuotes, MsgDelete, MsgRecordAdded
       , MsgRecordDeleted, MsgRecordEdited, MsgFillOutTheFormAndSavePlease
       , MsgNewPosition, MsgEditTheFormAndSavePlease, MsgNewDivision
-      , MsgEditDivision, MsgFieldRequired, MsgNewSubdivision
+      , MsgEditDivision, MsgFieldRequired, MsgNewSubdivision, MsgExpertAssessment
+      , MsgWeight, MsgApplicant, MsgCalculationAnalysis, MsgPhoto, MsgBreadcrumbs
+      , MsgCandidates, MsgCandidate
       )
     )
 
 import Model
     ( Job (Job, jobCode, jobName, jobDayStart, jobDayEnd, jobDescr, jobDept)
     , JobId, JobSkillId, Skill (Skill), JobSkill (JobSkill)
-    , Params (Params), ultDestKey, Dept (Dept)
+    , Params (Params), Dept (Dept)
+    , ApplicantId, Applicant (Applicant), AppSkill (AppSkill)
     , EntityField
       ( JobId, SkillId, JobSkillJob, JobSkillSkill , JobSkillParent
       , JobSkillId, JobSkillWeight, JobCode , JobName, JobDescr
-      , JobDayStart, JobDayEnd, DeptName, DeptId, JobDept, JobSkillExpanded
+      , JobDayStart, JobDayEnd, DeptName, DeptId, JobSkillExpanded
+      , JobDept, AppSkillSkill, ApplicantId, AppSkillApplicant
       )
     )
   
@@ -111,15 +120,14 @@ import Yesod (YesodPersist(runDB))
 import Yesod.Core
     ( Yesod(defaultLayout)
     , Html, WidgetFor, whamlet, SomeMessage (SomeMessage)
-    , MonadIO (liftIO), setTitleI, redirectUltDest
-    , lookupSession, getRequest, YesodRequest (reqGetParams)
-    , languages, MonadTrans (lift), getUrlRenderParams, newIdent
-    , lookupGetParams, getMessages, addMessageI
+    , MonadIO (liftIO), setTitleI, getRequest
+    , YesodRequest (reqGetParams), languages, MonadTrans (lift)
+    , newIdent, lookupGetParams, getMessages, addMessageI
     )
 import Yesod.Core.Content (TypedContent)
 import Yesod.Core.Handler
     ( HandlerFor, selectRep, provideRep, redirect
-    , getUrlRender
+    , getUrlRenderParams
     )
 import Yesod.Form.Fields
     ( Textarea (Textarea), selectFieldList, intField, doubleField
@@ -134,16 +142,68 @@ import Yesod.Form.Types
     )
 
 
-putJobSkillR :: JobSkillId -> HandlerFor App ()
-putJobSkillR jsid = do    
+getJobCandidateR :: JobId -> ApplicantId -> HandlerFor App TypedContent
+getJobCandidateR jid aid = selectRep $ provideRep $ defaultLayout $ do
+    stati <- filter ((/= "tab") . fst) . reqGetParams <$> getRequest
+    rndr <- getUrlRenderParams
+    setTitleI MsgCandidate
+    $(widgetFile "jobs/candidate")
+
+
+getJobCandidatesR :: JobId -> HandlerFor App TypedContent
+getJobCandidatesR jid = do
+    stati <- filter ((/= "tab") . fst) . reqGetParams <$> getRequest
+    
+    job <- do
+        mjob <- runDB $ selectOne $ do
+            j <- from $ table @Job
+            where_ $ j ^. JobId ==. val jid
+            return j
+        case mjob of
+          Just job -> do
+              skillTree <- bldTree <$> runDB (fetchJobSkills jid)
+              return $ Just (job, skillTree)
+          Nothing -> return Nothing
+
+    applicants <- runDB $ select $ do
+        x <- from $ table @Applicant
+        where_ $ exists $ do
+            (as :& js) <- from $ table @AppSkill
+                `innerJoin` table @JobSkill `on` (\(as :& js) -> as ^. AppSkillSkill ==. js ^. JobSkillSkill)
+            where_ $ js ^. JobSkillJob ==. val jid
+            where_ $ as ^. AppSkillApplicant ==. x ^. ApplicantId
+
+        return x
+
+    appSkills <- mapM ( \e@(Entity aid _) -> (e,) <$> runDB ( select $ do 
+            x <- from $ table @AppSkill
+            where_ $ x ^. AppSkillApplicant ==. val aid
+            where_ $ exists $ do
+                js <- from $ table @JobSkill
+                where_ $ js ^. JobSkillSkill ==. x ^. AppSkillSkill
+                where_ $ js ^. JobSkillJob ==. val jid
+            return x ) ) applicants
+
+    loc <- Locale . unpack . fromMaybe "en" . LS.head <$> languages
+    selectRep $ provideRep $ defaultLayout $ do
+        setTitleI MsgCandidates
+        $(widgetFile "jobs/candidates")
+
+
+putJobSkillR :: JobId -> JobSkillId -> HandlerFor App ()
+putJobSkillR jid jsid = do
+    stati <- reqGetParams <$> getRequest
     expanded <- runInputPost $ ireq boolField "expanded"
     runDB $ P.update jsid [JobSkillExpanded P.=. expanded]
+    redirect (JobSkillsEditFormR jid, stati)
 
 
-deleteJobSkillR :: JobSkillId -> HandlerFor App ()
-deleteJobSkillR jsid = do
+deleteJobSkillR :: JobId -> JobSkillId -> HandlerFor App ()
+deleteJobSkillR jid jsid = do
+    stati <- reqGetParams <$> getRequest
     runDB $ delete jsid
     addMessageI "alert-info toast" MsgRecordDeleted
+    redirect (JobSkillsEditFormR jid, stati)
 
 
 postJobSkillsR :: JobId -> HandlerFor App TypedContent
@@ -173,7 +233,7 @@ deleteJobR jid = do
 
 postJobR :: JobId -> HandlerFor App TypedContent
 postJobR jid = selectRep $ provideRep $ do
-    
+    stati <- filter ((/= "tab") . fst) . reqGetParams <$> getRequest
     job <- runDB $ selectOne $ do
         x <- from $ table @Job
         where_ $ x ^. JobId ==. val jid
@@ -185,7 +245,7 @@ postJobR jid = selectRep $ provideRep $ do
       FormSuccess r -> do
           runDB $ replace jid r
           addMessageI "alert-info toast" MsgRecordEdited 
-          redirectUltDest JobsR
+          redirect (JobsR,stati)
           
       _otherwise -> do
           selected <- fromMaybe [] . mapM ((toSqlKey <$>) . readMaybe . unpack) <$> lookupGetParams "jsid"
@@ -196,7 +256,7 @@ postJobR jid = selectRep $ provideRep $ do
           skillPool <- runDB $ fetchJoblessSkills (snd <$> skills)
           location <- getUrlRenderParams >>= \rndr -> return $ rndr (JobEditFormR jid) [("tab","1")]
           
-          (fw,fe) <- generateFormPost $ formSkills trees (fmtDbl ".######" (Locale "en")) selected
+          (fw,fe) <- generateFormPost $ formSkills stati trees (fmtDbl ".######" (Locale "en")) selected
 
           when (any (> 1) (weightLevels trees)) $ addMessageI "alert-warning tab-1" MsgCumulativeWeightNotNormal
 
@@ -207,9 +267,6 @@ postJobR jid = selectRep $ provideRep $ do
           msgs <- getMessages
           defaultLayout $ do
               setTitleI MsgEditPosition
-              let params = [("desc","id"),("offset","0"),("limit","5")]
-              rndr <- getUrlRenderParams
-              ult <- fromMaybe (rndr JobsR params) <$> lookupSession ultDestKey
               $(widgetFile "jobs/edit")
 
 
@@ -288,7 +345,6 @@ getJobsR = do
         loc <- Locale . unpack . fromMaybe "en" . LS.head <$> languages
         fmt <- liftIO $ standardDateFormatter NoFormatStyle ShortFormatStyle loc "GMT+0300"
         cal <- liftIO $ calendar "GMT+0300" loc TraditionalCalendarType
-        ult <- lookupSession ultDestKey
         idFormSearch <- newIdent
         idInputSearch <- newIdent
         idSelectLimit <- newIdent
@@ -298,12 +354,13 @@ getJobsR = do
 
 postJobSkillsEditR :: JobId -> HandlerFor App TypedContent
 postJobSkillsEditR jid = do
+    stati <- filter ((/= "tab") . fst) . reqGetParams <$> getRequest
     selected <- fromMaybe [] . mapM ((toSqlKey <$>) . readMaybe . unpack) <$> lookupGetParams "jsid"
     location <- runInputPost $ ireq urlField "location"
     skills <- runDB $ fetchJobSkills jid :: HandlerFor App [(Entity JobSkill, Entity Skill)]
     let trees = bldTree skills
     skillPool <- runDB $ fetchJoblessSkills (snd <$> skills)
-    ((fr,fw),fe) <- runFormPost $ formSkills trees (fmtDbl ".######" (Locale "en")) selected
+    ((fr,fw),fe) <- runFormPost $ formSkills stati trees (fmtDbl ".######" (Locale "en")) selected
     msgs <- getMessages
     job <- runDB $ get jid
     
@@ -314,34 +371,33 @@ postJobSkillsEditR jid = do
                          where_ $ x ^. JobSkillId ==. val jsid
                    )
           addMessageI "alert-info toast" MsgRecordEdited
-          redirect location
+          redirect (JobSkillsEditFormR jid,stati)
         
       _otherwise -> selectRep $ provideRep $ defaultLayout $ do
           setTitleI MsgEditSkills
-          let params = [("desc","id"),("offset","0"),("limit","5")]
-          rndr <- getUrlRenderParams
-          ult <- fromMaybe (rndr JobsR params) <$> lookupSession ultDestKey
           $(widgetFile "jobs/skills")
 
 
 getJobSkillsEditFormR :: JobId -> HandlerFor App Html
 getJobSkillsEditFormR jid = do
+    stati <- filter ((/= "tab") . fst) . reqGetParams <$> getRequest
     selected <- fromMaybe [] . mapM ((toSqlKey <$>) . readMaybe . unpack) <$> lookupGetParams "jsid"
     job <- runDB $ get jid
     skills <- runDB $ fetchJobSkills jid :: HandlerFor App [(Entity JobSkill, Entity Skill)]
     let trees = bldTree skills
     skillPool <- runDB $ fetchJoblessSkills (snd <$> skills)
-    location <- getUrlRender >>= \rndr -> return $ rndr (JobSkillsEditFormR jid)
-    (fw,fe) <- generateFormPost $ formSkills trees (fmtDbl ".######" (Locale "en")) selected
+    location <- getUrlRenderParams >>= \rndr -> return $ rndr (JobSkillsEditFormR jid) stati
+    
+    (fw,fe) <- generateFormPost $ formSkills stati trees (fmtDbl ".######" (Locale "en")) selected
+
     when (any (> 1) (weightLevels trees)) $ addMessageI "alert-warning" MsgCumulativeWeightNotNormal
     loc <- maybe "en" (Locale . unpack) . LS.head <$> languages
     unless (null selected) $ addMessageI "alert-info"
         (MsgTotalValue (fmtDbl ".######" loc $ calcLevelWeight selected trees))
+        
     msgs <- getMessages
     defaultLayout $ do
         setTitleI MsgEditSkills
-        let params = [("desc","id"),("offset","0"),("limit","5")]
-        ult <- getUrlRenderParams >>= \rndr -> fromMaybe (rndr JobsR params) <$> lookupSession ultDestKey
         $(widgetFile "jobs/skills")
 
 
@@ -380,6 +436,7 @@ weightTree (Node _ xs@(c:_)) =
 
 getJobEditFormR :: JobId -> HandlerFor App Html
 getJobEditFormR jid = do
+    stati <- filter ((/= "tab") . fst) . reqGetParams <$> getRequest
     selected <- fromMaybe [] . mapM ((toSqlKey <$>) . readMaybe . unpack) <$> lookupGetParams "jsid"
     tab <- fromMaybe 0 <$> runInputGet (iopt intField "tab") :: HandlerFor App Int
     
@@ -392,8 +449,8 @@ getJobEditFormR jid = do
     let trees = bldTree skills
     skillPool <- runDB $ fetchJoblessSkills (snd <$> skills)
     (widget,enctype) <- generateFormPost $ formJob job False
-    location <- getUrlRenderParams >>= \rndr -> return $ rndr (JobEditFormR jid) [("tab","1")]
-    (fw,fe) <- generateFormPost $ formSkills trees (fmtDbl ".######" (Locale "en")) selected
+    location <- getUrlRenderParams >>= \rndr -> return $ rndr (JobEditFormR jid) (("tab","1") : stati)
+    (fw,fe) <- generateFormPost $ formSkills stati trees (fmtDbl ".######" (Locale "en")) selected
     when (any (> 1) (weightLevels trees)) $ addMessageI "alert-warning tab-1" MsgCumulativeWeightNotNormal
     loc <- maybe "en" (Locale . unpack) . LS.head <$> languages
     unless (null selected) $ addMessageI "alert-info tab-1"
@@ -402,9 +459,6 @@ getJobEditFormR jid = do
     msgs <- getMessages
     defaultLayout $ do
         setTitleI MsgEditPosition
-        let params = [("desc","id"),("offset","0"),("limit","5")]
-        rndr <- getUrlRenderParams
-        ult <- fromMaybe (rndr JobsR params) <$> lookupSession ultDestKey
         $(widgetFile "jobs/edit")
 
 
@@ -625,9 +679,9 @@ bldTree xs = go (sortBy compareJobSkillId (filter root xs)) xs
       Node (js,se) (go (sortBy compareJobSkillId (filter (child p) as)) as) : go ys as
 
 
-rndrTree :: (Double -> Text) -> [Tree (Entity JobSkill, Entity Skill)] -> WidgetFor App ()
-rndrTree _ [] = return ()
-rndrTree fmt [Node (Entity _ (JobSkill _ _ weight _ _), Entity _ (Skill code name _ _)) []] =
+rndrTree :: [(Text,Text)] -> (Double -> Text) -> [Tree (Entity JobSkill, Entity Skill)] -> WidgetFor App ()
+rndrTree _ _ [] = return ()
+rndrTree _ fmt [Node (Entity _ (JobSkill _ _ weight _ _), Entity _ (Skill code name _ _)) []] =
     [whamlet|
             <li.mb-1 role=treeitem>
               <div.d-flex.flex-row.justify-content-start.align-items-center>
@@ -637,7 +691,7 @@ rndrTree fmt [Node (Entity _ (JobSkill _ _ weight _ _), Entity _ (Skill code nam
                 <span.lh-1 title=#{name}>#{code}
             |]
     
-rndrTree fmt (Node (Entity _ (JobSkill _ _ weight _ _), Entity _ (Skill code name _ _)) []:ns) =
+rndrTree stati fmt (Node (Entity _ (JobSkill _ _ weight _ _), Entity _ (Skill code name _ _)) []:ns) =
     [whamlet|
             <li.mb-1 role=treeitem>
               <div.d-flex.flex-row.justify-content-start.align-items-center>
@@ -645,34 +699,34 @@ rndrTree fmt (Node (Entity _ (JobSkill _ _ weight _ _), Entity _ (Skill code nam
                   <i.bi.bi-dot>
                 <span.badge.text-bg-secondary.me-1>#{fmt weight}
                 <span.lh-1 title=#{name}>#{code}
-            ^{rndrTree fmt ns}
+            ^{rndrTree stati fmt ns}
             |]
     
-rndrTree fmt (Node (Entity jsid (JobSkill _ _ weight _ expanded), Entity _ (Skill code name _ _)) xs:ns) =
+rndrTree stati fmt (Node (Entity jsid (JobSkill jid _ weight _ expanded), Entity _ (Skill code name _ _)) xs:ns) =
     [whamlet|
             <li.mb-1 role=treeitem>
               <div.d-flex.flex-row.justify-content-start.align-items-center>
                 $if not (null xs)
                   <div>
                     <button.btn.btn-light.rounded-circle.me-1.chevron type=button
-                      data-url=@{JobSkillR jsid}
+                      data-url=@?{(JobSkillR jid jsid,stati)}
                       data-bs-toggle=collapse data-bs-target=#ulCollapse#{fromSqlKey jsid}
                       :expanded:aria-expanded=true :not expanded:aria-expanded=false
                       aria-controls=ulCollapse#{fromSqlKey jsid} aria-label=_{MsgExpand}>
                 <span.badge.text-bg-secondary.me-1>#{fmt weight}
                 <span.lh-1 title=#{name}>#{code}
               <ul.collapse :expanded:.show #ulCollapse#{fromSqlKey jsid} role=group>
-                ^{rndrTree fmt xs}
-            ^{rndrTree fmt ns}
+                ^{rndrTree stati fmt xs}
+            ^{rndrTree stati fmt ns}
             |]
 
 
-formSkills :: [Tree (Entity JobSkill, Entity Skill)]
+formSkills :: [(Text,Text)] -> [Tree (Entity JobSkill, Entity Skill)]
            -> (Double -> Text)
            -> [JobSkillId]
            -> Html -> MForm (HandlerFor App) (FormResult [(JobSkillId, Double)], WidgetFor App ())
-formSkills tree fmt selected extra = do
-    (r,w') <- treeSkills tree fmt selected
+formSkills stati tree fmt selected extra = do
+    (r,w') <- treeSkills stati tree fmt selected
     let w = [whamlet|
                     #{extra}
                     <ul role=tree>
@@ -681,12 +735,12 @@ formSkills tree fmt selected extra = do
     return (r,w)
 
 
-treeSkills :: [Tree (Entity JobSkill, Entity Skill)]
+treeSkills :: [(Text,Text)] -> [Tree (Entity JobSkill, Entity Skill)]
            -> (Double -> Text)
            -> [JobSkillId]
            -> MForm (HandlerFor App) (FormResult [(JobSkillId, Double)], WidgetFor App ())
-treeSkills [] _ _ = return (FormSuccess [],[whamlet||])
-treeSkills [Node (Entity jsid (JobSkill _ _ w _ _), Entity _ (Skill _ name _ _)) []] _ selected = do
+treeSkills _ [] _ _ = return (FormSuccess [],[whamlet||])
+treeSkills _ [Node (Entity jsid (JobSkill _ _ w _ _), Entity _ (Skill _ name _ _)) []] _ selected = do
     (r,v) <- first ((jsid,) <$>) <$> mreq doubleField FieldSettings
              { fsLabel = SomeMessage name
              , fsTooltip = Nothing, fsId = Nothing, fsName = Nothing
@@ -703,8 +757,8 @@ treeSkills [Node (Entity jsid (JobSkill _ _ w _ _), Entity _ (Skill _ name _ _))
                      |]
            )
       
-treeSkills (Node (Entity jsid (JobSkill _ _ weight _ _), Entity _ (Skill _ name _ _)) []:ns) fmt selected = do
-    (r',w') <- treeSkills ns fmt selected :: MForm (HandlerFor App) (FormResult [(JobSkillId,Double)], WidgetFor App ())
+treeSkills stati (Node (Entity jsid (JobSkill _ _ weight _ _), Entity _ (Skill _ name _ _)) []:ns) fmt selected = do
+    (r',w') <- treeSkills stati ns fmt selected :: MForm (HandlerFor App) (FormResult [(JobSkillId,Double)], WidgetFor App ())
 
     (r,v) <- first ((jsid,) <$>) <$> mreq doubleField FieldSettings
              { fsLabel = SomeMessage name
@@ -722,10 +776,10 @@ treeSkills (Node (Entity jsid (JobSkill _ _ weight _ _), Entity _ (Skill _ name 
                     |]
     return ((:) <$> r <*> r', w)
     
-treeSkills (Node (Entity jsid (JobSkill _ _ weight _ expanded), Entity _ (Skill _ name _ _)) xs:ns) fmt selected = do
+treeSkills stati (Node (Entity jsid (JobSkill jid _ weight _ expanded), Entity _ (Skill _ name _ _)) xs:ns) fmt selected = do
     ident <- newIdent
-    (r',w') <- treeSkills ns fmt selected
-    (r'',w'') <- treeSkills xs fmt selected
+    (r',w') <- treeSkills stati ns fmt selected
+    (r'',w'') <- treeSkills stati xs fmt selected
 
     (r,v) <- first ((jsid,) <$>) <$> mreq doubleField FieldSettings
              { fsLabel = SomeMessage name
@@ -738,7 +792,8 @@ treeSkills (Node (Entity jsid (JobSkill _ _ weight _ expanded), Entity _ (Skill 
                       <div.d-flex.flex-row.justify-content-start.align-items-end>
                         $if not (null xs)
                           <button.btn.btn-light.rounded-circle.me-1.chevron type=button
-                            data-bs-toggle=collapse data-bs-target=#ulCollapse#{ident} data-url=@{JobSkillR jsid}
+                            data-bs-toggle=collapse data-bs-target=#ulCollapse#{ident}
+                            data-url=@?{(JobSkillR jid jsid,stati)}
                             :not expanded:aria-expanded=false :expanded:aria-expanded=true aria-controls=ulCollapse#{ident}
                             :not expanded:aria-label=_{MsgExpand} :expanded:aria-label=_{MsgCollapse}>
                           ^{itemSkill jsid (elem jsid selected) v}

@@ -120,13 +120,13 @@ import Handler.Jobs
   , putJobSkillR
   , getJobSkillsEditFormR
   , postJobSkillsEditR
+  , getJobCandidatesR
+  , getJobCandidateR
   )
 
 import Handler.Candidates
-  ( getJobCandidatesR
-  , getCandidateR
+  ( getCandidateR
   , getCandidatesR
-  , getJobCandidateR
   )
 
 import Handler.Depts

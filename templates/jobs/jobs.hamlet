@@ -28,11 +28,9 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
               :Just False == ((<$>) T.null mq):.btn-success>
               <i.bi.bi-search>
             $maybe q <- mq
-              <input.form-control type=search role=search name=q value=#{q}
-                ##{idInputSearch} placeholder=_{MsgSearch}>
+              <input.form-control type=search name=q value=#{q} ##{idInputSearch} placeholder=_{MsgSearch}>
             $nothing
-              <input.form-control type=search role=search name=q
-                ##{idInputSearch} placeholder=_{MsgSearch}>
+              <input.form-control type=search name=q ##{idInputSearch} placeholder=_{MsgSearch}>
 
           $maybe (d,f) <- msort
             <input.sort type=text name=#{d} value=#{f} hidden>
@@ -52,10 +50,10 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
     <div.card.mt-2.d-block.d-lg-none>
       <div.card-header.pt-0>
         <div.d-flex.flex-row.justify-content-between>
+        
           <div>
-            <small>
-              <small>
-                <small.fw-light>_{MsgRowsPerPage}
+            <label.form-text.fw-light for=#{idSelectLimit2}>
+              _{MsgRowsPerPage}
             <select.form-select ##{idSelectLimit2}>
               <option value=3 :Just 3 == mlimit:selected>3
               <option value=4 :Just 4 == mlimit:selected>4
@@ -63,10 +61,9 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
               <option value=10 :Just 10 == mlimit:selected>10
               <option value=20 :Just 20 == mlimit:selected>20
               <option value=50 :Just 50 == mlimit:selected>50
+              
           <div>
-            <small>
-              <small>
-                <small.fw-light>_{MsgPaginationLabel start end rcnt}
+            <small.form-text.fw-light>_{MsgPaginationLabel start end rcnt}
             <nav aria-label=_{MsgPagination}>
               <ul.pagination.m-0.p-0>
                 <li.page-item>
@@ -96,7 +93,7 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
 
                 <ul.dropdown-menu>
                   <li>
-                    <a.dropdown-item href="@{JobEditFormR jid}?tab=0" rel=edit-form>
+                    <a.dropdown-item href=@?{(JobEditFormR jid,(:) ("tab","0") stati)} rel=edit-form>
                       <div.d-flex.align-items-center>
                         <i.bi.bi-pencil.me-2>
                         _{MsgEdit}
@@ -107,29 +104,29 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
                         <i.bi.bi-trash.me-2>
                         _{MsgDelete}
                   <li>
-                    <a.dropdown-item href=@{JobR jid}?tab=0 rel=item>
+                    <a.dropdown-item href=@?{(JobR jid,(:) ("tab","0") stati)} rel=item>
                       <div.d-flex.align-items-center>
                         <i.bi.bi-card-text.me-2>
                         _{MsgDetails}
                   <li>
                     <hr.dropdown-divider>
                   <li>
-                    <a.dropdown-item href=@{JobSkillsEditFormR jid} rel=item>
+                    <a.dropdown-item href=@?{(JobSkillsEditFormR jid,stati)} rel=item>
                       <div.d-flex.align-items-center>
                         <i.bi.bi-pencil.me-2>
                         _{MsgSkills}
                   <li>
-                    <a.dropdown-item href=@{JobCandidatesR jid} rel=item>
+                    <a.dropdown-item href=@?{(JobCandidatesR jid,stati)} rel=item>
                       <div.d-flex.align-items-center>
                         <i.bi.bi-mortarboard.me-2>
                         _{MsgCandidates}
             <div.details.d-flex.gap-3>
-              <a.skills.app-link href=@?{(JobR jid,[("tab","1")])}>
+              <a.skills.app-link href=@?{(JobR jid,(:) ("tab","1") stati)}>
                 <div.d-flex.align-items-center.gap-1>
                   _{MsgSkills}
                   <sup.badge.rounded-pill.bg-secondary>
                     #{nSkills}
-              <a.candidates.app-link href=@{JobCandidatesR jid}>
+              <a.candidates.app-link href=@?{(JobCandidatesR jid,stati)}>
                 <div.d-flex.align-items-center.gap-1>
                   _{MsgCandidates}
                   <sup.badge.rounded-pill.bg-secondary>
@@ -168,7 +165,7 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
                   <a.app-link.d-inline-block.w-100 href=@?{(JobR jid,(:) ("tab","1") stati)} title=_{MsgNumberOfSkills}>
                     &nbsp;#{nSkills}&nbsp;
                 <td>
-                  <a.app-link.d-inline-block.w-100 href=@{JobCandidatesR jid} title=_{MsgNumberOfCandidates}>
+                  <a.app-link.d-inline-block.w-100 href=@?{(JobCandidatesR jid,stati)} title=_{MsgNumberOfCandidates}>
                     &nbsp;#{nCandidates}&nbsp;
                 <td>
                   <div.d-flex.justify-content-end.gap-2>
@@ -179,7 +176,7 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
 
                       <ul.dropdown-menu>
                         <li>
-                          <a.dropdown-item href="@{JobEditFormR jid}?tab=0" rel=edit-form>
+                          <a.dropdown-item href=@?{(JobEditFormR jid,(:) ("tab","0") stati)} rel=edit-form>
                             <div.d-flex.align-items-center>
                               <i.bi.bi-pencil.me-2>
                               _{MsgEdit}
@@ -190,26 +187,27 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
                               <i.bi.bi-trash.me-2>
                               _{MsgDelete}
                         <li>
-                          <a.dropdown-item href=@{JobR jid}?tab=0 rel=item>
+                          <a.dropdown-item href=@?{(JobR jid,(:) ("tab","0") stati)} rel=item>
                             <div.d-flex.align-items-center>
                               <i.bi.bi-card-text.me-2>
                               _{MsgDetails}
                         <li>
                           <hr.dropdown-divider>
                         <li>
-                          <a.dropdown-item href=@{JobSkillsEditFormR jid} rel=item>
+                          <a.dropdown-item href=@?{(JobSkillsEditFormR jid,stati)} rel=item>
                             <div.d-flex.align-items-center>
                               <i.bi.bi-pencil.me-2>
                               _{MsgSkills}
                         <li>
-                          <a.dropdown-item href=@{JobCandidatesR jid} rel=item>
+                          <a.dropdown-item href=@?{(JobCandidatesR jid,stati)} rel=item>
                             <div.d-flex.align-items-center>
                               <i.bi.bi-mortarboard.me-2>
                               _{MsgCandidates}
 
       <div.d-flex.flex-row.justify-content-between>
         <div>
-          <small.fw-light>_{MsgRowsPerPage}
+          <label.form-text.fw-light for=#{idSelectLimit}>
+            _{MsgRowsPerPage}
           <select.form-select form=#{idFormSearch} name=limit ##{idSelectLimit}>
             <option value=3 :Just 3 == mlimit:selected>3
             <option value=4 :Just 4 == mlimit:selected>4
@@ -218,7 +216,7 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
             <option value=20 :Just 20 == mlimit:selected>20
             <option value=50 :Just 50 == mlimit:selected>50
         <div>
-          <small.fw-light>_{MsgPaginationLabel start end rcnt}
+          <small.form-text.fw-light>_{MsgPaginationLabel start end rcnt}
           <nav aria-label=_{MsgPagination}>
             <ul.pagination>
               <li.page-item>
@@ -247,7 +245,7 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
             data-bs-toggle=modal data-bs-target=#modalRootLabel>
             <i.bi.bi-plus-lg>
         <nav>
-          ^{deptTreeWidget labels depts}
+          ^{deptTreeWidget idFormSearch labels depts}
 
     <div.modal.fade #modalRootLabel tabindex=-1 aria-hidden=true aria-labelledby=modalRootLabelTitle>
       <div.modal-dialog>
@@ -260,7 +258,7 @@ $forall (status, msg) <- filter (not . (isInfixOf "toast" . fst)) msgs
             <p.form-text>
               _{MsgFillOutTheFormAndSavePlease}
               
-            <form method=post action=@{DeptsR} #formRootLabel>
+            <form method=post action=@?{(DeptsR,stati)} #formRootLabel>
               <input type=hidden name=parent>
               <input.form-control #rootLabelName type=text name=dept placeholder=_{MsgDenom}>
               <div.form-text>
@@ -288,7 +286,7 @@ $forall Entity did (Dept name _) <- depts
         <div.modal-footer>
           <button.btn.btn-light type=button data-bs-dismiss=modal>
             _{MsgCancel}
-          <button.btn.btn-danger.delete type=button data-url=@{DeptR did}>
+          <button.btn.btn-danger.delete type=button data-url=@?{(DeptR did,stati)}>
             _{MsgDelete}
 
   <div.modal.fade #modalEditDept#{fromSqlKey did} tabindex=-1 aria-hidden=true aria-label=_{MsgDivision}>
@@ -302,7 +300,7 @@ $forall Entity did (Dept name _) <- depts
           <p.form-text>
             _{MsgEditTheFormAndSavePlease}
             
-          <form method=post action=@{DeptR did} #formEditDept#{fromSqlKey did}>
+          <form method=post action=@?{(DeptR did,stati)} #formEditDept#{fromSqlKey did}>
             <input.form-control type=text name=dept required #inputFormEditDept#{fromSqlKey did} value=#{name}>
             <div.form-text>
               <sup>*
@@ -322,7 +320,7 @@ $forall Entity did (Dept name _) <- depts
           <h4.modal-title>_{MsgNewSubdivision}
           <button.btn-close type=button data-bs-dismiss=modal aria-label=_{MsgClose}>
         <div.modal-body>
-          <form method=post action=@{DeptsR} #formDept#{fromSqlKey did}>
+          <form method=post action=@?{(DeptsR,stati)} #formDept#{fromSqlKey did}>
             <p.form-field>
               _{MsgFillOutTheFormAndSavePlease}
             <input type=hidden name=parent value=#{fromSqlKey did}>
@@ -351,7 +349,7 @@ $forall (Entity jid (Job _ name _ _ _ _), _, _) <- jobs
         <div.modal-footer>
           <button.btn.btn-light type=button data-bs-dismiss=modal>
             _{MsgCancel}
-          <button.btn.btn-danger.delete type=button data-url=@{JobR jid}>
+          <button.btn.btn-danger.delete type=button data-url=@?{(JobR jid,stati)}>
             _{MsgDelete}
 
 
