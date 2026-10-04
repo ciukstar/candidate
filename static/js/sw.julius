@@ -1,0 +1,42 @@
+
+self.addEventListener('fetch', (event) => {
+  const requestUrl = new URL(event.request.url);
+
+  if (
+    requestUrl.origin === self.location.origin && 
+    ['POST', 'PUT', 'DELETE', 'PATCH'].includes(event.request.method)
+  ) {
+    
+    event.respondWith(
+      (async () => {
+
+        const csrfHeaderName = #{TE.decodeUtf8 $ CI.foldedCase defaultCsrfHeaderName};
+        
+        const csrfCookie = await self.cookieStore.get(#{TE.decodeUtf8 defaultCsrfCookieName});
+        
+        if (!csrfCookie) {
+          return fetch(event.request);
+        }
+
+        // 3. Clone the original request and append the CSRF header
+        const modifiedHeaders = new Headers(event.request.headers);
+        modifiedHeaders.set(csrfHeaderName, csrfCookie.value);
+
+        // Requests with bodies (like POST) must clone or read the body before reconstructing
+        const requestBody = event.request.method !== 'GET' && event.request.method !== 'HEAD' 
+          ? await event.request.clone().blob() 
+          : null;
+
+        const modifiedRequest = new Request(event.request, {
+          headers: modifiedHeaders,
+          body: requestBody,
+          // duplex: 'half' is required in modern fetch when streaming/passing bodies
+          ...(requestBody && { duplex: 'half' }) 
+        });
+
+        return fetch(modifiedRequest);
+        
+      })()
+    );
+  }
+});

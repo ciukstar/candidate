@@ -1,6 +1,6 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell   #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -35,8 +35,9 @@ import qualified Data.List.Safe as LS
 import Data.Maybe (Maybe (..), fromMaybe)
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
+import Data.Type.Equality (type (~))
 
-import Database.Persist.Sql (ConnectionPool, runSqlPool, SqlBackend)
+import Database.Persist.Sql (ConnectionPool, SqlBackend, runSqlPool)
 
 import Model
     ( JobSkillId, SkillId, ApplicantId, JobId, DeptId
@@ -92,7 +93,6 @@ import Import.NoFoundation
     )
 
 import Settings (widgetFile)
-import Settings.StaticFiles (js_cookie_3_0_1_dist_js_cookie_js)
 
 import Text.Hamlet (hamletFile, Html)
 import Text.Jasmine (minifym)
@@ -108,9 +108,8 @@ import Yesod.Auth
     , AuthenticationResult(Authenticated)
     )
 -- Used only when in "auth-dummy-login" setting is enabled.
-import Yesod.Auth.Dummy
+import Yesod.Auth.Dummy ( authDummy )
 import Yesod.Auth.OpenId (authOpenId, IdentifierType (Claimed))
-import Yesod.Core (hamlet)
 import Yesod.Core.Content
     ( TypedContent (TypedContent), toContent, typeJavascript
     )
@@ -121,7 +120,6 @@ import Yesod.Core.Handler
 import Yesod.Default.Util (addStaticContentExternal)
 import Yesod.Core.Types (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
-import Yesod.Core.Widget (toWidgetHead)
 import Yesod.Form (MForm, FormResult)
 import Yesod.Form.I18n.English (englishFormMessage)
 import Yesod.Form.I18n.French (frenchFormMessage)
@@ -199,9 +197,7 @@ instance Yesod App where
         -- value passed to hamletToRepHtml cannot be a widget, this allows
         -- you to use normal widget features in default-layout.
 
-        pc <- widgetToPageContent $ do
-          toWidgetHead [hamlet|<script type=text/javascript src=@{StaticR js_cookie_3_0_1_dist_js_cookie_js}>|]
-          $(widgetFile "default-layout")
+        pc <- widgetToPageContent $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
     -- The page to be redirected to when authentication is required.
